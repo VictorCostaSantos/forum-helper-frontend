@@ -1,0 +1,20 @@
+/* Arquivo Hub - Importa os módulos */
+@import './variables.css';
+@import './base.css';
+@import './components.css';
+@import './modules.css';
+@import './utilities.css';
+
+/* Refinamentos finais de layout */
+#catalog-view .filters-bar {
+    align-items: center;
+}
+
+/* Força altura para os inputs do catálogo não herdarem tamanho de outros lugares */
+#catalog-view .search-input,
+#catalog-view .filter-select,
+#catalog-view .ai-button,
+#catalog-view #resetFilters {
+    height: 45px;
+    box-sizing: border-box;
+}

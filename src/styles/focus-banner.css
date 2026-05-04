@@ -1,0 +1,318 @@
+/* ==========================================================================
+   FOCUS BANNER — Sugestão proativa do Forum Helper
+   Layout: [categoria/ícone] [título + subtítulo + stats] [ação + dismiss]
+   ========================================================================== */
+
+.focus-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-left-width: 5px;
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    animation: focus-banner-in 0.25s ease-out;
+}
+
+@keyframes focus-banner-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Visual de categoria à esquerda (quando há targetCategory) ---- */
+
+.focus-banner__category {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    flex-shrink: 0;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.focus-banner__category img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    position: relative;
+    z-index: 1;
+}
+
+/* Tinta de fundo na cor da categoria — sutil, pra não competir com o ícone */
+.focus-banner__category.frontend     { background: rgba(107, 209, 255, 0.18); border-color: rgba(107, 209, 255, 0.35); }
+.focus-banner__category.backend      { background: rgba(0, 200, 111, 0.18);   border-color: rgba(0, 200, 111, 0.35); }
+.focus-banner__category.data         { background: rgba(156, 211, 59, 0.18);  border-color: rgba(156, 211, 59, 0.35); }
+.focus-banner__category.devops       { background: rgba(241, 97, 101, 0.18);  border-color: rgba(241, 97, 101, 0.35); }
+.focus-banner__category.design       { background: rgba(220, 110, 190, 0.18); border-color: rgba(220, 110, 190, 0.35); }
+.focus-banner__category.mobile       { background: rgba(255, 186, 5, 0.20);   border-color: rgba(255, 186, 5, 0.40); }
+.focus-banner__category.inova        { background: rgba(255, 140, 42, 0.18);  border-color: rgba(255, 140, 42, 0.35); }
+.focus-banner__category.ia           { background: rgba(123, 113, 255, 0.18); border-color: rgba(123, 113, 255, 0.35); }
+
+/* ---- Ícone fallback (quando não há categoria, ex: success geral) ---- */
+
+.focus-banner__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    font-size: 1.4rem;
+}
+
+/* ---- Bloco central ---- */
+
+.focus-banner__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.focus-banner__title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-color);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+}
+
+.focus-banner__subtitle {
+    font-size: 0.9rem;
+    color: var(--light-text-color);
+    line-height: 1.4;
+}
+
+/* ---- Chips sinalizadores: número grande + label, cor é o sinal ---- */
+
+.focus-banner__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.focus-banner__stat {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color);
+    white-space: nowrap;
+    line-height: 1.1;
+}
+
+.focus-banner__stat-value {
+    font-weight: 800;
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+.focus-banner__stat-label {
+    color: var(--light-text-color);
+    font-weight: 600;
+}
+
+/* Tons sinalizadores — sólidos, mais visíveis */
+
+.focus-banner__stat.is-danger {
+    background: var(--cor-complexo);
+    border-color: var(--cor-complexo);
+    color: #fff;
+}
+.focus-banner__stat.is-danger .focus-banner__stat-label { color: rgba(255, 255, 255, 0.85); }
+
+.focus-banner__stat.is-warn {
+    background: #f3933a;
+    border-color: #f3933a;
+    color: #fff;
+}
+.focus-banner__stat.is-warn .focus-banner__stat-label { color: rgba(255, 255, 255, 0.85); }
+
+.focus-banner__stat.is-mild {
+    background: rgba(255, 193, 7, 0.18);
+    border-color: rgba(255, 193, 7, 0.45);
+    color: #8a6308;
+}
+.focus-banner__stat.is-mild .focus-banner__stat-label { color: #8a6308; opacity: 0.85; }
+
+/* ---- Ações à direita ---- */
+
+.focus-banner__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.focus-banner__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    font-family: inherit;
+}
+
+.focus-banner__btn:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.focus-banner__btn:active {
+    transform: translateY(0);
+    filter: brightness(0.95);
+}
+
+.focus-banner__btn--primary {
+    color: #fff;
+}
+
+.focus-banner__btn--ghost {
+    width: 40px;
+    padding: 0;
+    background: transparent;
+    color: var(--light-text-color);
+    border-color: var(--border-color);
+    justify-content: center;
+}
+
+.focus-banner__btn--ghost:hover {
+    background: var(--bg-color);
+    color: var(--text-color);
+    box-shadow: none;
+}
+
+/* ---- Variações de severidade (cor da borda esquerda + ícone fallback + CTA) ---- */
+
+.focus-banner--success {
+    border-left-color: var(--cor-facil);
+}
+.focus-banner--success .focus-banner__icon {
+    background: rgba(40, 167, 69, 0.12);
+    color: var(--cor-facil);
+}
+.focus-banner--success .focus-banner__btn--primary {
+    background: var(--cor-facil);
+}
+
+.focus-banner--info {
+    border-left-color: var(--cor-feedback);
+}
+.focus-banner--info .focus-banner__icon {
+    background: rgba(23, 162, 184, 0.12);
+    color: var(--cor-feedback);
+}
+.focus-banner--info .focus-banner__btn--primary {
+    background: var(--cor-feedback);
+}
+
+.focus-banner--warning {
+    border-left-color: var(--cor-sla);
+    background: linear-gradient(90deg, rgba(255, 193, 7, 0.06), var(--card-bg-color) 30%);
+}
+.focus-banner--warning .focus-banner__icon {
+    background: rgba(255, 193, 7, 0.18);
+    color: #b8860b;
+}
+.focus-banner--warning .focus-banner__btn--primary {
+    background: #f3933a;
+    color: #fff;
+}
+
+.focus-banner--critical {
+    border-left-color: var(--cor-complexo);
+    background: linear-gradient(90deg, rgba(220, 53, 69, 0.10), var(--card-bg-color) 35%);
+}
+.focus-banner--critical .focus-banner__icon {
+    background: rgba(220, 53, 69, 0.16);
+    color: var(--cor-complexo);
+}
+.focus-banner--critical .focus-banner__btn--primary {
+    background: var(--cor-complexo);
+}
+
+/* ---- Dark mode ---- */
+
+body.dark-mode .focus-banner__stat {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+body.dark-mode .focus-banner--warning .focus-banner__icon { color: var(--cor-sla); }
+body.dark-mode .focus-banner--warning {
+    background: linear-gradient(90deg, rgba(255, 193, 7, 0.10), var(--card-bg-color) 30%);
+}
+body.dark-mode .focus-banner--critical {
+    background: linear-gradient(90deg, rgba(220, 53, 69, 0.16), var(--card-bg-color) 35%);
+}
+
+/* Chips sólidos: contraste já vem da cor sólida — só ajustar o "mild" */
+body.dark-mode .focus-banner__stat.is-mild {
+    background: rgba(255, 193, 7, 0.14);
+    border-color: rgba(255, 193, 7, 0.40);
+    color: #ffce5e;
+}
+body.dark-mode .focus-banner__stat.is-mild .focus-banner__stat-label {
+    color: #ffce5e;
+    opacity: 0.85;
+}
+
+/* ---- Responsivo ---- */
+
+@media (max-width: 820px) {
+    .focus-banner {
+        flex-wrap: wrap;
+    }
+    .focus-banner__main {
+        flex-basis: calc(100% - 72px);
+    }
+    .focus-banner__actions {
+        flex-basis: 100%;
+        justify-content: flex-end;
+        margin-top: 8px;
+    }
+    .focus-banner__btn--primary {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .focus-banner {
+        padding: 14px;
+        gap: 12px;
+    }
+    .focus-banner__category,
+    .focus-banner__icon {
+        width: 48px;
+        height: 48px;
+    }
+    .focus-banner__category img {
+        width: 30px;
+        height: 30px;
+    }
+    .focus-banner__title { font-size: 0.95rem; }
+    .focus-banner__subtitle { font-size: 0.82rem; }
+}

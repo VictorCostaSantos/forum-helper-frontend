@@ -1,0 +1,355 @@
+/* frontend/css/catalog/modules.css */
+
+/* =========================================
+   1. BOTÃO IA (Visual Moderno)
+   ========================================= */
+.ai-button {
+    height: 48px;
+    padding: 0 24px;
+    border: none;
+    border-radius: 12px;
+    
+    /* Gradiente Roxo Vibrante (Padrão Alura Formação) */
+    background: linear-gradient(135deg, #7B71FF 0%, #9C27B0 100%);
+    
+    color: white;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    
+    box-shadow: 0 4px 12px rgba(123, 113, 255, 0.25);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ai-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(123, 113, 255, 0.4);
+    filter: brightness(1.05);
+}
+
+.ai-button.loading {
+    background: #e5e7eb;
+    color: #9ca3af;
+    cursor: wait;
+    box-shadow: none;
+    pointer-events: none;
+}
+
+.ai-button.loading i {
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+
+/* =========================================
+   2. TAGS DA IA (Filtro Sugerido)
+   ========================================= */
+.ai-tags-container {
+    display: none;
+    flex-wrap: wrap;
+    align-items: center;
+    
+    /* Espaçamento elegante */
+    gap: 12px;
+    padding: 16px 24px;
+    margin-bottom: 24px;
+    
+    background-color: #fcfaff;
+    border-radius: 16px;
+    border: 1px dashed #a855f7; /* Borda tracejada roxa */
+    
+    animation: fadeIn 0.4s ease forwards;
+}
+
+.ai-tags-container span:first-child {
+    font-weight: 700;
+    color: #4b5563;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    margin-right: 10px;
+}
+
+.ai-tag-pill {
+    background: linear-gradient(135deg, #e9d5ff 0%, #f3e8ff 100%);
+    color: #6b21a8;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid #d8b4fe;
+    box-shadow: 0 2px 4px rgba(168, 85, 247, 0.1);
+    transition: transform 0.2s;
+    cursor: default;
+}
+
+.ai-tag-pill:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, #d8b4fe 0%, #e9d5ff 100%);
+}
+
+/* Linha de contexto: summary + contador */
+.ai-info-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9d5ff;
+    margin-bottom: 4px;
+}
+
+.ai-summary-text {
+    font-size: 0.9rem;
+    color: #6b21a8;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ai-summary-text i {
+    color: #a855f7;
+}
+
+.ai-count-badge {
+    background: #7c3aed;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+/* Linha de tags */
+.ai-tags-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.ai-tags-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 4px;
+    white-space: nowrap;
+}
+
+/* Botão de limpar busca IA */
+.ai-clear-btn {
+    margin-left: auto;
+    background: none;
+    border: 1px solid #d8b4fe;
+    color: #7c3aed;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+}
+
+.ai-clear-btn:hover {
+    background: #f3e8ff;
+    border-color: #a855f7;
+}
+
+
+/* =========================================
+   3. MODAL DE ADICIONAR MATERIAL (Restaurado)
+   ========================================= */
+
+/* Fundo Escuro (Overlay) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Escurece o fundo */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000; /* Garante que fique acima de tudo */
+    backdrop-filter: blur(4px); /* Efeito de desfoque no fundo */
+}
+
+/* Caixa do Modal */
+.modal-content {
+    background: white;
+    padding: 28px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* Header do Modal com título + botão X */
+.modal-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.modal-content h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--header-bg-color);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-content h3 i {
+    color: var(--color-accent);
+}
+
+/* Botão X do Modal */
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.modal-close-btn:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+/* Asterisco de campo obrigatório */
+.required-star {
+    color: #ef4444;
+    font-size: 0.85rem;
+}
+
+/* Campos de Input */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+}
+
+.input-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.input-group input, 
+.input-group select {
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.2s;
+    background-color: #f9fafb;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    border-color: var(--color-accent);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 200, 111, 0.15);
+}
+
+.input-group input.input-error {
+    border-color: #ef4444;
+    background-color: #fff5f5;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+
+.input-group input.input-error:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+/* Botões de Ação do Modal */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 10px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-primary, .btn-secondary {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    border: none;
+    transition: transform 0.2s;
+}
+
+/* Botão Confirmar (Verde/Escuro) */
+.btn-primary {
+    background-color: var(--header-bg-color);
+    color: white;
+}
+.btn-primary:hover {
+    background-color: #2c3e50;
+    transform: translateY(-2px);
+}
+
+/* Botão Cancelar (Cinza) */
+.btn-secondary {
+    background-color: #f3f4f6;
+    color: #4b5563;
+}
+.btn-secondary:hover {
+    background-color: #e5e7eb;
+    color: #1f2937;
+}
+
+/* Toast (Notificação) */
+.toast {
+    background: var(--header-bg-color);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}

@@ -1,0 +1,455 @@
+/* ==========================================================================
+   CONTAINER GERAL
+   ========================================================================== */
+.filters-container {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ==========================================================================
+   ANDAR 1: TOPO (BUSCA + AÇÕES)
+   ========================================================================== */
+.filters-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+/* BUSCA */
+.search-wrapper {
+    flex: 1;
+    min-width: 280px;
+    display: flex;
+    align-items: center;
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    padding: 0 20px;
+    height: 42px;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.search-wrapper:focus-within {
+    border-color: var(--cor-frontend);
+    box-shadow: 0 0 0 4px rgba(107, 209, 255, 0.15);
+    background: var(--bg-color);
+}
+
+body.dark-mode .search-wrapper {
+    border-color: #444;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.search-wrapper i {
+    color: var(--light-text-color);
+    font-size: 1rem;
+    opacity: 0.7;
+}
+
+.search-wrapper input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    margin-left: 12px;
+    outline: none;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+/* AÇÕES (SELECT + TOGGLE) */
+.actions-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* SELECT CUSTOMIZADO */
+.sort-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    height: 42px;
+    padding: 0 20px;
+    min-width: 200px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.sort-wrapper:hover {
+    border-color: var(--light-text-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.sort-wrapper i {
+    color: var(--light-text-color);
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+.sort-wrapper select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: none;
+    background-color: transparent;
+    width: 100%;
+    height: 100%;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+    cursor: pointer;
+    outline: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236c757d%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0 center;
+    background-size: 10px;
+    padding-right: 20px;
+}
+
+body.dark-mode .sort-wrapper select {
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.sort-wrapper select option {
+    background-color: var(--card-bg-color);
+    color: var(--text-color);
+    padding: 12px;
+    font-size: 1.1rem;
+}
+
+/* TOGGLE */
+.toggle-compact {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card-bg-color);
+    padding: 4px 6px 4px 16px;
+    border-radius: 50px;
+    border: 1px solid var(--border-color);
+    height: 42px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.toggle-compact:hover {
+    border-color: var(--light-text-color);
+}
+
+.toggle-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--border-color);
+    transition: .3s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--card-bg-color);
+    transition: .3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+input:checked+.slider {
+    background-color: var(--cor-facil);
+}
+
+input:checked+.slider:before {
+    transform: translateX(16px);
+}
+
+/* ==========================================================================
+   ANDAR 2: SEGMENTAÇÃO (CHIPS)
+   ========================================================================== */
+.filters-bottom-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+.priority-group {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.category-scroll-area {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 16px 12px 6px 12px;
+    flex: 1;
+    align-items: center;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.category-scroll-area::-webkit-scrollbar {
+    display: none;
+}
+
+/* ==========================================================================
+   BOTÕES (CHIPS) & ESTILOS
+   ========================================================================== */
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    gap: 0 !important;
+    padding: 0 14px;
+    border-radius: 50px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg-color);
+    color: var(--light-text-color);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    white-space: nowrap;
+    flex-shrink: 0;
+    overflow: visible !important;
+}
+
+.filter-chip.category {
+    min-width: 42px;
+    padding: 0 10px;
+}
+
+.filter-chip:hover {
+    background: var(--bg-color);
+    border-color: var(--light-text-color);
+    color: var(--text-color);
+    transform: translateY(-2px);
+    z-index: 5;
+    box-shadow: var(--shadow);
+}
+
+.filter-chip.active {
+    border-color: transparent;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    color: #ffffff !important;
+}
+
+/* IMAGENS & ÍCONES */
+.category-img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    display: block;
+    flex-shrink: 0;
+    transition: filter 0.2s ease;
+    margin: 0 auto;
+}
+
+.category-icon-fallback {
+    font-size: 20px;
+    color: var(--light-text-color);
+    margin: 0 auto;
+}
+
+.filter-chip.active .category-img {
+    filter: brightness(0) invert(1) !important;
+}
+
+.filter-chip.active .category-icon-fallback {
+    color: #ffffff !important;
+}
+
+/* TEXTO EXPANSÍVEL */
+.filter-chip.category span {
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    display: inline-block;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    margin-left: 0;
+    font-size: 0.95rem;
+}
+
+
+.filter-chip.category.active span {
+    max-width: 200px;
+    opacity: 1;
+    margin-left: 10px;
+    padding-right: 4px;
+}
+
+/* ==========================================================================
+   CORES TEMÁTICAS
+   ========================================================================== */
+.filter-chip.priority.active { background: #4b5563; color: #ffffff !important; }
+.filter-chip.priority.sla.active { background: var(--cor-sla); color: #fff !important; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); }
+.filter-chip.priority.danger.active { background: var(--cor-complexo); }
+.filter-chip.priority.success.active { background: var(--cor-facil); }
+.filter-chip.priority.feedback.active { background: var(--cor-feedback); }
+
+.filter-chip.category[data-category="Todas"].active { background: #4b5563; }
+.filter-chip.category.frontend.active { background: var(--cor-frontend); }
+.filter-chip.category.backend.active { background: var(--cor-programacao); }
+.filter-chip.category.data.active { background: var(--cor-data-science); }
+.filter-chip.category.devops.active { background: var(--cor-devops); }
+.filter-chip.category.design.active { background: var(--cor-ux-design); }
+.filter-chip.category.mobile.active { background: var(--cor-mobile); }
+.filter-chip.category.inova.active { background: var(--cor-inovacao-gestao); }
+.filter-chip.category.ia.active { background: var(--cor-ia); }
+
+/* ==========================================================================
+   BADGE DE CONTAGEM (NORMAL & ALERTA)
+   ========================================================================== */
+/* ==========================================================================
+   BADGE DE CONTAGEM (APARÊNCIA EXATA DO CLIENTE)
+   ========================================================================== */
+.count-badge {
+    position: absolute;
+    top: -12px;
+    right: -13px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 5px; /* Tamanho mantido conforme seu pedido */
+    font-weight: 400;
+    font-family: 'Roboto', sans-serif;
+    height: 19px;
+    min-width: 17px;
+    padding: 1px 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border: 2px solid var(--card-bg-color);
+
+    /* Estado inicial: Invisível */
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+    /* Z-index baixo: o badge só precisa ficar acima dos chips,
+       NÃO de modais/dropdowns (header é z=100). */
+    z-index: 5;
+}
+
+.category-scroll-area:hover .count-badge {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.filter-chip[data-category="Todas"] .count-badge {
+    display: none !important;
+}
+
+.count-badge.alert-mode {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+    background-color: #ff453a;
+    z-index: 10;
+}
+
+/* ==========================================================================
+   TOGGLE DE REGIÃO (BRASIL / LATAM)
+   ========================================================================== */
+
+.region-toggle-pill {
+    display: flex;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 3px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.region-pill-btn {
+    background: transparent;
+    border: none;
+    color: var(--light-text-color);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.region-pill-btn:hover:not(.active) {
+    color: var(--text-color);
+}
+
+.region-pill-btn.active {
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Brasil verde, LATAM laranja — mesma paleta usada no sidebar (Apple system) */
+#view-br-topics.active {
+    background: #34C759;
+}
+
+#view-latam-topics.active {
+    background: #FF9500;
+}
+
+body.dark-mode #view-br-topics.active {
+    background: #34C759;
+}
+
+body.dark-mode #view-latam-topics.active {
+    background: #FF9500;
+}
+
+/* ==========================================================================
+   MEDIA QUERIES
+   ========================================================================== */
+@media (max-width: 900px) {
+    .filters-top-row { flex-direction: column; align-items: stretch; }
+    .search-wrapper { width: 100%; }
+    .actions-wrapper { justify-content: space-between; margin-top: 10px; }
+    .filters-bottom-row { flex-direction: column; align-items: flex-start; height: auto; gap: 16px; }
+    .priority-group, .category-scroll-area { width: 100%; padding-right: 0; }
+}

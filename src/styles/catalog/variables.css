@@ -1,0 +1,56 @@
+/* frontend/css/catalog/variables.css */
+
+#catalog-view {
+    /* --- MODO CLARO --- */
+    --bg-card-catalog: #ffffff;
+    --bg-input-catalog: #ffffff;
+    --text-primary-cat: #212529;
+    --text-secondary-cat: #6c757d;
+    --border-color-cat: #e9ecef;
+    --pagination-bg: #ffffff;
+
+    /* Sombras Suaves */
+    --shadow-sm-cat: 0 2px 5px rgba(0, 0, 0, 0.05);
+    --shadow-md-cat: 0 6px 12px rgba(0, 0, 0, 0.1);
+
+    /* Cores de Ação */
+    --color-accent-cat: #00C86F;
+    --color-danger-cat: #c62828;
+
+    /* Categorias */
+    --cat-curso: #00C86F;
+    --cat-formacao: #7B71FF;
+    --cat-aluramais: #DC6EBE;
+    --cat-video: #F16165;
+    --cat-podcast: #FF8C2A;
+    --cat-artigo: #6BD1FF;
+    --cat-carreira: #FFBA05;
+    --cat-ludico: #9C27B0;
+    --cat-extra: #00BCD4;
+    --cat-outro: #495057;
+}
+
+/* --- MODO ESCURO (CORRIGIDO E FORÇADO) --- */
+body.dark-mode #catalog-view {
+    --bg-card-catalog: #1e1e1e;
+    /* Fundo dos Cards */
+    --bg-input-catalog: #2c2c2c;
+    /* Fundo dos Inputs */
+    --text-primary-cat: #e0e0e0;
+    /* Texto Principal (Branco Suave) */
+    --text-secondary-cat: #b0b0b0;
+    /* Texto Secundário (Cinza Claro) */
+    --border-color-cat: #444444;
+    /* Borda mais visível */
+    --pagination-bg: #2c2c2c;
+    /* Fundo Paginação */
+
+    /* Sombras mais fortes para dar profundidade no escuro */
+    --shadow-sm-cat: 0 2px 5px rgba(0, 0, 0, 0.3);
+    --shadow-md-cat: 0 6px 12px rgba(0, 0, 0, 0.5);
+
+    /* Ajuste de cores das categorias para não ficarem neon demais */
+    --cat-curso: #00e67f;
+    --cat-video: #ff6b6f;
+    --cat-outro: #6c757d;
+}

@@ -1,0 +1,158 @@
+/* frontend/css/catalog/base.css */
+
+/* --- 1. ESTRUTURA GERAL --- */
+#catalog-view * {
+    box-sizing: border-box;
+}
+
+#catalog-view {
+    font-family: 'Roboto', sans-serif;
+    color: var(--text-color);
+    height: auto;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    background-color: var(--bg-app);
+}
+
+#catalog-view.active {
+    display: flex !important;
+    flex: 1;
+    min-height: 0;
+}
+
+#catalog-view ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#catalog-view a {
+    text-decoration: none;
+    color: inherit;
+}
+
+#catalog-view button {
+    font-family: inherit;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+/* --- 2. GRID LAYOUT (AUMENTADO PARA 400px) --- */
+#catalog-view .main-layout {
+    display: grid;
+    /* AQUI: Mudou de 340px para 400px para ficar mais largo */
+    grid-template-columns: 1fr 400px;
+    height: 100%;
+    overflow: hidden;
+}
+
+#catalog-view .content-area {
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+/* --- 3. SIDEBAR --- */
+#catalog-view .selection-panel {
+    background-color: var(--bg-card-catalog);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    border-left: 1px solid var(--border-color-cat);
+    z-index: 90;
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.03);
+}
+
+#catalog-view .panel-header {
+    flex-shrink: 0;
+    /* Padding ajustado para o novo layout */
+    padding: 20px 24px 0 24px;
+    background: var(--bg-card-catalog);
+    border-bottom: 1px solid var(--border-color-cat);
+    display: flex;
+    flex-direction: column;
+    /* Coluna para título em cima, abas embaixo */
+}
+
+#catalog-view .panel-body {
+    flex-grow: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px 24px;
+}
+
+#catalog-view .panel-footer {
+    flex-shrink: 0;
+    padding: 20px 24px;
+    border-top: 1px solid var(--border-color-cat);
+    background: var(--bg-card-catalog);
+    position: relative;
+    z-index: 5;
+}
+
+/* --- 4. BADGES E BOTÕES --- */
+#catalog-view #selectedCount {
+    background-color: var(--color-accent-cat) !important;
+    color: #ffffff !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 12px !important;
+    font-weight: 700;
+    font-size: 0.8rem;
+    line-height: 1;
+    margin-right: 8px;
+}
+
+#catalog-view #btnAddCustom {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    border: 1px solid transparent;
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--text-secondary-cat);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+#catalog-view #btnAddCustom:hover {
+    background-color: var(--color-accent-cat);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 200, 111, 0.3);
+}
+
+body.dark-mode #catalog-view #btnAddCustom {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+body.dark-mode #catalog-view #btnAddCustom:hover {
+    background-color: var(--color-accent-cat);
+}
+
+/* --- 5. RESPONSIVIDADE --- */
+@media (max-width: 1200px) {
+    #catalog-view .main-layout {
+        grid-template-columns: 1fr;
+    }
+
+    #catalog-view .selection-panel {
+        display: none;
+    }
+}

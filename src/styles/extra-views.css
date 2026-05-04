@@ -1,0 +1,412 @@
+/* ==========================================================================
+   ALOCAÇÃO + GALERIA DE NOTIFICAÇÕES — páginas dedicadas
+   Layouts compartilham estética leve (mesma família visual do StatusView):
+   inner com max-width, botão "voltar", card grande de conteúdo.
+   ========================================================================== */
+
+/* ---------- ALLOCATION ---------- */
+.allocation-view {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 24px 60px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.allocation-view__inner {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.allocation-view__back {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--light-text-color);
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-family: inherit;
+    transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.allocation-view__back:hover {
+    color: var(--text-color);
+    border-color: var(--light-text-color);
+    background: rgba(127, 127, 127, 0.05);
+}
+
+.allocation-view__card {
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 36px 32px 32px;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+body.dark-mode .allocation-view__card {
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.allocation-view__icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    margin: 0 auto 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(123, 113, 255, 0.18), rgba(255, 186, 5, 0.16));
+    color: var(--cor-ia);
+    font-size: 1.8rem;
+    box-shadow: 0 6px 18px rgba(123, 113, 255, 0.18);
+}
+
+body.dark-mode .allocation-view__icon {
+    background: linear-gradient(135deg, rgba(123, 113, 255, 0.28), rgba(255, 186, 5, 0.22));
+}
+
+.allocation-view__title {
+    margin: 0 0 8px;
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--text-color);
+}
+
+.allocation-view__lede {
+    margin: 0 auto;
+    color: var(--light-text-color);
+    font-size: 1rem;
+    line-height: 1.55;
+    max-width: 48ch;
+}
+
+/* ---------- NOTIFICATIONS PREVIEW ---------- */
+.notif-preview {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 24px 60px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.notif-preview__inner {
+    max-width: 1080px;
+    margin: 0 auto;
+}
+
+.notif-preview__back {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--light-text-color);
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 22px;
+    font-family: inherit;
+    transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.notif-preview__back:hover {
+    color: var(--text-color);
+    border-color: var(--light-text-color);
+    background: rgba(127, 127, 127, 0.05);
+}
+
+.notif-preview__head {
+    margin-bottom: 30px;
+    max-width: 720px;
+}
+
+.notif-preview__title {
+    margin: 0 0 8px;
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--text-color);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.notif-preview__title i { color: var(--cor-feedback); font-size: 1.5rem; }
+
+.notif-preview__subtitle {
+    margin: 0;
+    color: var(--light-text-color);
+    font-size: 0.95rem;
+    line-height: 1.55;
+}
+
+.notif-preview__section {
+    margin-bottom: 36px;
+}
+
+.notif-preview__section-title {
+    margin: 0 0 14px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--light-text-color);
+}
+
+.notif-preview__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+}
+
+/* Cell wraps cada amostra com label do kind no topo + a notificação real
+   abaixo. O kind serve pra debug — quando algo quebra na produção, dá pra
+   bater o olho aqui e identificar qual tipo. */
+.notif-preview__cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: var(--shadow);
+}
+
+body.dark-mode .notif-preview__cell {
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.notif-preview__kind {
+    align-self: flex-start;
+    font-family: 'Roboto Mono', ui-monospace, monospace;
+    font-size: 0.66rem;
+    font-weight: 600;
+    color: var(--light-text-color);
+    background: rgba(127, 127, 127, 0.10);
+    padding: 2px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.02em;
+}
+
+body.dark-mode .notif-preview__kind {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* Item dentro da célula: já estilizado pelo CSS de notificações,
+   só ajusta margin e bg pra não competir com o cell wrapper. */
+.notif-preview__cell .notification-item {
+    background: var(--bg-color);
+}
+
+body.dark-mode .notif-preview__cell .notification-item {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.notif-preview__foot {
+    margin-top: 36px;
+    padding: 16px 18px;
+    background: rgba(123, 113, 255, 0.06);
+    border: 1px solid rgba(123, 113, 255, 0.18);
+    border-radius: 10px;
+    color: var(--text-color);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.notif-preview__foot code {
+    font-family: 'Roboto Mono', ui-monospace, monospace;
+    font-size: 0.82rem;
+    background: rgba(0, 0, 0, 0.06);
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+
+body.dark-mode .notif-preview__foot code {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- ESTADO ATUAL (KPIs + lista de eventos vivos) ---------- */
+.notif-preview__now {
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+}
+
+body.dark-mode .notif-preview__now {
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.notif-preview__kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.notif-preview__kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+}
+
+body.dark-mode .notif-preview__kpi {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.notif-preview__kpi-num {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-color);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    font-variant-numeric: tabular-nums;
+}
+
+.notif-preview__kpi-lbl {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: var(--light-text-color);
+}
+
+.notif-preview__kpi--warn .notif-preview__kpi-num { color: #FF9500; }
+.notif-preview__kpi--danger .notif-preview__kpi-num { color: var(--cor-complexo); }
+.notif-preview__kpi--info .notif-preview__kpi-num { color: var(--cor-feedback); }
+
+/* "Eventos agora" tem destaque pulsante quando > 0 — chama atenção sem
+   ser intrusivo. */
+.notif-preview__kpi--live {
+    border-color: rgba(255, 59, 48, 0.45);
+    background: linear-gradient(135deg, rgba(255, 59, 48, 0.10), rgba(255, 59, 48, 0.04));
+    animation: notif-preview-live-glow 2.4s ease-in-out infinite;
+}
+
+.notif-preview__kpi--live .notif-preview__kpi-num {
+    color: #FF3B30;
+}
+
+@keyframes notif-preview-live-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.0); }
+    50%      { box-shadow: 0 0 0 4px rgba(255, 59, 48, 0.10); }
+}
+
+/* Lista de eventos acontecendo agora — cards horizontais clicáveis */
+.notif-preview__live-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.notif-preview__live-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255, 59, 48, 0.06);
+    border: 1px solid rgba(255, 59, 48, 0.18);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 0.92rem;
+    font-weight: 600;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.notif-preview__live-item:hover {
+    transform: translateX(2px);
+    border-color: rgba(255, 59, 48, 0.40);
+}
+
+body.dark-mode .notif-preview__live-item {
+    background: rgba(255, 59, 48, 0.10);
+}
+
+.notif-preview__live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #FF3B30;
+    flex-shrink: 0;
+    animation: events-banner-live-pulse 1.4s ease-out infinite;
+}
+
+.notif-preview__live-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.notif-preview__live-item i {
+    color: var(--light-text-color);
+    font-size: 0.78rem;
+    opacity: 0.7;
+}
+
+.notif-preview__empty {
+    margin: 4px 0 0;
+    color: var(--light-text-color);
+    font-size: 0.88rem;
+    font-style: italic;
+}
+
+/* ---------- PRÉVIA DE CARDS (estados do topic-card) ---------- */
+.notif-preview__section-hint {
+    margin: -8px 0 14px;
+    color: var(--light-text-color);
+    font-size: 0.85rem;
+    line-height: 1.45;
+}
+
+.notif-preview__cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.notif-preview__card-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.notif-preview__card-label {
+    font-family: 'Roboto Mono', ui-monospace, monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--light-text-color);
+    background: rgba(127, 127, 127, 0.10);
+    padding: 3px 9px;
+    border-radius: 6px;
+    align-self: flex-start;
+    letter-spacing: 0.02em;
+}
+
+body.dark-mode .notif-preview__card-label {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* Garante que o topic-card real dentro do preview não fica com altura mínima
+   gigante (220px é ok pra fila, exagero pra grid de previews). */
+.notif-preview__card-wrap .topic-card {
+    min-height: 0;
+}

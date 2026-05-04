@@ -1,0 +1,479 @@
+/* ==========================================================================
+   CENTRAL DE NOTIFICAÇÕES — Sininho + dropdown
+   ========================================================================== */
+
+.notification-bell {
+    position: relative;
+    display: inline-flex;
+}
+
+.notification-bell__btn {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    background: transparent;
+    border: none;
+    color: var(--light-text-color);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    padding: 0;
+}
+
+.notification-bell__btn:hover {
+    background-color: var(--icon-hover-bg);
+    color: var(--text-color);
+}
+
+.notification-bell__btn:focus-visible {
+    outline: 2px solid var(--cor-feedback);
+    outline-offset: 2px;
+}
+
+.notification-bell__btn.has-unread {
+    color: var(--cor-feedback);
+}
+
+/* Pulse leve quando tem não-lida — chama atenção sem irritar */
+.notification-bell__btn.has-unread::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 9px;
+    box-shadow: 0 0 0 0 rgba(23, 162, 184, 0.4);
+    animation: bell-pulse 2.4s ease-out infinite;
+    pointer-events: none;
+}
+
+@keyframes bell-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(23, 162, 184, 0.35); }
+    70%  { box-shadow: 0 0 0 10px rgba(23, 162, 184, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(23, 162, 184, 0); }
+}
+
+/* Badge com contador */
+.notification-bell__badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: #FF3B30;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+    box-shadow: 0 0 0 2px var(--card-bg-color);
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+}
+
+/* ============================================
+   DROPDOWN
+   ============================================ */
+.notification-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 360px;
+    max-width: calc(100vw - 24px);
+    max-height: min(560px, calc(100vh - 80px));
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: 0 16px 44px rgba(15, 23, 42, 0.18), 0 4px 12px rgba(15, 23, 42, 0.08);
+    /* z-index 1300 fica acima do sidebar (999) e do backdrop (998).
+       Quando o sidebar tá aberto, o dropdown não fica "atrás" dele. */
+    z-index: 1300;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: dropdown-fade-in 0.16s ease;
+}
+
+/* O conflito posicional dropdown-vs-sidebar é resolvido no Layout: quando
+   bellOpen=true (NotificationsContext), o sidebar é forçado a colapsar e
+   restaura ao fechar a central. Por isso o dropdown vive sempre em
+   right: 0 do sino, sem shift especial nem backdrop blur. */
+
+body.dark-mode .notification-dropdown {
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.55);
+}
+
+@keyframes dropdown-fade-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.notification-dropdown__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--card-bg-color);
+}
+
+.notification-dropdown__header strong {
+    font-size: 0.92rem;
+    color: var(--text-color);
+    letter-spacing: -0.01em;
+}
+
+.notification-dropdown__actions {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.notification-dropdown__actions button {
+    background: transparent;
+    border: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--light-text-color);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.15s ease, color 0.15s ease;
+    font-family: inherit;
+}
+
+.notification-dropdown__actions button:hover {
+    background: var(--icon-hover-bg);
+    color: var(--text-color);
+}
+
+.notification-dropdown__body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* ============================================
+   SEÇÕES (RADAR / AGORA) — feed estilo X/Threads
+   ============================================ */
+.notification-section {
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.notification-section + .notification-section {
+    border-top: 1px solid var(--border-color);
+}
+
+.notification-section__title {
+    margin: 0 4px 4px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--light-text-color);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.85;
+}
+
+.notification-section__title i {
+    font-size: 0.78rem;
+    opacity: 0.7;
+}
+
+/* ============================================
+   ITEM como CARD individual — não mais lista densa.
+   Cada notificação é um cartão com sombra sutil, gap entre eles,
+   hover com lift discreto. Estética social (Insta/X).
+   ============================================ */
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--bg-color);
+    border: 1px solid transparent;
+    cursor: default;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    position: relative;
+    text-decoration: none;
+    color: inherit;
+}
+
+body.dark-mode .notification-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.04);
+}
+
+.notification-item.is-interactive,
+.notification-item[role='button'] {
+    cursor: pointer;
+}
+
+.notification-item.is-interactive:hover,
+.notification-item[role='button']:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .notification-item.is-interactive:hover,
+body.dark-mode .notification-item[role='button']:hover {
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.10);
+}
+
+.notification-item.is-read {
+    opacity: 0.55;
+}
+
+/* ÍCONE — círculo com bg colorido (estilo avatar de feed social) */
+.notification-item__icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.05rem;
+    transition: transform 0.18s ease;
+}
+
+.notification-item__icon--success {
+    background: rgba(40, 167, 69, 0.14);
+    color: var(--cor-facil);
+}
+
+.notification-item__icon--warning {
+    background: rgba(255, 149, 0, 0.14);
+    color: #FF9500;
+}
+
+.notification-item__icon--critical {
+    background: rgba(220, 53, 69, 0.14);
+    color: var(--cor-complexo);
+}
+
+.notification-item__icon--info {
+    background: rgba(23, 162, 184, 0.14);
+    color: var(--cor-feedback);
+}
+
+/* Foco do usuário — anel sutil + tom roxo (cor IA) */
+.notification-item__icon.is-focused {
+    background: rgba(123, 113, 255, 0.16);
+    color: var(--cor-ia);
+    box-shadow: 0 0 0 2px rgba(123, 113, 255, 0.18);
+}
+
+/* ClickUp branding: fundo neutro suave + logo gradiente preservado.
+   Sobrescreve as variantes coloridas (success/warning/critical/info) acima
+   pq o logo do ClickUp já carrega cor própria. Ainda mantemos a borda
+   lateral colorida (notification-item--{severity}) pra dar o sinal de
+   urgência sem competir com a marca. */
+.notification-item__icon--clickup {
+    background: rgba(137, 48, 253, 0.10);
+    color: inherit;
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+body.dark-mode .notification-item__icon--clickup {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.notification-item__icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.notification-item:hover .notification-item__icon {
+    transform: scale(1.04);
+}
+
+.notification-item__main {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-item__title {
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--text-color);
+    line-height: 1.35;
+    letter-spacing: -0.005em;
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* Pill "seu foco" — destaque pra notificação personalizada */
+.notification-item__chip {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(123, 113, 255, 0.14);
+    color: var(--cor-ia);
+}
+
+.notification-item__body {
+    font-size: 0.78rem;
+    color: var(--light-text-color);
+    line-height: 1.4;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.notification-item__time {
+    font-size: 0.7rem;
+    color: var(--light-text-color);
+    opacity: 0.75;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Linha de metadados: source chip · tempo relativo · data absoluta.
+   Layout estilo X/Threads — informação densa mas legível. */
+.notification-item__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    font-size: 0.7rem;
+    color: var(--light-text-color);
+    flex-wrap: wrap;
+}
+
+.notification-item__meta > * {
+    line-height: 1;
+}
+
+.notification-item__source {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.06);
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-color);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+body.dark-mode .notification-item__source {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.notification-item__date {
+    opacity: 0.6;
+    font-variant-numeric: tabular-nums;
+}
+
+.notification-item__date::before {
+    content: "·";
+    margin-right: 8px;
+    opacity: 0.5;
+}
+
+/* Chevron — indica que o item é clicável (vai a algum lugar). */
+.notification-item__chev {
+    color: var(--light-text-color);
+    font-size: 0.72rem;
+    opacity: 0.4;
+    flex-shrink: 0;
+    transition: opacity 0.15s ease, transform 0.18s ease;
+}
+
+.notification-item:hover .notification-item__chev {
+    opacity: 0.9;
+    transform: translateX(2px);
+}
+
+.notification-item__dismiss {
+    background: transparent;
+    border: none;
+    color: var(--light-text-color);
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    opacity: 0;
+    transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+    flex-shrink: 0;
+}
+
+.notification-item:hover .notification-item__dismiss {
+    opacity: 1;
+}
+
+.notification-item__dismiss:hover {
+    background: rgba(255, 59, 48, 0.12);
+    color: #FF3B30;
+}
+
+/* Borda lateral colorida sutil indicando severidade — agora é um border-left
+   no card inteiro pra encaixar no novo formato */
+.notification-item--success { border-left: 3px solid var(--cor-facil); }
+.notification-item--warning { border-left: 3px solid #FF9500; }
+.notification-item--critical { border-left: 3px solid var(--cor-complexo); }
+.notification-item--info { border-left: 3px solid var(--cor-feedback); }
+
+.notification-item.is-read { border-left-color: transparent; }
+
+/* ============================================
+   ESTADO VAZIO
+   ============================================ */
+.notification-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 36px 18px;
+    color: var(--light-text-color);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.notification-empty i {
+    font-size: 1.6rem;
+    opacity: 0.6;
+}
+
+/* ============================================
+   RESPONSIVO
+   ============================================ */
+@media (max-width: 600px) {
+    .notification-dropdown {
+        position: fixed;
+        top: 64px;
+        right: 12px;
+        left: 12px;
+        width: auto;
+        max-width: none;
+    }
+}

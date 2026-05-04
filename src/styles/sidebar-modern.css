@@ -1,0 +1,635 @@
+/* ============================================================================
+   Sidebar Modern v4 — fixa, polida, com hierarquia visual clara.
+   ========================================================================== */
+
+aside#forum-counter.sidebar-modern {
+  position: fixed;
+  top: 88px;
+  right: 16px;
+  bottom: 16px;
+  width: 308px;
+  z-index: 999;
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  background: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 14px 36px -10px rgba(15, 23, 42, 0.16);
+
+  font-family: 'Roboto', sans-serif;
+  transition:
+    transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+body.dark-mode aside#forum-counter.sidebar-modern {
+  background: #1c1c20;
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 14px 36px -10px rgba(0, 0, 0, 0.55);
+}
+
+aside#forum-counter.sidebar-modern.is-collapsed {
+  transform: translateX(calc(100% + 32px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------- Header ---------- */
+.sidebar-modern .sm-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+body.dark-mode .sidebar-modern .sm-head {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-modern .sm-head__name {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-color);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.sidebar-modern .sm-head__subtitle {
+  font-size: 0.76rem;
+  color: var(--light-text-color);
+  margin-top: 3px;
+  line-height: 1.2;
+}
+
+/* Override no .close-sidebar-btn (responsive.css esconde por padrão). */
+.sidebar-modern .sm-head__close {
+  display: inline-flex;
+  position: static;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: rgba(127, 127, 127, 0.08);
+  color: var(--light-text-color);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.sidebar-modern .sm-head__close:hover {
+  background: rgba(127, 127, 127, 0.16);
+  color: var(--text-color);
+  transform: scale(1.04);
+}
+
+/* ---------- Body (rola se necessário) ---------- */
+.sidebar-modern .sm-body {
+  flex: 1 1 auto;
+  padding: 14px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar-modern .sm-body::-webkit-scrollbar { width: 4px; }
+.sidebar-modern .sm-body::-webkit-scrollbar-track { background: transparent; }
+.sidebar-modern .sm-body::-webkit-scrollbar-thumb {
+  background: rgba(127, 127, 127, 0.22);
+  border-radius: 999px;
+}
+
+/* ---------- Cabeçalho de seção ---------- */
+.sidebar-modern .sm-urgent__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--light-text-color);
+  margin-bottom: 8px;
+}
+
+.sidebar-modern .sm-urgent__head i {
+  font-size: 0.72rem;
+  color: var(--cor-sla, #ffc107);
+}
+
+/* ---------- Performance card (anel + stats) ---------- */
+.sidebar-modern .sm-perf {
+  --perf-color: #00C86F;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--perf-color) 8%, transparent),
+      transparent 65%
+    ),
+    var(--card-bg-color);
+}
+
+body.dark-mode .sidebar-modern .sm-perf {
+  border-color: rgba(255, 255, 255, 0.06);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--perf-color) 12%, transparent),
+      transparent 65%
+    ),
+    rgba(255, 255, 255, 0.02);
+}
+
+.sidebar-modern .sm-perf__ring {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+}
+
+.sidebar-modern .sm-perf__ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.sidebar-modern .sm-perf__track {
+  fill: none;
+  stroke: rgba(127, 127, 127, 0.16);
+  stroke-width: 8;
+}
+
+body.dark-mode .sidebar-modern .sm-perf__track {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-modern .sm-perf__progress {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition:
+    stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    stroke 0.3s ease;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+.sidebar-modern .sm-perf__inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.sidebar-modern .sm-perf__num {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.sidebar-modern .sm-perf__label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--light-text-color);
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.sidebar-modern .sm-perf__side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.sidebar-modern .sm-perf__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sidebar-modern .sm-perf__pill {
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--light-text-color);
+}
+
+.sidebar-modern .sm-perf__regions {
+  display: inline-flex;
+  background: rgba(127, 127, 127, 0.1);
+  border-radius: 7px;
+  padding: 2px;
+  gap: 1px;
+}
+
+.sidebar-modern .sm-perf__region {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 7px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--light-text-color);
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.sidebar-modern .sm-perf__region img {
+  width: 12px;
+  border-radius: 1px;
+}
+
+.sidebar-modern .sm-perf__region.active {
+  background: var(--card-bg-color);
+  color: var(--text-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+body.dark-mode .sidebar-modern .sm-perf__region.active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-modern .sm-perf__stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sidebar-modern .sm-perf__stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sidebar-modern .sm-perf__stat-num {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-color);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.sidebar-modern .sm-perf__stat-lbl {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--light-text-color);
+  font-weight: 700;
+}
+
+/* ---------- Panorama (grid 2×2) ---------- */
+.sidebar-modern .sm-pano {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sidebar-modern .sm-pano__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: rgba(127, 127, 127, 0.04);
+}
+
+body.dark-mode .sidebar-modern .sm-pano__cell {
+  border-color: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sidebar-modern .sm-pano__num {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-color);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.sidebar-modern .sm-pano__lbl {
+  font-size: 0.6rem;
+  color: var(--light-text-color);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.sidebar-modern .sm-pano__cell--alert {
+  background: rgba(239, 68, 68, 0.07);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.sidebar-modern .sm-pano__cell--alert .sm-pano__num { color: #ef4444; }
+
+/* ---------- Time / alocações ---------- */
+.sidebar-modern .sm-team {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar-modern .sm-team__tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(127, 127, 127, 0.06);
+  border-radius: 10px;
+}
+
+.sidebar-modern .sm-team__tab {
+  flex: 1;
+  height: 32px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--light-text-color);
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+  padding: 0;
+}
+
+.sidebar-modern .sm-team__tab .tab-icon-custom {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  transition: filter 0.18s ease, opacity 0.18s ease;
+}
+
+.sidebar-modern .sm-team__tab:hover {
+  color: var(--text-color);
+}
+
+.sidebar-modern .sm-team__tab.active {
+  background: var(--card-bg-color);
+  color: var(--cor-ia, #7b71ff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .sidebar-modern .sm-team__tab.active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-modern .sm-team__tab:not(.active) .tab-icon-custom {
+  filter: grayscale(100%);
+  opacity: 0.6;
+}
+
+.sidebar-modern .sm-team__tab.is-hidden { display: none; }
+
+.sidebar-modern .sm-team__content {
+  font-size: 0.78rem;
+  animation: smFade 0.32s ease;
+}
+
+@keyframes smFade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Alocação (período + avatares empilhados) ---------- */
+.sidebar-modern .sm-alloc {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-modern .sm-alloc__period {
+  font-size: 0.7rem;
+  color: var(--light-text-color);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.sidebar-modern .sm-alloc__avatars {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.sidebar-modern .sm-alloc__avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(127, 127, 127, 0.15);
+  border: 2px solid var(--card-bg-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  margin-left: -10px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, z-index 0s 0.18s;
+  position: relative;
+}
+
+.sidebar-modern .sm-alloc__avatar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  z-index: 5;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, z-index 0s;
+}
+
+body.dark-mode .sidebar-modern .sm-alloc__avatar {
+  border-color: #1c1c20;
+}
+
+.sidebar-modern .sm-alloc__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sidebar-modern .sm-alloc__avatar.is-me {
+  border-color: #F05537;
+  box-shadow: 0 0 0 2px rgba(240, 85, 55, 0.25);
+}
+
+.sidebar-modern .sm-alloc__fallback {
+  font-size: 0.7rem;
+  color: var(--light-text-color);
+}
+
+/* ---------- Foco / prioridade ---------- */
+.sidebar-modern .sm-focus {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-modern .sm-focus__lbl {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--light-text-color);
+}
+
+.sidebar-modern .sm-focus .my-allocation-focos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0;
+  justify-content: flex-start;
+}
+
+.sidebar-modern .sm-focus .category-tag {
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+/* ---------- Estados vazios ---------- */
+.sidebar-modern .sm-empty {
+  font-size: 0.78rem;
+  color: var(--light-text-color);
+  margin: 4px 0;
+  line-height: 1.45;
+}
+
+/* ---------- Avisos (reminders) ---------- */
+.sidebar-modern #reminders-panel {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 193, 7, 0.07);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+  border-left: 3px solid var(--cor-sla, #ffc107);
+  color: var(--text-color);
+  margin: 0;
+}
+
+.sidebar-modern #reminders-panel p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.sidebar-modern #reminders-panel a {
+  color: var(--cor-frontend, #6BD1FF);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid rgba(107, 209, 255, 0.4);
+}
+
+.sidebar-modern #reminders-panel a:hover { text-decoration: underline; }
+
+.sidebar-modern #reminders-panel .reminder-image {
+  display: block;
+  width: 100%;
+  max-height: 100px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  margin: 8px auto 0;
+}
+
+/* ---------- Bandeja flutuante (reabrir) ---------- */
+.sidebar-reopen-btn {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 80px;
+  border: none;
+  border-radius: 12px 0 0 12px;
+  background: linear-gradient(135deg, #7b71ff, #5a4fd8);
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: -3px 6px 16px rgba(0, 0, 0, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 998;
+  transition: width 0.22s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.sidebar-reopen-btn:hover {
+  width: 44px;
+  transform: translateY(-50%) translateX(-2px);
+  box-shadow: -6px 8px 20px rgba(123, 113, 255, 0.45);
+}
+
+.sidebar-reopen-btn::before {
+  content: 'Painel';
+  position: absolute;
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1f1f24;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 5px 9px;
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+  white-space: nowrap;
+}
+
+.sidebar-reopen-btn:hover::before { opacity: 1; }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 1400px) {
+  aside#forum-counter.sidebar-modern {
+    top: 80px;
+    right: 12px;
+    bottom: 12px;
+    width: min(90vw, 308px);
+  }
+}
+
+@media (max-width: 720px) {
+  aside#forum-counter.sidebar-modern {
+    top: 76px;
+    right: 8px;
+    left: 8px;
+    bottom: 8px;
+    width: auto;
+  }
+  .sidebar-reopen-btn { width: 32px; height: 64px; }
+}

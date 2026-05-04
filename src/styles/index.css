@@ -1,0 +1,37 @@
+/* Base do projeto (espelha css/main.css do projeto original) */
+@import './variables.css';
+@import './global.css';
+@import './header.css';
+@import './filters.css';
+@import './cards.css';
+@import './sidebar.css';
+@import './components.css';
+@import './responsive.css';
+@import './dashboard.css';
+@import './mural.css';
+
+/* Catálogo (escopado por #catalog-view) */
+@import './catalog/variables.css';
+@import './catalog/base.css';
+@import './catalog/components.css';
+@import './catalog/modules.css';
+@import './catalog/utilities.css';
+@import './catalog/style.css';
+
+/* Visual moderno do Dashboard (escopado em .dashboard-modern) */
+@import './dashboard-modern.css';
+
+/* Central de notificações */
+@import './notifications.css';
+
+/* Banner de sugestão de foco do FH */
+@import './focus-banner.css';
+
+/* Aviso central de eventos próximos (Radar de Eventos do ClickUp) */
+@import './events-banner.css';
+
+/* Páginas de Alocação (placeholder) e Galeria de Notificações */
+@import './extra-views.css';
+
+/* Regras específicas do shell React (não conflitam com o original) */
+@import './app.css';

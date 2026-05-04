@@ -1,0 +1,63 @@
+/* frontend/css/variables.css */
+/*
+   Paleta calibrada para sessões longas (8h+).
+   - Sem branco puro (#fff cega) nem preto puro (#000 vibra).
+   - Hierarquia clara: bg < surface < card (3 níveis).
+   - Bordas visíveis sem peso (slate, baixa saturação).
+   - Texto ~92% luminância — máximo legível, mínimo fadiga.
+*/
+:root {
+    /* --- MODO CLARO "soft" — ainda claro, mas sem branco puro (anti-lanterna) ---
+       Princípio: card NÃO é #ffffff. É um off-white cool. Reduz glare em ~80%
+       sem sair da estética light. Texto vai para slate-800 em vez de slate-900,
+       cortando o contraste extremo que cansa em sessões longas. */
+    --bg-color: #ccd5e0;            /* slate mais profundo — fundo da página */
+    --surface-color: #d8dfe8;       /* nível intermediário (modal-body, inputs) */
+    --card-bg-color: #f0f3f7;       /* OFF-WHITE COOL — não cega */
+    --header-bg-color: #374151;     /* gray-700 — cinza neutro, sem undertone azul/roxo */
+    --text-color: #1e293b;          /* slate-800 (não slate-900: menos contraste extremo) */
+    --light-text-color: #475569;    /* slate-600 */
+    --border-color: #c2cbd6;        /* slate-300/400 — visível sobre off-white */
+    --border-strong: #8b95a3;       /* hover/foco */
+    --shadow: 0 1px 2px rgba(30, 41, 59, 0.04), 0 2px 6px rgba(30, 41, 59, 0.05);
+    --hover-shadow: 0 4px 10px rgba(30, 41, 59, 0.08), 0 12px 24px rgba(30, 41, 59, 0.10);
+
+    /* Cores das Categorias */
+    --cor-programacao: #00C86F;
+    --cor-frontend: #6BD1FF;
+    --cor-data-science: #9CD33B;
+    --cor-devops: #F16165;
+    --cor-ux-design: #DC6EBE;
+    --cor-mobile: #FFBA05;
+    --cor-inovacao-gestao: #FF8C2A;
+    --cor-ia: #7B71FF;
+    --cor-default: #495057;
+
+    /* Cores das Prioridades */
+    --cor-facil: #28a745;
+    --cor-complexo: #dc3545;
+    --cor-feedback: #17a2b8;
+    --cor-sla: #ffc107;
+    --icon-hover-bg: rgba(15, 23, 42, 0.06);
+}
+
+/*
+   DARK — paleta GitHub/Linear, otimizada p/ sessões longas:
+   - bg #0d1117 (deep ink, leve undertone azul) em vez de #121212 (preto morto)
+   - card #1a1f29 visivelmente elevado em cima do bg → hierarquia óbvia
+   - texto #d6d8de off-white quente, não branco-laser
+   - bordas sólidas #2a313c, não rgba que "some"
+*/
+body.dark-mode {
+    --bg-color: #0d1117;
+    --surface-color: #131820;
+    --card-bg-color: #1a1f29;
+    --header-bg-color: #1a1f29;
+    --text-color: #d6d8de;
+    --light-text-color: #8b94a3;
+    --border-color: #2a313c;
+    --border-strong: #3a4150;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 14px rgba(0, 0, 0, 0.5);
+    --hover-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), 0 12px 28px rgba(0, 0, 0, 0.6);
+    --icon-hover-bg: rgba(255, 255, 255, 0.08);
+}

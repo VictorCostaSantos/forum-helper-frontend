@@ -1,0 +1,52 @@
+/* Em telas menores, a sidebar ocupa altura total e cola na borda direita.
+   O React controla mostrar/esconder via .is-collapsed. */
+
+@media (max-width: 1400px) {
+    #forum-counter {
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        height: 100%;
+        border-radius: 0;
+        border-left: 1px solid var(--border-color);
+        margin: 0;
+        padding-bottom: 90px;
+        overflow-y: auto;
+    }
+
+    /* Backdrop só renderiza abaixo de 1400px (onde a sidebar é modal-like).
+       Em telas grandes a sidebar fica docada e não precisa de overlay. */
+    .sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(15, 23, 42, 0.35);
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+        z-index: 999; /* abaixo da sidebar (1000), acima de tudo o resto */
+        cursor: pointer;
+        animation: backdrop-fade-in 0.18s ease;
+    }
+
+    @keyframes backdrop-fade-in {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+}
+
+/* Em telas grandes o backdrop nem existe. */
+@media (min-width: 1401px) {
+    .sidebar-backdrop { display: none !important; }
+}
+
+body.dashboard-active #forum-counter,
+body.mural-active #forum-counter,
+body.catalog-active #forum-counter,
+body.status-active #forum-counter,
+body.dashboard-active .sidebar-reopen-btn,
+body.mural-active .sidebar-reopen-btn,
+body.catalog-active .sidebar-reopen-btn,
+body.status-active .sidebar-reopen-btn {
+    display: none !important;
+}

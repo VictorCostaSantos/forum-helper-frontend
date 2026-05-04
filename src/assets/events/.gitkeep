@@ -1,0 +1,9 @@
+# Logos de marcas que aparecem nos eventos do Radar (ClickUp).
+#
+# Como adicionar uma logo:
+# 1. Salve o PNG/SVG aqui com o key da marca (ex: santander.png, oracle.png).
+# 2. Em src/features/events/eventBrands.js, importe e atribua ao campo `logo`:
+#       import santanderLogo from '../../assets/events/santander.png';
+#       { key: 'santander', logo: santanderLogo, ... }
+#
+# Sem logo: o banner cai pro fallback genérico (ícone de calendário).

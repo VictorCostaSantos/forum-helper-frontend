@@ -1,0 +1,332 @@
+/* frontend/css/global.css */
+
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+
+    /* MANTÉM A TELA TRAVADA (App-like) */
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Transições */
+body,
+.topic-card,
+.filter-btn,
+.search-box,
+header,
+#forum-counter,
+.modal {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+header {
+    flex-shrink: 0;
+}
+
+/* Container das Views */
+.view-container {
+    display: none;
+    flex: 1;
+    /* Ocupa o espaço restante */
+    overflow: hidden;
+    /* O container NÃO rola */
+    position: relative;
+    width: 100%;
+}
+
+.view-container.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- TELA DE TÓPICOS (CORRIGIDA) --- */
+#topics-view>main {
+    flex: 1;
+    overflow-y: auto;
+    /* Scroll vertical ativo */
+    overflow-x: hidden;
+    width: 100%;
+
+    /* REVERSÃO: Garante que os cards não fiquem espremidos */
+    display: block;
+
+    /* CORREÇÃO DO SCROLL GRUDADO: Padding para afastar conteúdo da barra */
+    padding: 2rem 1.5rem;
+    padding-right: 1rem;
+    /* Espaço extra na direita para o scroll */
+    box-sizing: border-box;
+}
+
+#topics-view>main>.content-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    /* Centraliza o bloco */
+    width: 100%;
+    /* Garante largura total */
+    padding-bottom: 4rem;
+}
+
+/* --- ESTILIZAÇÃO DA BARRA DE ROLAGEM (SCROLLBAR) --- */
+/* Isso resolve a sensação de "barra grudada e feia" */
+
+/* Largura da barra */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+/* Fundo da barra (Trilho) */
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* A parte que mexe (Thumb) */
+::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+/* Hover na barra */
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Dark Mode para a barra */
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.is-hidden {
+    display: none !important;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+/* --- TELA DE RESGATE IA --- */
+#rescue-view > main {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    display: block;
+    padding: 2rem 1.5rem;
+    box-sizing: border-box;
+}
+
+#rescue-view > main > .content-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-bottom: 4rem;
+}
+
+/* --- ABAS MESTRAS (Tópicos em Aberto / Fora do Radar) ---
+   Estilo: segmented control com pill — ativa ganha card branco e sombra leve;
+   inativa fica transparente. Badge no canto superior direito quando há
+   alerta (Fora do Radar quando precisa de intervenção). */
+.master-tabs-container {
+    display: inline-flex;
+    align-items: stretch;
+    gap: 4px;
+    background-color: var(--surface-color, rgba(15, 23, 42, 0.04));
+    border: 1px solid var(--border-color);
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+body.dark-mode .master-tabs-container {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.master-tab {
+    position: relative;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--light-text-color);
+    cursor: pointer;
+    padding: 9px 18px;
+    transition: color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    white-space: nowrap;
+    letter-spacing: -0.005em;
+}
+
+.master-tab i {
+    font-size: 0.95rem;
+    opacity: 0.85;
+}
+
+.master-tab:hover {
+    color: var(--text-color);
+    background-color: rgba(127, 127, 127, 0.05);
+}
+
+.master-tab.active {
+    color: var(--text-color);
+    background-color: var(--card-bg-color);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.06);
+}
+
+body.dark-mode .master-tab.active {
+    background-color: var(--card-bg-color);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.master-tab.active i {
+    color: var(--cor-ia);
+    opacity: 1;
+}
+
+/* Badge notification — número compacto colado no canto superior direito.
+   Muda de cor por severidade pra dar contexto sem precisar ler. */
+.master-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background-color: var(--cor-feedback);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.master-tab-badge--alert {
+    background-color: var(--cor-complexo);
+}
+
+.master-tab-badge--soft {
+    background-color: rgba(127, 127, 127, 0.18);
+    color: var(--light-text-color);
+}
+
+body.dark-mode .master-tab-badge--soft {
+    background-color: rgba(255, 255, 255, 0.10);
+}
+
+/* --- FILTRO DO RESGATE --- */
+.rescue-filter-btn {
+    background: var(--bg-color);
+    color: var(--light-text-color);
+    border: 1px solid var(--border-color);
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all 0.18s ease;
+}
+
+.rescue-filter-btn:hover {
+    color: var(--text-color);
+}
+
+.rescue-filter-btn.active {
+    color: white;
+    border-color: transparent;
+}
+
+.rescue-filter-btn[data-filter="INTERVIR"].active { background: var(--cor-ia); }
+.rescue-filter-btn[data-filter="ALL"].active    { background: #4b5563; }
+.rescue-filter-btn[data-filter="ALTA"].active   { background: var(--cor-complexo); }
+.rescue-filter-btn[data-filter="MEDIA"].active  { background: #f57c00; }
+.rescue-filter-btn[data-filter="NAO_INTERVIR"].active { background: #2e7d32; }
+
+/* --- PAGINAÇÃO DO RADAR --- */
+.rescue-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 24px 8px 8px;
+    flex-wrap: wrap;
+}
+
+.rescue-pagination__count {
+    font-size: 0.82rem;
+    color: var(--light-text-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.rescue-pagination__btn {
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 9px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.rescue-pagination__btn:hover {
+    background: var(--bg-color);
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
+}
+
+/* --- STAGE DO CARD DE RESGATE --- */
+/* Grid trick: front e back na mesma célula, a célula cresce pro maior dos dois */
+.rescue-stage {
+    display: grid;
+}
+
+.rescue-stage-front,
+.rescue-stage-back {
+    grid-area: 1 / 1;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.rescue-stage-front {
+    opacity: 1;
+    transform: translateY(0);
+    align-self: start;
+}
+
+.rescue-stage-back {
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    align-self: start;
+}
+
+.topic-card:hover .rescue-stage-front {
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+}
+
+.topic-card:hover .rescue-stage-back {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
