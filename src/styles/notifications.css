@@ -276,28 +276,30 @@ body.dark-mode .notification-item[role='button']:hover {
     box-shadow: 0 0 0 2px rgba(123, 113, 255, 0.18);
 }
 
-/* ClickUp branding: fundo neutro suave + logo gradiente preservado.
-   Sobrescreve as variantes coloridas (success/warning/critical/info) acima
-   pq o logo do ClickUp já carrega cor própria. Ainda mantemos a borda
-   lateral colorida (notification-item--{severity}) pra dar o sinal de
-   urgência sem competir com a marca. */
+/* ClickUp branding sóbrio: badge neutro com glyph monocromático.
+   Sem gradientes, sem halos coloridos — a severidade do alerta é
+   sinalizada pelo border-left lateral do card (.notification-item--*),
+   não pelo ícone. Mantém identidade da marca pela forma do glyph. */
 .notification-item__icon--clickup {
-    background: rgba(137, 48, 253, 0.10);
-    color: inherit;
-    padding: 6px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 9px;
     box-sizing: border-box;
 }
 
 body.dark-mode .notification-item__icon--clickup {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-color);
 }
 
-.notification-item__icon-img {
+.notification-item__icon-svg {
     width: 100%;
     height: 100%;
-    object-fit: contain;
     display: block;
 }
+
 
 .notification-item:hover .notification-item__icon {
     transform: scale(1.04);

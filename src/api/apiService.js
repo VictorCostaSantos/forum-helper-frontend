@@ -202,6 +202,20 @@ export async function unclaimRescueTopic(topicId) {
     return response.data;
 }
 
+/*
+  Marca um tópico do Fora do Radar como resolvido. Backend faz soft-delete
+  (status=RESOLVED, deixa de aparecer em /api/rescue-queue). Quem chama é
+  responsável por sumir o card otimisticamente — próximo poll já não
+  retorna ele.
+*/
+export async function resolveRescueTopic(topicId, username) {
+    const response = await axios.post(`${API_BASE_URL}/rescue-resolve`, {
+        topic_id: topicId,
+        username,
+    });
+    return response.data;
+}
+
 export async function fetchFocusData() {
     const SHEET_ID = '1746BtlDdh97YV0CV0s941WezEgkhEJx8geFNPYf2ulk';
     const GID = '1835095510';

@@ -120,6 +120,74 @@ function getEventDate(task) {
   return null;
 }
 
+/*
+  Status que tratamos como "concluído" e devem ser filtrados antes de
+  qualquer iteração. Cobre dois casos:
+
+  - status.type === 'closed': é o tipo padrão da ClickUp (Done/Closed).
+    O param da API include_closed=false já filtra esses, mas reforçamos
+    aqui pra garantir.
+  - status.status normalizado em DONE_STATUS_NORMALIZED: custom statuses
+    que humanos tratam como "fora do meu radar" mas a API ainda devolve.
+
+  Os nomes ficam aqui já normalizados (sem acentos, lowercase, espaços
+  unificados) — a função normalizeStatus aplica a mesma transformação no
+  input antes de comparar. Assim "Pós-Produção", "pos producao" e
+  "pos-producao" todos viram a mesma chave.
+
+  Pra extender: adicione o nome normalizado abaixo (sem acentos, espaços
+  simples). Ex: "in review" cobre "In Review", "in-review", "in_review".
+*/
+function normalizeStatus(value) {
+  return (value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\s_-]+/g, ' ')
+    .trim();
+}
+
+const DONE_STATUS_NORMALIZED = new Set([
+  // Done genérico em pt-br/en
+  'publicado', 'publicada', 'publicados', 'publicadas',
+  'feito', 'feita', 'feitos', 'feitas',
+  'realizado', 'realizada', 'realizados', 'realizadas',
+  'concluido', 'concluida', 'concluidos', 'concluidas',
+  'finalizado', 'finalizada',
+  'completo', 'completa', 'completed',
+  'done',
+  'closed', 'fechado', 'fechada',
+  'archived', 'arquivado', 'arquivada',
+  'resolvido', 'resolvida',
+  // Workflow do time de conteúdo — fases que indicam "saiu da minha mesa"
+  'inbox pos producao',
+  'pos producao',
+  'em pos producao',
+  'em revisao',
+  'in review',
+]);
+
+function isTaskDone(task) {
+  if (!task || !task.status) return false;
+  if (task.status.type === 'closed') return true;
+  const normalized = normalizeStatus(task.status.status);
+  return DONE_STATUS_NORMALIZED.has(normalized);
+}
+
+/* Dedup por id + filtragem de done. ClickUp API às vezes devolve a mesma
+   task em workspaces diferentes (mesmo id) — mantemos a primeira ocorrência. */
+function cleanTaskList(rawTasks) {
+  const seen = new Set();
+  const out = [];
+  for (const task of rawTasks) {
+    if (!task?.id || seen.has(task.id)) continue;
+    if (isTaskDone(task)) continue;
+    seen.add(task.id);
+    out.push(task);
+  }
+  return out;
+}
+
 // Quando ainda não acabou: usa due_date se houver, senão estima janela de
 // 1 dia a partir do start. Pessoa que pegou o sistema na ativa precisa saber
 // "esse evento começou e ainda tá rolando" — não pode silenciar só porque
@@ -209,10 +277,14 @@ export async function runClickUpSync({ token, announce, forceAnnounce = false })
   if (!token) throw new Error('Token ClickUp ausente.');
 
   // Tarefas pessoais + eventos do Radar em paralelo.
-  const [{ tasks }, eventTasks] = await Promise.all([
+  const [{ tasks: rawTasks }, eventTasks] = await Promise.all([
     fetchAllClickUpData(token),
     fetchEventTasks(token),
   ]);
+  // Dedupe + remove done. Tudo que vem depois (overdue, dueSoon, taskList,
+   // anúncios) opera sobre essa lista limpa — nenhum lugar deve trabalhar
+   // com `rawTasks` a partir daqui.
+  const tasks = cleanTaskList(rawTasks);
 
   const seenBefore = readJsonSet(CLICKUP_SEEN_KEY);
   const overdueSeenBefore = readJsonSet(CLICKUP_OVERDUE_SEEN_KEY);
@@ -241,11 +313,19 @@ export async function runClickUpSync({ token, announce, forceAnnounce = false })
   let eventNewAnnounced = 0;
   let eventApproachAnnounced = 0;
 
+  // Contadores agregados pra o panorama do dropdown — total atualmente
+   // atrasadas e total com vencimento nas próximas 24h. Diferente de
+   // overdueAnnounced (que conta só transições novas no sync).
+   let currentOverdueTotal = 0;
+   let dueSoonTotal = 0;
+
   tasks.forEach((task) => {
     newSeen.add(task.id);
     const dueMs = task.due_date ? Number(task.due_date) : null;
     const overdue = dueMs && dueMs < now;
     const upcoming24h = dueMs && dueMs >= now && (dueMs - now) <= 24 * 3600 * 1000;
+    if (overdue) currentOverdueTotal += 1;
+    if (upcoming24h) dueSoonTotal += 1;
 
     if (!seenBefore.has(task.id) && !isFirstRun) {
       newTasksBuffer.push(task);
@@ -441,9 +521,60 @@ export async function runClickUpSync({ token, announce, forceAnnounce = false })
     saveJsonSet(m.storageKey, newMarkerSeen.get(m.days));
   });
 
+  // Próximo evento futuro (mais perto) — usado no panorama do dropdown.
+  const futureEvents = eventTasks
+    .map((t) => ({ id: t.id, name: t.name || '', startMs: getEventDate(t), url: t.url }))
+    .filter((e) => e.startMs && e.startMs > now)
+    .sort((a, b) => a.startMs - b.startMs);
+  const liveEventsCount = eventTasks.filter((t) => isEventLive(t, now)).length;
+
+  /*
+    Lista enxuta das tarefas pessoais pra mostrar na Central de Visualização.
+    Filtramos só os campos que a UI consome — payload da API tem dezenas
+    de campos extras (custom_fields, watchers, checklists) que pesam
+    no localStorage e travam o re-render.
+
+    Ordenação: atrasadas primeiro (mais antigas), depois vencendo em 24h,
+    depois pelo due_date asc, sem-due no fim. Limita a 12 — mais que isso
+    vira um scroll infinito que o usuário não consegue priorizar.
+  */
+  const taskList = tasks
+    .map((task) => {
+      const dueMs = task.due_date ? Number(task.due_date) : null;
+      const isOverdue = dueMs && dueMs < now;
+      const isDueSoon = dueMs && dueMs >= now && (dueMs - now) <= 24 * 3600 * 1000;
+      return {
+        id: task.id,
+        name: task.name || '',
+        url: task.url,
+        dueMs,
+        isOverdue,
+        isDueSoon,
+        statusLabel: task.status?.status || null,
+        statusColor: task.status?.color || null,
+      };
+    })
+    .sort((a, b) => {
+      // Tier ordering: overdue=0, due_soon=1, has_due=2, no_due=3
+      const tier = (t) => (t.isOverdue ? 0 : t.isDueSoon ? 1 : t.dueMs ? 2 : 3);
+      const ta = tier(a);
+      const tb = tier(b);
+      if (ta !== tb) return ta - tb;
+      // Dentro do mesmo tier, due_date asc (mais urgente primeiro)
+      if (a.dueMs && b.dueMs) return a.dueMs - b.dueMs;
+      return 0;
+    })
+    .slice(0, 12);
+
   return {
     totalTasks: tasks.length,
     totalEvents: eventTasks.length,
+    currentOverdueTotal,
+    dueSoonTotal,
+    liveEventsCount,
+    nextEvent: futureEvents[0] || null,
+    upcomingEventsCount: futureEvents.length,
+    taskList,
     newAnnounced,
     overdueAnnounced,
     eventNewAnnounced,

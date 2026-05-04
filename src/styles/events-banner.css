@@ -143,31 +143,6 @@ body.dark-mode .events-banner.is-live {
     border: 1px solid rgba(255, 59, 48, 0.25);
 }
 
-/* Hint pra quem chegou no meio: pílula discreta abaixo do subtítulo, mesma
-   cor do tag pra reforçar o contexto. Só aparece em is-live. */
-.events-banner__live-hint {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 16px;
-    padding: 5px 10px;
-    border-radius: 8px;
-    background: rgba(255, 59, 48, 0.08);
-    color: #b71c1c;
-    font-size: 0.78rem;
-    font-weight: 600;
-    line-height: 1.2;
-}
-
-.events-banner__live-hint i {
-    font-size: 0.85rem;
-    opacity: 0.85;
-}
-
-body.dark-mode .events-banner__live-hint {
-    background: rgba(255, 59, 48, 0.16);
-    color: #ff8a85;
-}
 
 /* ---- TÍTULO ---- */
 

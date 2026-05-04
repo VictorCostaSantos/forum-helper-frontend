@@ -204,14 +204,16 @@ function Layout({ settingsOpen, setSettingsOpen, settings, onSettingsChange, the
         />
       )}
 
-      {showSidebar && (
+      {/* Renderiza só quando sidebar foi colapsado pelo usuário. Antes
+          ficava sempre montado com classe is-visible toggleada — mas o
+          box-shadow projetado pra esquerda (-4px) vazava no edge mesmo
+          com o botão transladado pra fora. Render condicional resolve. */}
+      {showSidebar && sidebarCollapsed && (
         <button
           type="button"
-          className={`sidebar-reopen-btn ${sidebarCollapsed ? 'is-visible' : ''}`}
+          className="sidebar-reopen-btn is-visible"
           onClick={toggleSidebar}
           aria-label="Reabrir painel"
-          aria-hidden={!sidebarCollapsed}
-          tabIndex={sidebarCollapsed ? 0 : -1}
         >
           <i className="fa-solid fa-chevron-left"></i>
         </button>

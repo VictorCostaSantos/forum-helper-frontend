@@ -105,11 +105,19 @@ export function getPresetRange(preset) {
     return { start: d, end: d };
   }
   if (preset === 'week') {
-    // segunda → hoje
+    // Semana de trabalho = segunda a sexta da semana ISO atual.
+    // - Seg-Sex: Mon-Fri da semana onde "hoje" está.
+    // - Sáb-Dom: Mon-Fri que ACABOU de passar (semana já encerrada).
+    //   Importante: nunca retornamos datas futuras — o backend não tem
+    //   dados pro futuro e o dashboard ficava vazio. Hoje 03/05 (dom)
+    //   retorna 27/04–01/05; amanhã 04/05 (seg) já vira 04/05–08/05.
+    // dow || 7: 1=Seg, 2=Ter, ..., 5=Sex, 6=Sáb, 7=Dom.
     const dow = today.getDay() || 7;
     const monday = new Date(today);
     monday.setDate(today.getDate() - (dow - 1));
-    return { start: monday, end: today };
+    const friday = new Date(monday);
+    friday.setDate(monday.getDate() + 4);
+    return { start: monday, end: friday };
   }
   if (preset === 'month') return { start: new Date(y, m, 1), end: new Date(y, m + 1, 0) };
   if (preset === 'lastMonth') return { start: new Date(y, m - 1, 1), end: new Date(y, m, 0) };

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useNotifications } from './NotificationsContext';
 import { scrollToTopicCard, scrollToTopicCardEventually } from './scrollToTopic';
-import clickupLogo from '../../assets/clickup.svg';
+import ClickupIcon from './ClickupIcon';
 
 function timeAgo(ts) {
   if (!ts) return '';
@@ -83,7 +83,7 @@ function ItemIcon({ icon, severity, focused, kind }) {
   if (isClickUpKind(kind)) {
     return (
       <span className={cls} aria-hidden="true">
-        <img src={clickupLogo} alt="" className="notification-item__icon-img" />
+        <ClickupIcon className="notification-item__icon-svg" />
       </span>
     );
   }

@@ -3,6 +3,7 @@ import {
   fetchRescueQueue,
   claimRescueTopic,
   unclaimRescueTopic,
+  resolveRescueTopic,
   fetchAvatarFromBackend,
 } from '../../api/apiService';
 import { useToast } from '../../shared/ui/ToastProvider';
@@ -67,8 +68,10 @@ const RescueCard = memo(function RescueCard({
   username,
   isClaiming,
   isReleasing,
+  isResolving,
   onClaim,
   onRelease,
+  onResolve,
 }) {
   const ia = topic.ia_analysis;
   const needsIntervention = ia.intervencao_necessaria === true;
@@ -149,34 +152,56 @@ const RescueCard = memo(function RescueCard({
 
       <div className="card-footer" style={{ marginTop: 15 }}>
         <div className="author-info"></div>
-        {isClaimed ? (
-          <div
-            className={`claimed-by ${isMine ? 'is-mine' : ''}`}
-            title={isMine ? 'Liberar tópico' : `Em atendimento por ${topic.claimed_by.name}`}
-            onClick={isMine && !isReleasing ? () => onRelease(topic.topic_id) : undefined}
-            style={{ cursor: isMine ? 'pointer' : 'default' }}
-          >
-            {isReleasing ? (
-              <div className="spinner"></div>
-            ) : (
-              <img src={claimedAvatar} alt="Avatar" loading="lazy" />
-            )}
-          </div>
-        ) : (
-          <button
-            className={`action-button claim-button ${isClaiming ? 'is-loading' : ''}`}
-            onClick={() => onClaim(topic.topic_id)}
-            disabled={isClaiming}
-            title="Assumir Tópico"
-          >
-            <span className="icon-add">
-              <i className="fas fa-plus"></i>
-            </span>
-            <span className="icon-spinner">
-              <div className="spinner"></div>
-            </span>
-          </button>
-        )}
+
+        <div className="rescue-card-actions">
+          {/* Botão "Marcar como respondido" só pra quem assumiu o tópico —
+              ação seguinte natural depois de responder no fórum. */}
+          {isClaimed && isMine ? (
+            <button
+              type="button"
+              className="rescue-resolve-btn"
+              onClick={() => onResolve(topic.topic_id)}
+              disabled={isResolving}
+              title="Marcar como respondido"
+            >
+              {isResolving ? (
+                <i className="fas fa-spinner fa-spin"></i>
+              ) : (
+                <i className="fa-solid fa-check"></i>
+              )}
+              <span>Respondido</span>
+            </button>
+          ) : null}
+
+          {isClaimed ? (
+            <div
+              className={`claimed-by ${isMine ? 'is-mine' : ''}`}
+              title={isMine ? 'Liberar tópico' : `Em atendimento por ${topic.claimed_by.name}`}
+              onClick={isMine && !isReleasing ? () => onRelease(topic.topic_id) : undefined}
+              style={{ cursor: isMine ? 'pointer' : 'default' }}
+            >
+              {isReleasing ? (
+                <div className="spinner"></div>
+              ) : (
+                <img src={claimedAvatar} alt="Avatar" loading="lazy" />
+              )}
+            </div>
+          ) : (
+            <button
+              className={`action-button claim-button ${isClaiming ? 'is-loading' : ''}`}
+              onClick={() => onClaim(topic.topic_id)}
+              disabled={isClaiming}
+              title="Assumir Tópico"
+            >
+              <span className="icon-add">
+                <i className="fas fa-plus"></i>
+              </span>
+              <span className="icon-spinner">
+                <div className="spinner"></div>
+              </span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -192,6 +217,10 @@ function RescuePanel({ username }) {
   const [error, setError] = useState('');
   const [claimingId, setClaimingId] = useState(null);
   const [releasingId, setReleasingId] = useState(null);
+  const [resolvingId, setResolvingId] = useState(null);
+  // IDs já marcados como resolvidos — somem da tela imediatamente, sem
+  // esperar o próximo poll do backend (que vai fazer soft-delete).
+  const [resolvedIds, setResolvedIds] = useState(() => new Set());
   const initialLoad = useRef(true);
 
   const loadData = useCallback(async ({ silent = false } = {}) => {
@@ -236,9 +265,11 @@ function RescuePanel({ username }) {
     return data.topics.filter((topic) => {
       if (!topic.ia_analysis || topic.rescue_status === 'ERROR') return false;
       if ((topic.ia_analysis.motivo_intervencao || '').includes('Falha')) return false;
+      // Já marcamos como respondido localmente — esconde até o próximo poll.
+      if (resolvedIds.has(topic.topic_id)) return false;
       return true;
     });
-  }, [data.topics]);
+  }, [data.topics, resolvedIds]);
 
   const filteredAnalyzed = useMemo(() => {
     return validAnalyzedTopics.filter((topic) => {
@@ -315,6 +346,36 @@ function RescuePanel({ username }) {
       }
     },
     [loadData, showToast]
+  );
+
+  // Marca como respondido no backend (soft-delete) e some o card da tela
+  // imediatamente via resolvedIds — o próximo poll do /rescue-queue já
+  // não vai retornar o tópico.
+  const handleResolve = useCallback(
+    async (topicId) => {
+      if (!username) {
+        showToast('Defina seu usuário para marcar como respondido.', 'error');
+        return;
+      }
+      if (!window.confirm('Confirmar que esse tópico já foi respondido no fórum?')) return;
+      setResolvingId(topicId);
+      try {
+        await resolveRescueTopic(topicId, username);
+        showToast('Tópico marcado como respondido.', 'success');
+        setResolvedIds((prev) => {
+          const next = new Set(prev);
+          next.add(topicId);
+          return next;
+        });
+      } catch (err) {
+        console.error('Erro ao marcar como respondido:', err);
+        const message = err?.response?.data?.message || 'Erro ao marcar como respondido.';
+        showToast(message, 'error');
+      } finally {
+        setResolvingId(null);
+      }
+    },
+    [showToast, username]
   );
 
   if (!username) {
@@ -438,8 +499,10 @@ function RescuePanel({ username }) {
               username={username}
               isClaiming={claimingId === topic.topic_id}
               isReleasing={releasingId === topic.topic_id}
+              isResolving={resolvingId === topic.topic_id}
               onClaim={handleClaim}
               onRelease={handleRelease}
+              onResolve={handleResolve}
             />
           ))
         )}

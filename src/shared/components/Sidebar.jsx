@@ -86,8 +86,21 @@ function PerformanceCard({ meta, statsBr, statsLatam, hasLatam }) {
   // Apple system colors: green BR / orange LATAM.
   const color = useLatam ? '#FF9500' : '#34C759';
 
+  // Faixa de cor da barra (vermelho → laranja → amarelo → verde).
+  // Cor sólida muda em "degrau" conforme o pct cresce — visualmente mais
+  // claro do que um gradiente contínuo (que ficou poluído).
+  let fillTier = 'low';
+  if (pct >= 100) fillTier = 'done';
+  else if (pct >= 75) fillTier = 'almost';
+  else if (pct >= 50) fillTier = 'high';
+  else if (pct >= 25) fillTier = 'mid';
+
   return (
-    <div className="sidebar-panel perf-card" id="performance-card" style={{ '--perf-color': color }}>
+    <div
+      className="sidebar-panel perf-card"
+      id="performance-card"
+      style={{ '--perf-color': color }}
+    >
       <div className="perf-top">
         {useLatam ? <span className="perf-region-badge">LATAM</span> : null}
         <span className="perf-title-text">Desempenho hoje</span>
@@ -120,7 +133,7 @@ function PerformanceCard({ meta, statsBr, statsLatam, hasLatam }) {
       >
         <div className="perf-progress__track">
           <div
-            className={`perf-progress__fill ${isComplete ? 'is-complete' : ''}`}
+            className={`perf-progress__fill perf-progress__fill--${fillTier} ${isComplete ? 'is-complete' : ''}`}
             style={{ width: `${pct}%` }}
           />
         </div>

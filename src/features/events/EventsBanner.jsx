@@ -48,15 +48,23 @@ function getDaysCopy(daysAway) {
 
 // Copy do evento "agora": preferimos rotular como EVENTO AGORA (mais claro
 // pra quem pega o sistema na ativa do que "AO VIVO" — não é um vídeo). Se
-// tiver due_date real, mostra o tempo restante.
+// tiver due_date real, mostra o tempo restante na unidade adequada.
 function getLiveCopy(endMs) {
   if (!endMs) return 'EVENTO AGORA';
   const now = Date.now();
   const remainingMin = Math.round((endMs - now) / 60000);
   if (remainingMin <= 0) return 'EVENTO AGORA';
   if (remainingMin < 60) return `EVENTO AGORA · termina em ${remainingMin}min`;
-  const hours = Math.round(remainingMin / 60);
-  return `EVENTO AGORA · termina em ${hours}h`;
+  if (remainingMin < 1440) {
+    const hours = Math.round(remainingMin / 60);
+    return `EVENTO AGORA · termina em ${hours}h`;
+  }
+  // Eventos longos (cursos com due_date a meses) virariam "4301h" ridículo.
+  // Escala pra dias acima de 24h e pra meses acima de 60d.
+  const days = Math.floor(remainingMin / 1440);
+  if (days < 60) return `EVENTO AGORA · termina em ${days}d`;
+  const months = Math.floor(days / 30);
+  return `EVENTO AGORA · termina em ${months}mes`;
 }
 
 // Title do evento geralmente vem como "Curso Santander: Imersão Digital 2026".
@@ -146,12 +154,6 @@ function EventsBanner({ events = [] }) {
             {formatDateBr(top.startMs)}
             {brand.name ? ` · ${brand.name}` : ''}
           </p>
-          {top.isLive ? (
-            <span className="events-banner__live-hint">
-              <i className="fa-solid fa-circle-info"></i>
-              Quem chegou agora — esse evento já começou. Não perca.
-            </span>
-          ) : null}
           {top.url ? (
             <a
               href={top.url}

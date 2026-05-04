@@ -47,7 +47,7 @@ function formatHoursLeft(hoursLeft) {
 
 function NotificationsHub({ username, meta, clickupToken }) {
   const { topics } = useTopics();
-  const { announce, setRadarItems } = useNotifications();
+  const { announce, setRadarItems, setClickupSummary } = useNotifications();
   const [focusCategories, setFocusCategories] = useState([]);
   const [clickupRadar, setClickupRadar] = useState([]);
 
@@ -174,6 +174,7 @@ function NotificationsHub({ username, meta, clickupToken }) {
   useEffect(() => {
     if (!clickupToken) {
       setClickupRadar([]);
+      setClickupSummary(null);
       return undefined;
     }
     let alive = true;
@@ -183,6 +184,19 @@ function NotificationsHub({ username, meta, clickupToken }) {
         const result = await runClickUpSync({ token: clickupToken, announce });
         if (!alive) return;
         setClickupRadar(result.radarItems);
+        // Publica o resumo agregado pra o dropdown da central renderizar
+        // o mini-painel "Panorama ClickUp".
+        setClickupSummary({
+          totalTasks: result.totalTasks,
+          totalEvents: result.totalEvents,
+          overdueTotal: result.currentOverdueTotal,
+          dueSoonTotal: result.dueSoonTotal,
+          liveEventsCount: result.liveEventsCount,
+          upcomingEventsCount: result.upcomingEventsCount,
+          nextEvent: result.nextEvent,
+          taskList: result.taskList || [],
+          syncedAt: Date.now(),
+        });
       } catch (err) {
         console.warn('[NotificationsHub] ClickUp tick falhou:', err);
       }
@@ -194,7 +208,7 @@ function NotificationsHub({ username, meta, clickupToken }) {
       alive = false;
       clearInterval(id);
     };
-  }, [clickupToken, announce]);
+  }, [clickupToken, announce, setClickupSummary]);
 
   /* ============== SLA RADAR (digest — sem spam por tópico) ============== */
   // Antes: gerava 1 item "vira urgente em Xh" por tópico → 4 itens repetitivos

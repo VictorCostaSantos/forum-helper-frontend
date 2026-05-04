@@ -64,6 +64,11 @@ export function NotificationsProvider({ children }) {
   // e restaura ao fechar. Evita conflito visual sem precisar shiftar o
   // dropdown manualmente.
   const [bellOpen, setBellOpen] = useState(false);
+  // Resumo do ClickUp atualizado pelo NotificationsHub a cada sync.
+  // Usado pelo dropdown da central pra mostrar um mini-painel de
+  // panorama (total de tarefas, atrasadas, próximo evento). Quando
+  // o token não tá configurado, fica null e o painel some.
+  const [clickupSummary, setClickupSummary] = useState(null);
 
   useEffect(() => {
     saveToStorage({ alerts, readIds, dismissedIds });
@@ -135,6 +140,8 @@ export function NotificationsProvider({ children }) {
       clearAll,
       bellOpen,
       setBellOpen,
+      clickupSummary,
+      setClickupSummary,
     }),
     [
       alerts,
@@ -148,6 +155,7 @@ export function NotificationsProvider({ children }) {
       setRadarItems,
       clearAll,
       bellOpen,
+      clickupSummary,
     ],
   );
 
