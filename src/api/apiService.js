@@ -42,11 +42,15 @@ export async function fetchLatamStats(username) {
     }
 }
 
-export async function claimTopic(topicLink, username) {
+export async function claimTopic(topicLink, username, avatarUrl = null) {
     try {
+        // Mesmo padrão do /rescue-claim: front manda o avatar pronto (que ele
+        // já tem cacheado no localStorage). Backend valida e usa, evitando
+        // scrappear na hora — claim fica instantâneo.
         const response = await axios.post(`${API_BASE_URL}/claim`, {
             topicLink,
-            username
+            username,
+            avatar: avatarUrl,
         });
         return response.data;
     } catch (error) {
@@ -111,14 +115,28 @@ export async function fetchAvatarFromBackend(username) {
     const normalizedUsername = username.trim().toLowerCase();
     const cacheKey = `alura_avatar_v1_${normalizedUsername}`;
     const CACHE_EXPIRATION_MS = 7 * 24 * 60 * 60 * 1000;
+    // "Negative cache": quando o backend FALHA explicitamente (success: false
+    // ou erro de rede), evita request repetido por 5 min. Tempo curto porque
+    // o backend tem cache próprio que se popula aos poucos — é normal a 1ª
+    // chamada falhar e a 2ª (segundos depois) já dar certo.
+    //
+    // ATENÇÃO: success:true + avatarUrl:null NÃO conta como falha — o backend
+    // simplesmente ainda não tem essa URL no cache dele. Próxima request pode
+    // já ter (após scraping). Tratamos como "ausência neutra".
+    const NEGATIVE_CACHE_MS = 5 * 60 * 1000;
 
     const cachedData = localStorage.getItem(cacheKey);
     if (cachedData) {
         try {
             const parsedCache = JSON.parse(cachedData);
             const now = Date.now();
-            if (now - parsedCache.timestamp < CACHE_EXPIRATION_MS && parsedCache.url) {
+            // Cache positivo válido — devolve.
+            if (parsedCache.url && now - parsedCache.timestamp < CACHE_EXPIRATION_MS) {
                 return { success: true, url: parsedCache.url, cached: true };
+            }
+            // Cache negativo válido — devolve fail sem fazer request.
+            if (parsedCache.negative && now - parsedCache.timestamp < NEGATIVE_CACHE_MS) {
+                return { success: false, url: null, cached: true };
             }
         } catch (e) {
             console.warn("Cache do avatar corrompido. Buscando novo...");
@@ -129,25 +147,47 @@ export async function fetchAvatarFromBackend(username) {
         const response = await axios.get(`${API_BASE_URL}/user-avatar?username=${normalizedUsername}`);
         const data = response.data;
 
-        if (!data.success || !data.avatarUrl) {
+        // FALHA explícita do backend (success: false) → negative cache.
+        if (data.success === false) {
+            localStorage.setItem(cacheKey, JSON.stringify({
+                negative: true,
+                timestamp: Date.now(),
+            }));
+            return { success: false, url: null };
+        }
+
+        // success: true mas avatarUrl null/vazio → ausência neutra. Não cacheia
+        // negative pra próxima request poder pegar quando o backend popular.
+        if (!data.avatarUrl) {
             return { success: false, url: null };
         }
 
         localStorage.setItem(cacheKey, JSON.stringify({
             url: data.avatarUrl,
-            timestamp: Date.now()
+            timestamp: Date.now(),
         }));
 
         return { success: true, url: data.avatarUrl, cached: false };
     } catch (error) {
         console.error(`Erro de rede ao buscar avatar para ${normalizedUsername}:`, error);
 
+        // Reuso de cache positivo expirado — melhor que nada se o backend caiu.
         if (cachedData) {
             try {
                 const parsedCache = JSON.parse(cachedData);
-                return { success: true, url: parsedCache.url, cached: true };
+                if (parsedCache.url) {
+                    return { success: true, url: parsedCache.url, cached: true };
+                }
             } catch (e) {}
         }
+
+        // Negative cache pra próximas tentativas falharem rápido.
+        try {
+            localStorage.setItem(cacheKey, JSON.stringify({
+                negative: true,
+                timestamp: Date.now(),
+            }));
+        } catch (e) { /* localStorage cheio, ok */ }
 
         return { success: false, url: null };
     }

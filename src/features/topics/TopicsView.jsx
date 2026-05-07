@@ -5,6 +5,7 @@ import {
   claimTopic,
   unclaimTopic,
   fetchRescueQueue,
+  fetchAvatarFromBackend,
 } from '../../api/apiService';
 import { useTopics } from '../../shared/context/TopicsContext';
 import { useToast } from '../../shared/ui/ToastProvider';
@@ -12,6 +13,7 @@ import { fetchUpcomingEvents } from '../../shared/notifications/clickupSync';
 import EventsBanner from '../events/EventsBanner';
 import RescuePanel from './RescuePanel';
 import FocusBanner from './FocusBanner';
+import UserAvatar from '../../shared/components/UserAvatar';
 import { computeFocus } from './focusEngine';
 import {
   CATEGORY_BUTTONS,
@@ -46,9 +48,13 @@ const TopicCard = memo(function TopicCard({
   const bbMarker = 'Tópico privado de empresa';
   const isBb = topic.title.includes(bbMarker);
   const title = topic.title.replace(bbMarker, '').trim();
-  const authorImage = topic.authorImage
-    || `https://ui-avatars.com/api/?name=${encodeURIComponent(getClaimedName(topic.claimedBy) || topic.category || 'A')}`;
-  const claimedAvatar = topic.claimedBy?.avatar || authorImage;
+  // Sem fallback ui-avatars.com aqui — UserAvatar gera fallback local quando
+  // a URL é vazia ou a imagem 404. Evita dependência externa que pode estar
+  // bloqueada/lenta e tira o "Avatar" cortado feio.
+  const authorImage = topic.authorImage || '';
+  const authorName = getClaimedName(topic.claimedBy) || topic.category || 'Autor';
+  const claimedAvatarSrc = topic.claimedBy?.avatar || '';
+  const claimedName = getClaimedName(topic.claimedBy) || 'Em atendimento';
 
   return (
     <div
@@ -73,7 +79,7 @@ const TopicCard = memo(function TopicCard({
       </div>
       <div className="card-footer">
         <div className="author-info">
-          <img src={authorImage} alt="Autor" loading="lazy" />
+          <UserAvatar src={authorImage} name={authorName} size={32} />
         </div>
         {topic.isClaimed ? (
           <div
@@ -85,7 +91,12 @@ const TopicCard = memo(function TopicCard({
             {isReleasing ? (
               <div className="spinner"></div>
             ) : (
-              <img src={claimedAvatar} alt="Avatar" loading="lazy" />
+              <UserAvatar
+                src={claimedAvatarSrc}
+                name={claimedName}
+                cacheKey={claimedName}
+                size={36}
+              />
             )}
           </div>
         ) : (
@@ -349,7 +360,11 @@ function TopicsView({ username: initialUsername }) {
   const handleClaim = useCallback(async (topic) => {
     setClaimingLink(topic.link);
     try {
-      await claimTopic(topic.link, username);
+      // Busca avatar do localStorage (cache 7d) e manda pro backend salvar
+      // junto com o claim. Backend valida URL e rejeita placeholders.
+      const avatarResult = await fetchAvatarFromBackend(username);
+      const avatarUrl = avatarResult.success ? avatarResult.url : null;
+      await claimTopic(topic.link, username, avatarUrl);
       showToast('Tópico assumido!', 'success');
       await loadTopics({ silent: true });
     } catch (err) {

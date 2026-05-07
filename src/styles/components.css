@@ -1,3 +1,29 @@
+/* ==========================================================================
+   USER AVATAR — componente reusável (img com fallback colorido).
+   Quando a imagem 404 ou está vazia, vira um círculo com a inicial do nome
+   (cor estável por hash do nome). Substitui o feio "Avatar" cortado.
+   ========================================================================== */
+.user-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    overflow: hidden;
+    user-select: none;
+    background: var(--surface-color, #d8dfe8);
+}
+
+.user-avatar--fallback {
+    color: white;
+    font-weight: 700;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    line-height: 1;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18);
+}
 
 button {
     padding: 10px 20px;

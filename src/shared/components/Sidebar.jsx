@@ -176,13 +176,27 @@ function toFriendly(raw) {
 
 function AllocationItem({ alloc, currentUserBr }) {
   const [avatars, setAvatars] = useState([]);
+  // Marca avatares cuja URL backend deu sucesso MAS a imagem em si falhou
+  // ao carregar (404, CORS, bloqueio). Sem isso, a img quebrada fica num
+  // limbo visual (placeholder padrão do navegador). Index pra evitar
+  // re-render da lista inteira a cada erro.
+  const [imgErrors, setImgErrors] = useState(() => new Set());
 
   useEffect(() => {
     let alive = true;
+    setImgErrors(new Set());
     Promise.all((alloc?.responsaveis || []).map((u) => fetchAvatarFromBackend(u.trim())))
       .then((res) => { if (alive) setAvatars(res); });
     return () => { alive = false; };
   }, [alloc]);
+
+  const handleImgError = (idx) => {
+    setImgErrors((prev) => {
+      const next = new Set(prev);
+      next.add(idx);
+      return next;
+    });
+  };
 
   if (!alloc || !alloc.responsaveis?.length) {
     return (
@@ -221,8 +235,12 @@ function AllocationItem({ alloc, currentUserBr }) {
               title={toFriendly(uClean)}
               className={`alloc-card__avatar ${me ? 'is-me' : ''}`}
             >
-              {avatar?.success ? (
-                <img src={avatar.url} alt={uClean} />
+              {avatar?.success && !imgErrors.has(idx) ? (
+                <img
+                  src={avatar.url}
+                  alt={uClean}
+                  onError={() => handleImgError(idx)}
+                />
               ) : (
                 <span className="alloc-card__avatar-fallback">
                   {toFriendly(uClean).charAt(0) || '?'}

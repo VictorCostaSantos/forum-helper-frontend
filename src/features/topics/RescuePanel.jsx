@@ -7,6 +7,7 @@ import {
   fetchAvatarFromBackend,
 } from '../../api/apiService';
 import { useToast } from '../../shared/ui/ToastProvider';
+import UserAvatar from '../../shared/components/UserAvatar';
 
 const categoryClassMap = {
   'Front-end': 'frontend',
@@ -81,9 +82,10 @@ const RescueCard = memo(function RescueCard({
   const studentCount = topic.total_interacoes_alunos || 0;
   const isClaimed = topic.rescue_status === 'CLAIMED' && topic.claimed_by;
   const isMine = isClaimed && topic.claimed_by.name === username;
-  const claimedAvatar = isClaimed
-    ? (topic.claimed_by.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(topic.claimed_by.name)}`)
-    : null;
+  // UserAvatar gera fallback local quando avatar é vazio ou imagem 404 —
+  // sem precisar de ui-avatars.com (que pode estar bloqueado/lento).
+  const claimedAvatarSrc = isClaimed ? (topic.claimed_by.avatar || '') : '';
+  const claimedName = isClaimed ? topic.claimed_by.name : '';
 
   const priorityStyle = needsIntervention
     ? {
@@ -183,7 +185,12 @@ const RescueCard = memo(function RescueCard({
               {isReleasing ? (
                 <div className="spinner"></div>
               ) : (
-                <img src={claimedAvatar} alt="Avatar" loading="lazy" />
+                <UserAvatar
+                  src={claimedAvatarSrc}
+                  name={claimedName}
+                  cacheKey={claimedName}
+                  size={36}
+                />
               )}
             </div>
           ) : (
