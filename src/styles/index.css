@@ -33,5 +33,8 @@
 /* Páginas de Alocação (placeholder) e Galeria de Notificações */
 @import './extra-views.css';
 
+/* Central PDI — companion pessoal do PDI oficial (FEEDZ) */
+@import './pdi.css';
+
 /* Regras específicas do shell React (não conflitam com o original) */
 @import './app.css';

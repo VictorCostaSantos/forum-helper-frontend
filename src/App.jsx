@@ -19,6 +19,7 @@ const CatalogView = lazy(() => import('./features/catalog/CatalogView'));
 const StatusView = lazy(() => import('./features/status/StatusView'));
 const AllocationView = lazy(() => import('./features/allocation/AllocationView'));
 const NotificationsPreviewView = lazy(() => import('./features/notifications-preview/NotificationsPreviewView'));
+const PdiView = lazy(() => import('./features/pdi/PdiView'));
 
 // Spinner discreto que ocupa a tela enquanto o chunk baixa. Não usa o
 // skeleton-card pq esse Suspense cobre views muito diferentes.
@@ -134,6 +135,7 @@ function Layout({ settingsOpen, setSettingsOpen, settings, onSettingsChange, the
   const isStatus = location.pathname === '/status';
   const isAllocation = location.pathname === '/allocation';
   const isNotificationsPreview = location.pathname === '/notifications-preview';
+  const isPdi = location.pathname === '/pdi';
   const showSidebar = isTopicsRoute && Boolean(settings.username) && Boolean(settings.meta);
 
   const toggleSidebar = () => {
@@ -151,7 +153,8 @@ function Layout({ settingsOpen, setSettingsOpen, settings, onSettingsChange, the
     document.body.classList.toggle('status-active', isStatus);
     document.body.classList.toggle('allocation-active', isAllocation);
     document.body.classList.toggle('notifications-preview-active', isNotificationsPreview);
-  }, [isDashboard, isMural, isCatalog, isStatus, isAllocation, isNotificationsPreview]);
+    document.body.classList.toggle('pdi-active', isPdi);
+  }, [isDashboard, isMural, isCatalog, isStatus, isAllocation, isNotificationsPreview, isPdi]);
 
   return (
     <>
@@ -182,6 +185,7 @@ function Layout({ settingsOpen, setSettingsOpen, settings, onSettingsChange, the
           <Route path="/status" element={<StatusView username={settings.username} />} />
           <Route path="/allocation" element={<AllocationView />} />
           <Route path="/notifications-preview" element={<NotificationsPreviewView />} />
+          <Route path="/pdi" element={<PdiView />} />
           <Route path="*" element={<NavigateToTopics />} />
         </Routes>
       </Suspense>

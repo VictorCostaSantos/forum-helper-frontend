@@ -187,6 +187,7 @@
 .app-nav__tab.is-mural.is-active i      { color: var(--cor-ia); }
 .app-nav__tab.is-dashboard.is-active i  { color: #667eea; }
 .app-nav__tab.is-allocation.is-active i { color: var(--cor-inovacao-gestao); }
+.app-nav__tab.is-pdi.is-active i        { color: var(--cor-data-science); }
 
 body.dark-mode .app-nav {
     background-color: var(--surface-color, rgba(255, 255, 255, 0.02));
