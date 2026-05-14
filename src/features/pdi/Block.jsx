@@ -1,5 +1,5 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { BLOCK, BLOCK_PALETTE, BLOCK_WIDTHS, blockCanHaveCourses } from './blockTypes';
+import { BLOCK, BLOCK_PALETTE, blockCanHaveCourses } from './blockTypes';
 import {
   RECURRING_FREQUENCIES,
   isCompletedThisPeriod,
@@ -140,9 +140,7 @@ const Block = forwardRef(function Block({
   };
 
   // ---------- ⋯ MENU items por bloco ----------
-  const currentWidth = block.width || 'full';
-  const canHaveColumns = ![BLOCK.HEADING_2, BLOCK.HEADING_3, BLOCK.DIVIDER].includes(block.type);
-
+  // Feature de colunas adiada — menu fica mais enxuto.
   const menuItems = [
     {
       label: 'Adicionar bloco abaixo',
@@ -164,27 +162,14 @@ const Block = forwardRef(function Block({
         if (rect) onSlashTrigger?.(rect, true);
       },
     },
+    { divider: true },
+    {
+      label: 'Remover bloco',
+      icon: 'fa-trash',
+      danger: true,
+      onClick: onRemove,
+    },
   ];
-
-  // Submenu de largura — 4 opções fixas. Marca o atual com ✓.
-  if (canHaveColumns) {
-    menuItems.push({ divider: true });
-    BLOCK_WIDTHS.forEach((w) => {
-      menuItems.push({
-        label: `${currentWidth === w.id ? '✓ ' : ''}${w.label}`,
-        icon: w.icon,
-        onClick: () => onChange({ width: w.id }),
-      });
-    });
-  }
-
-  menuItems.push({ divider: true });
-  menuItems.push({
-    label: 'Remover bloco',
-    icon: 'fa-trash',
-    danger: true,
-    onClick: onRemove,
-  });
 
   // ---------- RENDER POR TIPO ----------
   let leftSlot = null;

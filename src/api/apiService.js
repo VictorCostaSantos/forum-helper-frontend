@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-export const API_BASE_URL = 'https://forum-helper-zmqxu.ondigitalocean.app/api';
+// Base do backend. Em dev, crie `.env.local` na raiz do frontend com:
+//   VITE_API_BASE_URL=http://localhost:8080/api
+// Sem essa env var, cai no backend de produção (DigitalOcean).
+export const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
 export const LATAM_USER_MAPPING = {
     'victos-costa': 'victor-costa',
@@ -273,6 +277,46 @@ export async function fetchFocusData() {
         console.error("Erro ao buscar dados de foco:", error);
         return [];
     }
+}
+
+/* ============================================
+   ALOCAÇÃO — CRUD de atividades do time
+
+   Backend usa Sequelize com armazenamento persistente. `data` é DATEONLY
+   (YYYY-MM-DD), `peso` é 1..3, `responsaveis` é array de strings.
+   Front sempre filtra por range de datas pra economizar payload — o
+   quadro mostra uma semana por vez.
+   ============================================ */
+
+export async function fetchAtividades({ dataInicio, dataFim, peso } = {}) {
+    try {
+        const params = new URLSearchParams();
+        if (dataInicio) params.set('dataInicio', dataInicio);
+        if (dataFim)    params.set('dataFim', dataFim);
+        if (peso)       params.set('peso', String(peso));
+        const qs = params.toString();
+        const url = `${API_BASE_URL}/atividades${qs ? `?${qs}` : ''}`;
+        const response = await axios.get(url);
+        return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+        console.error('Erro no fetchAtividades:', error);
+        throw error;
+    }
+}
+
+export async function createAtividade(payload) {
+    const response = await axios.post(`${API_BASE_URL}/atividades`, payload);
+    return response.data;
+}
+
+export async function updateAtividade(id, payload) {
+    const response = await axios.put(`${API_BASE_URL}/atividades/${id}`, payload);
+    return response.data;
+}
+
+export async function deleteAtividade(id) {
+    const response = await axios.delete(`${API_BASE_URL}/atividades/${id}`);
+    return response.data;
 }
 
 /* ============================================

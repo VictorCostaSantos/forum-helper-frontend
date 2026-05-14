@@ -270,6 +270,7 @@ function PdiView() {
           data={alura.data}
           loading={alura.loading}
           error={alura.error}
+          unavailable={alura.unavailable}
           onRefetch={alura.refetch}
           fromCache={alura.fromCache}
           lastFetchedAt={alura.lastFetchedAt}

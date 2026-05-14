@@ -17,7 +17,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import Block from './Block';
 import SlashMenu from './SlashMenu';
-import { BLOCK, detectMarkdownShortcut, getWidthBasis } from './blockTypes';
+import { BLOCK, detectMarkdownShortcut } from './blockTypes';
 
 // Editor de blocos. Orquestra:
 // - Lista de blocos (drag-and-drop)
@@ -46,22 +46,18 @@ function SortableBlockWrapper({ block, children, isOverRight }) {
     data: { type: 'right-zone', targetBlockId: block.id },
   });
 
-  const effectiveWidth = ALWAYS_FULL_TYPES.has(block.type) ? 'full' : (block.width || 'full');
-  const flexBasis = getWidthBasis(effectiveWidth);
-
+  // Layout linear — cada bloco ocupa linha inteira. width: 100% forçado
+  // pra evitar colapso quando dnd-kit aplica transform.
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.4 : 1,
     zIndex: isDragging ? 10 : 'auto',
     position: 'relative',
-    flex: `0 1 ${flexBasis}`,
-    minWidth: 0,
-    maxWidth: flexBasis,
+    width: '100%',
   };
 
-  // Zona lateral SÓ aparece pra blocos que aceitam virar coluna (não heading/divider).
-  const acceptsRightDrop = !ALWAYS_FULL_TYPES.has(block.type);
+  const acceptsRightDrop = false; // drop lateral desabilitado (sem feature de coluna)
 
   return (
     <div ref={setNodeRef} style={style} {...attributes}>

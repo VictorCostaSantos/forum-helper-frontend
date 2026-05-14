@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import icon from '../../assets/icon.png';
 import { useToast } from '../ui/ToastProvider';
 import NotificationBell from '../notifications/NotificationBell';
+import { useAllocationSummary } from '../../features/allocation/useAllocationSummary';
 
 const DEFAULT_SOLUTION_FLAG_HTML =
   '<div style="display: inline-block; padding: 10px 20px; background: linear-gradient(135deg, #06B9A1, #049F89); color: white; font-size: 0.85em; font-style: italic; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); border: 1px solid #FFF; text-align: center;">\n<strong style="font-size: 0.9em;">Caso este post tenha lhe ajudado, por favor, <span style="text-decoration: underline;">marcar como solucionado</span></strong>\n</div>';
@@ -11,13 +12,21 @@ const DEFAULT_FEEDBACK_FLAG_HTML =
 
 const FORUM_URL = 'https://cursos.alura.com.br/forum/todos/1?hasAccessMGM=true';
 
+// Tooltip do item Alocação quando há avisos pendentes — breakdown rápido.
+function buildAllocBadgeTitle(summary) {
+  if (!summary?.total) return null;
+  const parts = [];
+  if (summary.vagoCount > 0) parts.push(`${summary.vagoCount} plantão(ões) vago(s)`);
+  if (summary.dangerCount > 0) parts.push(`${summary.dangerCount} sobrecarregado(s)`);
+  return `Alocação · ${parts.join(' · ')}`;
+}
+
 const NAV_ITEMS = [
   { path: '/catalog', icon: 'fa-book', label: 'Catálogo', accentClass: 'is-catalog' },
   { path: '/mural', icon: 'fa-table-columns', label: 'Mural', accentClass: 'is-mural' },
   { path: '/dashboard', icon: 'fa-chart-line', label: 'Dashboard', accentClass: 'is-dashboard' },
   { path: '/allocation', icon: 'fa-people-group', label: 'Alocação', accentClass: 'is-allocation' },
-  // PDI: rota /pdi continua acessível direto pelo URL — escondida do menu
-  // enquanto a feature ainda não está pronta pra todo o time.
+  { path: '/pdi', icon: 'fa-graduation-cap', label: 'PDI', accentClass: 'is-pdi' },
 ];
 
 /* Menu único pra atalhos do dia a dia. Substitui os 3 ícones soltos. */
@@ -119,6 +128,8 @@ function QuickActionsMenu({ onCopySolution, onCopyFeedback }) {
 const Header = ({ onSettingsClick, onNavigate, currentPath }) => {
   const { showToast } = useToast();
   const isHome = currentPath === '/topics' || currentPath === '/';
+  // Sumário de alocação compartilhado — alimenta o badge no item /allocation.
+  const allocSummary = useAllocationSummary();
 
   const goHome = () => onNavigate?.('/topics');
 
@@ -156,17 +167,31 @@ const Header = ({ onSettingsClick, onNavigate, currentPath }) => {
         <nav className="app-nav" aria-label="Navegação principal">
           {NAV_ITEMS.map((item) => {
             const active = currentPath === item.path;
+            // Badge só pra Alocação. Conta vago + sobrecarregados.
+            const isAlloc = item.path === '/allocation';
+            const showBadge = isAlloc && allocSummary.loaded && allocSummary.total > 0;
+            const badgeTitle = isAlloc
+              ? buildAllocBadgeTitle(allocSummary)
+              : null;
             return (
               <button
                 key={item.path}
                 type="button"
                 className={`app-nav__tab ${item.accentClass} ${active ? 'is-active' : ''}`}
                 onClick={() => onNavigate?.(active ? '/topics' : item.path)}
-                title={`Abrir ${item.label}`}
+                title={badgeTitle || `Abrir ${item.label}`}
                 aria-current={active ? 'page' : undefined}
               >
                 <i className={`fas ${item.icon}`} aria-hidden="true"></i>
                 <span>{item.label}</span>
+                {showBadge ? (
+                  <span
+                    className={`app-nav__badge app-nav__badge--${allocSummary.tone}`}
+                    aria-label={`${allocSummary.total} aviso(s) de alocação`}
+                  >
+                    {allocSummary.total}
+                  </span>
+                ) : null}
               </button>
             );
           })}

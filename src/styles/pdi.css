@@ -324,30 +324,44 @@ body.dark-mode .hero__cycle-track {
    Os slots opcionais (handle, +, left) só aparecem no hover.
    ========================================================================== */
 
+/* Layout linear simples — cada bloco numa linha. A feature de colunas
+   foi adiada (tentativas com flex-wrap e CSS Grid 12-col causaram bugs
+   de layout interno). Pode voltar no futuro com abordagem dedicada. */
 .block-editor {
     display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 0 16px;
-}
-
-/* Botão "Adicionar bloco" no fim ocupa linha inteira (independente do flex) */
-.block-editor__add-end {
-    flex: 0 0 100%;
+    flex-direction: column;
+    gap: 0;
 }
 
 .block {
     position: relative;
     border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .block__row {
-    display: grid;
-    grid-template-columns: 18px auto 1fr auto auto;
+    display: flex;
     align-items: flex-start;
     gap: 4px;
     padding: 2px 0;
     min-height: 28px;
+    width: 100%;
+}
+
+.block__row > .block__handle,
+.block__row > .block__left,
+.block__row > .block__menu {
+    flex: 0 0 auto;
+}
+
+.block__row > .block__main {
+    flex: 1 1 auto;
+    min-width: 0; /* sem isso, textarea com texto longo empurra demais */
+}
+
+.block__row > .block__right {
+    flex: 0 0 auto;
 }
 
 /* Handle visível só no hover do bloco. */
@@ -385,22 +399,43 @@ body.dark-mode .hero__cycle-track {
     outline: 2px solid color-mix(in srgb, var(--cor-data-science) 40%, transparent);
 }
 
-/* Drop zone lateral direita — invisível por padrão; vira indicador visual
-   quando o usuário arrasta um bloco em cima. */
+/* Drop zone lateral direita — área maior pra facilitar acerto durante drag.
+   Invisível por padrão; vira faixa vertical bem visível (com pulse) quando
+   o cursor passa por cima, indicando "solte aqui pra virar coluna ao lado". */
 .block__drop-right {
     position: absolute;
-    top: 0;
-    bottom: 0;
-    right: -8px;
-    width: 16px;
+    top: 4px;
+    bottom: 4px;
+    right: -16px;
+    width: 32px;
     z-index: 5;
-    border-radius: 4px;
+    border-radius: 6px;
     transition: background 0.12s ease, box-shadow 0.12s ease;
+    pointer-events: none;
+}
+
+/* Ativa pointer-events só quando há um drag ativo no DndContext.
+   dnd-kit adiciona .dnd-context-active no body durante drag — mas como
+   ele não faz isso, usamos um marker via :has() no editor. */
+.block-editor:has([style*="opacity: 0.4"]) .block__drop-right {
+    pointer-events: auto;
 }
 
 .block__drop-right.is-active {
-    background: var(--cor-data-science);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--cor-data-science) 30%, transparent);
+    background: linear-gradient(90deg,
+        transparent 0%,
+        color-mix(in srgb, var(--cor-data-science) 22%, transparent) 30%,
+        var(--cor-data-science) 100%
+    );
+    box-shadow:
+        inset -3px 0 0 0 var(--cor-data-science),
+        0 0 0 1px color-mix(in srgb, var(--cor-data-science) 40%, transparent);
+    animation: pulse-drop 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-drop {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
 .block__menu {
@@ -417,6 +452,7 @@ body.dark-mode .hero__cycle-track {
 
 /* MAIN — área de texto. Textarea sem visual de input por default. */
 .block__main {
+    width: 100%;
     min-width: 0;
     display: flex;
     flex-direction: column;

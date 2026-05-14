@@ -30,8 +30,11 @@
 /* Aviso central de eventos próximos (Radar de Eventos do ClickUp) */
 @import './events-banner.css';
 
-/* Páginas de Alocação (placeholder) e Galeria de Notificações */
+/* Galeria de Notificações */
 @import './extra-views.css';
+
+/* Painel de Alocação (quadro pessoa × dia, drawer lateral) */
+@import './allocation.css';
 
 /* Central PDI — companion pessoal do PDI oficial (FEEDZ) */
 @import './pdi.css';

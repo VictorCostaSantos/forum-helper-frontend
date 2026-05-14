@@ -98,6 +98,7 @@ function AluraCoursesSection({
   data,
   loading,
   error,
+  unavailable,
   onRefetch,
   fromCache,
   lastFetchedAt,
@@ -155,6 +156,10 @@ function AluraCoursesSection({
   }, [pdiCourses, search, statusFilter, schoolFilter, sort]);
 
   const hasPdiCourses = pdiCourses.length > 0;
+
+  // Backend não está disponível nesse ambiente (ex: prod sem o proxy do BI).
+  // Early return DEPOIS de todos os hooks pra não violar a regra dos hooks.
+  if (unavailable) return null;
 
   return (
     <section className="alura-section">

@@ -1,0 +1,2176 @@
+/* ==========================================================================
+   ALOCAÇÃO — Quadro pessoa × dia útil (seg-sex) + drawer lateral
+
+   Mesma família visual do PDI / notif-preview: cards sóbrios com
+   --card-bg-color e --shadow, tipografia compacta, cor pontual via tokens
+   (--cor-facil / --cor-sla / --cor-complexo) pra peso.
+   ========================================================================== */
+
+/* CONTAINER (a parte de "em construção" original em extra-views.css ficou
+   obsoleta, mas mantemos compatibilidade do .allocation-view raiz). */
+.allocation-view {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 24px 60px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.allocation-view__inner {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.allocation-view__back {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--light-text-color);
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+    font-family: inherit;
+    transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.allocation-view__back:hover {
+    color: var(--text-color);
+    border-color: var(--light-text-color);
+    background: rgba(127, 127, 127, 0.05);
+}
+
+/* ---------- HEAD ---------- */
+.alloc-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    gap: 16px;
+}
+
+.alloc-head__title {
+    margin: 0 0 6px;
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--text-color);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.alloc-head__title i {
+    color: var(--cor-ia);
+    font-size: 1.4rem;
+}
+
+.alloc-head__subtitle {
+    margin: 0;
+    color: var(--light-text-color);
+    font-size: 0.92rem;
+    line-height: 1.55;
+    max-width: 60ch;
+}
+
+/* ---------- TOOLBAR ---------- */
+.alloc-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.alloc-toolbar__group {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alloc-toolbar__group--filters {
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.alloc-toolbar__week {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg-color);
+    min-width: 220px;
+    justify-content: center;
+}
+
+body.dark-mode .alloc-toolbar__week {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.alloc-toolbar__week-label {
+    font-weight: 700;
+    color: var(--text-color);
+    font-size: 0.92rem;
+    letter-spacing: -0.01em;
+}
+
+.alloc-toolbar__today {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--light-text-color);
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 9px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: inherit;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.alloc-toolbar__today:hover {
+    color: var(--text-color);
+    border-color: var(--light-text-color);
+}
+
+.alloc-iconbtn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg-color);
+    color: var(--light-text-color);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.alloc-iconbtn:hover {
+    color: var(--text-color);
+    border-color: var(--light-text-color);
+    background: rgba(127, 127, 127, 0.05);
+}
+
+body.dark-mode .alloc-iconbtn { border-color: rgba(255, 255, 255, 0.08); }
+
+/* ---------- FILTRO POR PESO (segmented) ---------- */
+.alloc-pesofilter {
+    display: inline-flex;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--card-bg-color);
+    padding: 3px;
+    gap: 2px;
+}
+
+body.dark-mode .alloc-pesofilter { border-color: rgba(255, 255, 255, 0.08); }
+
+.alloc-pesofilter__btn {
+    background: transparent;
+    border: none;
+    color: var(--light-text-color);
+    padding: 5px 12px;
+    border-radius: 7px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.alloc-pesofilter__btn:hover { color: var(--text-color); }
+
+.alloc-pesofilter__btn.is-active {
+    background: var(--bg-color);
+    color: var(--text-color);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+body.dark-mode .alloc-pesofilter__btn.is-active {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* ---------- BTN GENÉRICO ---------- */
+.alloc-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    font-size: 0.86rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.alloc-btn--sm { padding: 6px 11px; font-size: 0.8rem; }
+
+.alloc-btn--primary {
+    background: var(--cor-ia);
+    color: #fff;
+    border-color: var(--cor-ia);
+    box-shadow: 0 4px 10px rgba(123, 113, 255, 0.25);
+}
+
+.alloc-btn--primary:hover { filter: brightness(1.05); }
+.alloc-btn--primary:disabled { opacity: 0.55; cursor: not-allowed; filter: none; }
+
+.alloc-btn--ghost {
+    background: transparent;
+    border-color: var(--border-color);
+    color: var(--light-text-color);
+}
+
+.alloc-btn--ghost:hover {
+    color: var(--text-color);
+    border-color: var(--light-text-color);
+}
+
+.alloc-btn--danger {
+    background: transparent;
+    border-color: rgba(220, 53, 69, 0.30);
+    color: var(--cor-complexo);
+}
+
+.alloc-btn--danger:hover {
+    background: rgba(220, 53, 69, 0.08);
+    border-color: var(--cor-complexo);
+}
+
+.alloc-btn--danger.is-confirming {
+    background: var(--cor-complexo);
+    color: #fff;
+    border-color: var(--cor-complexo);
+}
+
+/* ---------- ERROR ---------- */
+.alloc-error {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: rgba(220, 53, 69, 0.08);
+    border: 1px solid rgba(220, 53, 69, 0.30);
+    color: var(--cor-complexo);
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+}
+
+.alloc-error > span { flex: 1; }
+
+/* ===== Banner de avisos (vago / sobrecarga) ===== */
+.alloc-warnings {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 14px;
+    background: color-mix(in srgb, #F59E0B 10%, transparent);
+    border: 1px solid color-mix(in srgb, #F59E0B 30%, transparent);
+    flex-wrap: wrap;
+}
+
+.alloc-warnings--danger {
+    background: color-mix(in srgb, var(--cor-complexo) 9%, transparent);
+    border-color: color-mix(in srgb, var(--cor-complexo) 30%, transparent);
+}
+
+.alloc-warnings__icon {
+    color: #F59E0B;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.alloc-warnings--danger .alloc-warnings__icon {
+    color: var(--cor-complexo);
+}
+
+.alloc-warnings__label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-color);
+    letter-spacing: -0.01em;
+}
+
+.alloc-warnings__chips {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+}
+
+.alloc-warnings__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.12s ease;
+}
+
+.alloc-warnings__chip:hover {
+    transform: translateY(-1px);
+}
+
+.alloc-warnings__chip--danger {
+    border-color: color-mix(in srgb, var(--cor-complexo) 40%, transparent);
+    color: var(--cor-complexo);
+}
+
+.alloc-warnings__chip--danger:hover {
+    background: color-mix(in srgb, var(--cor-complexo) 12%, transparent);
+    border-color: var(--cor-complexo);
+}
+
+.alloc-warnings__chip--warn {
+    border-color: color-mix(in srgb, #F59E0B 40%, transparent);
+    color: #F59E0B;
+}
+
+.alloc-warnings__chip--warn:hover {
+    background: color-mix(in srgb, #F59E0B 12%, transparent);
+    border-color: #F59E0B;
+}
+
+/* ==========================================================================
+   FLIGHT BOARD — Layout principal: shell + header + grid (stations + termômetro)
+
+   Inspiração: painel de voo / Linear / Vercel — escuro, leitura rápida,
+   "calm tech". Usa os tokens dark do projeto (#0d1117 base, #1a1f29 surface,
+   #2a313c borders).
+   ========================================================================== */
+
+.alloc-shell {
+    max-width: 1280px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.alloc-shell__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+}
+
+.alloc-shell__title {
+    margin: 8px 0 4px;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--text-color);
+}
+
+.alloc-shell__subtitle {
+    margin: 0;
+    color: var(--light-text-color);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.alloc-shell__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* CTA "Nova atividade" — sóbria, sem gradient */
+.alloc-shell__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 9px;
+    border: 1px solid var(--cor-ia);
+    background: var(--cor-ia);
+    color: #fff;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: filter 0.15s ease;
+}
+
+.alloc-shell__cta:hover { filter: brightness(1.08); }
+
+.alloc-shell__cta--ghost {
+    background: transparent;
+    color: var(--light-text-color);
+    border-color: var(--border-color);
+    filter: none;
+}
+
+.alloc-shell__cta--ghost:hover {
+    color: var(--text-color);
+    border-color: var(--light-text-color);
+    background: rgba(127, 127, 127, 0.06);
+    filter: none;
+}
+
+/* ==========================================================================
+   CENTRAL DE ATIVIDADES — modal overlay com lista de estações editáveis
+   ========================================================================== */
+.alloc-central__backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(3px);
+    z-index: 1100;
+    animation: alloc-fade-in 0.18s ease;
+}
+
+.alloc-central {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(820px, 96vw);
+    max-height: 86vh;
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    z-index: 1101;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: alloc-pop 0.18s ease;
+}
+
+.alloc-central__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 20px 22px 16px;
+    border-bottom: 1px solid var(--border-color);
+    gap: 12px;
+}
+
+.alloc-central__title {
+    margin: 0 0 4px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-color);
+    letter-spacing: -0.02em;
+}
+
+.alloc-central__subtitle {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--light-text-color);
+}
+
+.alloc-central__close {
+    background: transparent;
+    border: none;
+    color: var(--light-text-color);
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    flex-shrink: 0;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.alloc-central__close:hover {
+    color: var(--text-color);
+    background: rgba(127, 127, 127, 0.08);
+}
+
+.alloc-central__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.alloc-central__empty {
+    margin: 0;
+    padding: 36px 12px;
+    text-align: center;
+    color: var(--light-text-color);
+    font-style: italic;
+}
+
+.alloc-central__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-color);
+    transition: background 0.15s ease;
+}
+
+body.dark-mode .alloc-central__row {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.alloc-central__row:hover {
+    background: color-mix(in srgb, var(--text-color) 4%, var(--bg-color));
+}
+
+.alloc-central__row.is-busy { opacity: 0.55; pointer-events: none; }
+
+.alloc-central__identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.alloc-central__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.alloc-central__name {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-color);
+    letter-spacing: -0.015em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.alloc-central__meta {
+    font-size: 0.74rem;
+    color: var(--light-text-color);
+    display: inline-flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.alloc-central__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.alloc-central__peso {
+    display: inline-flex;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 2px;
+    gap: 2px;
+}
+
+.alloc-central__peso-btn {
+    --w-color: var(--cor-default);
+    background: transparent;
+    border: none;
+    color: var(--light-text-color);
+    padding: 4px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    transition: color 0.12s ease, background 0.12s ease;
+}
+
+.alloc-central__peso-btn:hover { color: var(--text-color); }
+
+.alloc-central__peso-btn--p1 { --w-color: var(--cor-facil); }
+.alloc-central__peso-btn--p2 { --w-color: #F59E0B; }
+.alloc-central__peso-btn--p3 { --w-color: var(--cor-complexo); }
+
+.alloc-central__peso-btn.is-active {
+    color: #fff;
+    background: var(--w-color);
+}
+
+.alloc-central__peso-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.alloc-central__notice {
+    margin: 8px 14px 14px;
+    padding: 10px 14px;
+    background: color-mix(in srgb, var(--cor-ia) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--cor-ia) 25%, transparent);
+    border-radius: 9px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 0.78rem;
+    color: var(--text-color);
+    line-height: 1.45;
+}
+
+.alloc-central__notice i {
+    color: var(--cor-ia);
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.alloc-central__ghost {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--light-text-color);
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.74rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.alloc-central__ghost:hover:not(:disabled) {
+    color: var(--cor-ia);
+    border-color: var(--cor-ia);
+    background: color-mix(in srgb, var(--cor-ia) 10%, transparent);
+}
+
+.alloc-central__ghost:disabled { cursor: not-allowed; opacity: 0.45; }
+
+.alloc-central__danger {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--light-text-color);
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.74rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.alloc-central__danger:hover:not(:disabled) {
+    color: var(--cor-complexo);
+    border-color: var(--cor-complexo);
+    background: color-mix(in srgb, var(--cor-complexo) 10%, transparent);
+}
+
+.alloc-central__danger:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+/* Botão de "apagar atividade inteira" — discreto, só ícone de lixeira.
+   Quase invisível em estado normal pra reduzir cliques acidentais; só
+   ganha cor de alerta no hover. Confirmação acontece via ConfirmDialog. */
+.alloc-central__icon-danger {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--light-text-color);
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.78rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.alloc-central__icon-danger:hover:not(:disabled) {
+    color: var(--cor-complexo);
+    border-color: color-mix(in srgb, var(--cor-complexo) 35%, transparent);
+    background: color-mix(in srgb, var(--cor-complexo) 8%, transparent);
+}
+
+.alloc-central__icon-danger:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+}
+
+/* ===== ConfirmDialog (sobre tudo, inclusive a Central) ===== */
+.alloc-confirm__backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(3px);
+    z-index: 1200;
+    animation: alloc-fade-in 0.15s ease;
+}
+
+.alloc-confirm {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(420px, 94vw);
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    z-index: 1201;
+    padding: 22px 22px 18px;
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 14px;
+    animation: alloc-pop 0.18s ease;
+}
+
+.alloc-confirm__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--cor-complexo) 14%, transparent);
+    color: var(--cor-complexo);
+    font-size: 1rem;
+}
+
+.alloc-confirm__body {
+    grid-column: 2;
+}
+
+.alloc-confirm__title {
+    margin: 0 0 6px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-color);
+    letter-spacing: -0.01em;
+}
+
+.alloc-confirm__text {
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: var(--light-text-color);
+}
+
+.alloc-confirm__text b { color: var(--text-color); font-weight: 600; }
+
+.alloc-confirm__actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.alloc-confirm__cancel,
+.alloc-confirm__confirm {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.alloc-confirm__cancel {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+.alloc-confirm__cancel:hover {
+    background: rgba(127, 127, 127, 0.06);
+    border-color: var(--light-text-color);
+}
+
+.alloc-confirm__confirm {
+    background: var(--cor-complexo);
+    border: 1px solid var(--cor-complexo);
+    color: #fff;
+}
+
+.alloc-confirm__confirm:hover {
+    filter: brightness(1.08);
+}
+
+/* Navegador de período — pílula horizontal */
+.alloc-period {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    padding: 4px;
+}
+
+.alloc-period button {
+    background: transparent;
+    border: none;
+    color: var(--light-text-color);
+    padding: 5px 9px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.alloc-period button:hover {
+    color: var(--text-color);
+    background: rgba(127, 127, 127, 0.08);
+}
+
+.alloc-period span {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-color);
+    padding: 0 8px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+}
+
+.alloc-period__today {
+    border-left: 1px solid var(--border-color) !important;
+    margin-left: 2px;
+    border-radius: 0 6px 6px 0 !important;
+}
+
+/* GRID PRINCIPAL: lista de estações + termômetro lateral */
+.alloc-shell__grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 24px;
+    align-items: start;
+    transition: opacity 0.2s ease;
+}
+
+.alloc-shell__grid.is-loading { opacity: 0.6; pointer-events: none; }
+
+/* COLUNA PRINCIPAL: lista de estações */
+.alloc-stations {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.alloc-stations__empty {
+    background: var(--card-bg-color);
+    border: 1px dashed var(--border-color);
+    border-radius: 12px;
+    padding: 40px 24px;
+    text-align: center;
+    color: var(--light-text-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.alloc-stations__empty i {
+    font-size: 1.6rem;
+    opacity: 0.6;
+}
+
+.alloc-stations__empty p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   STATION ROW — cada linha "estação" (atividade) tem 3 zonas: identidade,
+   plantão atual e próximo plantão.
+   ========================================================================== */
+
+.alloc-station {
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 220px 1fr 180px;
+    align-items: center;
+    gap: 20px;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.alloc-station:hover {
+    background: color-mix(in srgb, var(--card-bg-color) 92%, var(--text-color) 8%);
+    border-color: var(--border-strong);
+}
+
+.alloc-station[data-pending="true"] { opacity: 0.55; }
+
+/* Filtro por pessoa: estações que não envolvem a pessoa filtrada ficam mais
+   discretas, sem desaparecer. */
+.alloc-station.is-dimmed {
+    opacity: 0.32;
+    filter: saturate(0.6);
+}
+
+.alloc-station.is-dimmed:hover {
+    opacity: 0.55;
+}
+
+/* Estação com plantão atual vago — borda lateral vermelha sutil pra chamar
+   atenção sem ser barulhento. */
+.alloc-station.is-vago {
+    box-shadow: inset 3px 0 0 var(--cor-complexo);
+}
+
+.alloc-station.is-vago::before {
+    /* Sem ::before extra — o inset box-shadow já faz o trabalho. */
+    content: none;
+}
+
+/* Atalho "Virar plantão" — ocupa o lugar onde estaria o nextShift quando
+   a estação é cíclica mas tá sem próximo agendado. Visual discreto, vira
+   chip dashed que convida a clicar. */
+.alloc-station__extend {
+    background: transparent;
+    border: 1px dashed var(--border-strong);
+    color: var(--light-text-color);
+    padding: 8px 14px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.alloc-station__extend:hover {
+    color: var(--cor-ia);
+    border-color: var(--cor-ia);
+    border-style: solid;
+    background: color-mix(in srgb, var(--cor-ia) 8%, transparent);
+}
+
+.alloc-station__extend i {
+    font-size: 0.74rem;
+}
+
+/* Avatares destacados / esmaecidos pelo filtro */
+.alloc-facepile__btn.is-dimmed { opacity: 0.3; }
+
+.alloc-facepile__btn.is-highlighted .alloc-facepile__img {
+    border-color: var(--cor-ia);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--cor-ia) 35%, transparent);
+}
+
+/* Tooltip rico — multi-linha, mostra carga + atividades atuais da pessoa.
+   Aparece com delay no hover via :hover + transition. */
+.alloc-facepile__btn[data-tooltip] {
+    position: relative;
+}
+
+.alloc-facepile__btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: var(--bg-color);
+    color: var(--text-color);
+    padding: 8px 11px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    font-size: 0.72rem;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: pre-line;
+    text-align: left;
+    min-width: 140px;
+    max-width: 220px;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 100;
+    transition: opacity 0.12s ease 0.4s, transform 0.12s ease 0.4s;
+}
+
+.alloc-facepile__btn[data-tooltip]:hover::after,
+.alloc-facepile__btn[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Próxima zona (next variant): tooltip menor */
+.alloc-facepile--next .alloc-facepile__btn[data-tooltip]::after {
+    font-size: 0.68rem;
+    min-width: 120px;
+}
+
+/* 1. IDENTIDADE */
+.alloc-station__identity {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.alloc-station__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    border: 1px solid var(--border-color);
+}
+
+.alloc-station__id-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.alloc-station__title {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+    letter-spacing: -0.01em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.15s ease;
+}
+
+.alloc-station__title:hover {
+    color: var(--cor-ia);
+}
+
+.alloc-station__sub {
+    font-size: 0.74rem;
+    color: var(--light-text-color);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Separador entre pedaços do subtitle (·) — discreto, sem cor forte */
+.alloc-station__sub-sep {
+    color: var(--light-text-color);
+    opacity: 0.6;
+    font-weight: 500;
+}
+
+/* 2. PLANTÃO ATUAL — destaque */
+.alloc-station__current {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-left: 20px;
+    border-left: 1px solid var(--border-color);
+    min-width: 0;
+}
+
+.alloc-station__date {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-color);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.alloc-station__date i {
+    color: var(--light-text-color);
+    font-size: 0.78rem;
+}
+
+.alloc-station__date.is-empty {
+    color: var(--light-text-color);
+    font-style: italic;
+}
+
+/* Rótulo que alterna entre versões com fade-up. Shadow span (invisível)
+   reserva a largura do label mais comprido, evitando layout shift quando
+   a string troca. */
+.alloc-rotating {
+    display: inline-block;
+    position: relative;
+    vertical-align: baseline;
+    white-space: nowrap;
+}
+
+.alloc-rotating__shadow {
+    display: inline-block;
+    visibility: hidden;
+    /* não interage com hover/click */
+    pointer-events: none;
+}
+
+.alloc-rotating__slot {
+    display: inline-block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    animation: alloc-rotate-in 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes alloc-rotate-in {
+    0%   { opacity: 0; transform: translateY(6px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* 3. PRÓXIMO PLANTÃO — rebaixado visualmente */
+.alloc-station__next {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding-left: 18px;
+    border-left: 1px dashed var(--border-color);
+    opacity: 0.55;
+    transition: opacity 0.2s ease;
+}
+
+.alloc-station:hover .alloc-station__next { opacity: 0.85; }
+
+.alloc-station__next-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--light-text-color);
+    letter-spacing: 0.06em;
+}
+
+/* ==========================================================================
+   FACEPILE — avatares sobrepostos + botão "+" perfeitamente redondo
+
+   Truques:
+   - flex-shrink:0 em tudo pra nada encolher e distorcer
+   - aspect-ratio:1 no btn + add garante quadrado mesmo se flex empurrar
+   - box-sizing:border-box no add pra a borda não somar e virar oval
+   ========================================================================== */
+.alloc-facepile {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    /* nota: NÃO usar isolation:isolate aqui — cria stacking context que
+       impede o popover de "+" de subir acima dos cards seguintes. */
+}
+
+.alloc-facepile__btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-left: -6px;
+    cursor: pointer;
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+    aspect-ratio: 1 / 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease;
+}
+
+.alloc-facepile__btn:first-child { margin-left: 0; }
+
+.alloc-facepile__btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    z-index: 50;
+}
+
+.alloc-facepile__btn:disabled { cursor: default; }
+
+.alloc-facepile__img {
+    border: 2px solid var(--card-bg-color);
+    box-sizing: content-box;
+    transition: border-color 0.15s ease;
+}
+
+.alloc-facepile__btn:hover .alloc-facepile__img {
+    border-color: var(--border-strong);
+}
+
+.alloc-facepile--next .alloc-facepile__img {
+    border-width: 1px;
+    filter: grayscale(60%);
+    opacity: 0.85;
+}
+
+/* Confirmação de remoção: avatar substitui pelo círculo vermelho + X */
+.alloc-facepile__btn.is-confirming .alloc-facepile__img { display: none; }
+
+.alloc-facepile__btn.is-confirming::before {
+    content: '';
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--cor-complexo);
+    box-shadow: 0 0 0 2px var(--card-bg-color);
+}
+
+.alloc-facepile--next .alloc-facepile__btn.is-confirming::before {
+    width: 24px;
+    height: 24px;
+}
+
+.alloc-facepile__remove {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 0.8rem;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Wrap do "+" — usa margin pra dar respiro depois dos avatares (não overlap). */
+.alloc-facepile__add-wrap {
+    position: relative;
+    display: inline-flex;
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+.alloc-facepile__add {
+    width: 32px;
+    height: 32px;
+    box-sizing: border-box;     /* borda não distorce a forma */
+    aspect-ratio: 1 / 1;        /* fallback se flex tentar encolher */
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px dashed var(--border-strong);
+    background: transparent;
+    color: var(--light-text-color);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-family: inherit;
+    padding: 0;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+/* Estado "você já está nessa" (não-admin): botão fica âmbar com ícone de saída.
+   1 clique remove você. */
+.alloc-facepile__add.is-self-in {
+    border-style: solid;
+    border-color: #F59E0B;
+    color: #F59E0B;
+    background: color-mix(in srgb, #F59E0B 12%, transparent);
+}
+
+.alloc-facepile__add.is-self-in:hover {
+    background: color-mix(in srgb, #F59E0B 20%, transparent);
+}
+
+.alloc-facepile__add:hover,
+.alloc-facepile__add.is-open {
+    color: var(--text-color);
+    border-color: var(--text-color);
+    border-style: solid;
+    background: color-mix(in srgb, var(--text-color) 8%, transparent);
+}
+
+/* No "próximo plantão" o "+" fica menor pra combinar com os avatares 24px. */
+.alloc-facepile--next .alloc-facepile__add {
+    width: 24px;
+    height: 24px;
+    font-size: 0.65rem;
+}
+
+.alloc-facepile__empty {
+    font-size: 0.75rem;
+    color: var(--light-text-color);
+    font-style: italic;
+}
+
+/* ==========================================================================
+   THERMOMETER SIDEBAR — coluna lateral com carga por pessoa
+   ========================================================================== */
+.alloc-thermometer {
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 14px 14px 16px;
+    position: sticky;
+    top: 24px;
+    background-image: linear-gradient(180deg, color-mix(in srgb, var(--cor-ia) 4%, transparent), transparent 30%);
+}
+
+.alloc-thermometer__head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.alloc-thermometer__head i {
+    font-size: 0.82rem;
+    color: var(--cor-ia);
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--cor-ia) 14%, transparent);
+}
+
+.alloc-thermometer__head span {
+    /* Tipografia mais "humana": sem caixa-alta agressiva, peso médio,
+       sem letter-spacing apertado. Tira a vibe AI/dashboard. */
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-color);
+    letter-spacing: -0.005em;
+    flex: 1;
+}
+
+/* Botão pra limpar filtro de pessoa */
+.alloc-thermometer__clear {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--light-text-color);
+    width: 24px;
+    height: 24px;
+    min-width: 24px;        /* impede flex de achatar */
+    flex-shrink: 0;
+    aspect-ratio: 1 / 1;    /* garante quadrado mesmo em flex */
+    box-sizing: border-box;
+    padding: 0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.72rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.alloc-thermometer__clear:hover {
+    color: var(--cor-complexo);
+    background: color-mix(in srgb, var(--cor-complexo) 12%, transparent);
+}
+
+/* Linha do termômetro clicável (filtro). is-focused = a pessoa filtrada;
+   is-dimmed = todas as outras quando há filtro ativo. */
+.alloc-thermometer__row {
+    cursor: pointer;
+    outline: none;
+}
+
+.alloc-thermometer__row.is-focused {
+    background: color-mix(in srgb, var(--cor-ia) 14%, transparent) !important;
+    box-shadow: inset 3px 0 0 var(--cor-ia);
+}
+
+.alloc-thermometer__row.is-dimmed {
+    opacity: 0.4;
+}
+
+.alloc-thermometer__row:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--cor-ia);
+}
+
+.alloc-thermometer__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.alloc-thermometer__row {
+    margin: 0;
+    padding: 7px 8px 9px;
+    border-radius: 8px;
+    transition: background 0.15s ease;
+}
+
+.alloc-thermometer__row:hover {
+    background: color-mix(in srgb, var(--text-color) 5%, transparent);
+}
+
+.alloc-thermometer__info {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 6px;
+}
+
+.alloc-thermometer__avatar {
+    border: 2px solid transparent;
+    flex-shrink: 0;
+    transition: border-color 0.2s ease;
+    width: 24px !important;
+    height: 24px !important;
+}
+
+/* Borda do avatar reflete o tom da carga — sutil mas dá vida ao termômetro */
+.alloc-thermometer__row[data-tone="warn"]   .alloc-thermometer__avatar { border-color: #F59E0B; }
+.alloc-thermometer__row[data-tone="danger"] .alloc-thermometer__avatar { border-color: var(--cor-complexo); }
+
+.alloc-thermometer__name {
+    flex: 1;
+    font-size: 0.86rem;
+    font-weight: 500;
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: 0;        /* nada de tracking apertado */
+}
+
+.alloc-thermometer__score {
+    font-size: 0.78rem;
+    font-weight: 600;          /* menos "bold de dashboard" */
+    /* sem tabular-nums; números com a métrica natural da fonte */
+    letter-spacing: 0;
+}
+
+.alloc-thermometer__score--ok     { color: var(--cor-facil); }
+.alloc-thermometer__score--warn   { color: #F59E0B; }
+.alloc-thermometer__score--danger { color: var(--cor-complexo); }
+
+.alloc-thermometer__bar {
+    position: relative;
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(127, 127, 127, 0.14);
+    overflow: hidden;
+}
+
+body.dark-mode .alloc-thermometer__bar {
+    background: rgba(0, 0, 0, 0.45);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.alloc-thermometer__fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), background 0.2s ease;
+    /* leve gradient pra dar profundidade */
+    background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+}
+
+.alloc-thermometer__fill--ok {
+    background-color: var(--cor-facil);
+}
+.alloc-thermometer__fill--warn {
+    background-color: #F59E0B;
+}
+.alloc-thermometer__fill--danger {
+    background-color: var(--cor-complexo);
+    /* sem glow pulsante — fica mais sóbrio e menos "alerta de painel" */
+}
+
+@keyframes alloc-pulse-danger {
+    /* mantido pra retrocompatibilidade, mas não é mais usado */
+    0%, 100% { box-shadow: 0 0 8px rgba(220, 53, 69, 0.45); }
+    50%      { box-shadow: 0 0 16px rgba(220, 53, 69, 0.7); }
+}
+
+.alloc-popover {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    /* alto o suficiente pra ficar acima dos avatares de OUTROS cards (que
+       usam z-index inline 20+idx). Cards seguintes ficavam por cima sem isso. */
+    z-index: 900;
+    width: 260px;
+    max-height: 320px;
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: alloc-pop 0.14s ease;
+}
+
+/* Quando o popover está aberto, o wrap dele precisa subir o card inteiro
+   acima dos cards vizinhos pra os avatares NÃO vazarem por cima. */
+.alloc-facepile__add-wrap:has(.alloc-popover) {
+    z-index: 800;
+}
+
+.alloc-station:has(.alloc-popover) {
+    position: relative;
+    z-index: 800;
+}
+
+body.dark-mode .alloc-popover {
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes alloc-pop {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.alloc-popover__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+body.dark-mode .alloc-popover__head {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.alloc-popover__title {
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--light-text-color);
+}
+
+.alloc-popover__close {
+    background: transparent;
+    border: none;
+    color: var(--light-text-color);
+    cursor: pointer;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+}
+
+.alloc-popover__close:hover {
+    color: var(--text-color);
+    background: rgba(127, 127, 127, 0.08);
+}
+
+.alloc-popover__list {
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.alloc-popover__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 7px 9px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 0.84rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background 0.12s ease;
+}
+
+.alloc-popover__item:hover {
+    background: rgba(127, 127, 127, 0.08);
+}
+
+.alloc-popover__item.is-checked {
+    background: rgba(123, 113, 255, 0.08);
+    color: var(--text-color);
+}
+
+.alloc-popover__check {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    flex-shrink: 0;
+    background: var(--bg-color);
+}
+
+.alloc-popover__item.is-checked .alloc-popover__check {
+    background: var(--cor-ia);
+    border-color: var(--cor-ia);
+    color: #fff;
+}
+
+.alloc-popover__name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.alloc-popover__admin {
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: rgba(123, 113, 255, 0.15);
+    color: var(--cor-ia);
+    padding: 1px 5px;
+    border-radius: 999px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* Aviso de carga ao adicionar pessoa (já em warn/danger) */
+.alloc-popover__load {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 999px;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+
+.alloc-popover__load--warn {
+    background: color-mix(in srgb, #F59E0B 16%, transparent);
+    color: #F59E0B;
+}
+
+.alloc-popover__load--danger {
+    background: color-mix(in srgb, var(--cor-complexo) 18%, transparent);
+    color: var(--cor-complexo);
+}
+
+.alloc-popover__load i { font-size: 0.62rem; }
+
+/* Sugerido: borda esquerda colorida + ícone de varinha */
+.alloc-popover__item.is-suggested {
+    box-shadow: inset 3px 0 0 var(--cor-ia);
+}
+
+.alloc-popover__suggest {
+    color: var(--cor-ia);
+    font-size: 0.74rem;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* ==========================================================================
+   DRAWER — Painel lateral de criação/edição/visualização
+   ========================================================================== */
+.alloc-drawer__backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.32);
+    backdrop-filter: blur(2px);
+    z-index: 1000;
+    animation: alloc-fade-in 0.18s ease;
+}
+
+@keyframes alloc-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.alloc-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: min(440px, 100vw);
+    background: var(--card-bg-color);
+    border-left: 1px solid var(--border-color);
+    box-shadow: -8px 0 30px rgba(0, 0, 0, 0.18);
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    animation: alloc-slide-in 0.22s ease;
+}
+
+body.dark-mode .alloc-drawer {
+    border-left-color: rgba(255, 255, 255, 0.08);
+}
+
+@keyframes alloc-slide-in {
+    from { transform: translateX(20px); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+}
+
+.alloc-drawer__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+body.dark-mode .alloc-drawer__head {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.alloc-drawer__title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-color);
+}
+
+.alloc-drawer__close {
+    background: transparent;
+    border: none;
+    color: var(--light-text-color);
+    font-size: 1rem;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.alloc-drawer__close:hover {
+    color: var(--text-color);
+    background: rgba(127, 127, 127, 0.08);
+}
+
+.alloc-drawer__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.alloc-drawer__hint {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(127, 127, 127, 0.08);
+    color: var(--light-text-color);
+    font-size: 0.82rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.alloc-drawer__hint i { opacity: 0.7; }
+
+.alloc-drawer__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 22px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-color);
+}
+
+body.dark-mode .alloc-drawer__foot {
+    background: rgba(255, 255, 255, 0.02);
+    border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+.alloc-drawer__actions {
+    display: inline-flex;
+    gap: 8px;
+}
+
+/* ---------- FIELD ---------- */
+.alloc-field { display: flex; flex-direction: column; gap: 6px; }
+
+.alloc-field__label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--light-text-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.alloc-field__hint {
+    font-size: 0.66rem;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    color: var(--light-text-color);
+    font-weight: 600;
+}
+
+.alloc-field__warn {
+    margin: 6px 0 0;
+    color: #B45309;
+    font-size: 0.78rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.alloc-field__input {
+    padding: 9px 12px;
+    border-radius: 9px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-size: 0.92rem;
+    font-family: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.dark-mode .alloc-field__input {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.10);
+}
+
+.alloc-field__input:focus {
+    outline: none;
+    border-color: var(--cor-ia);
+    box-shadow: 0 0 0 3px rgba(123, 113, 255, 0.15);
+}
+
+.alloc-field__input:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Toggle "aplicar nome+peso a todas as ocorrências" (modo edit em estação cíclica) */
+.alloc-apply-all {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--cor-ia) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--cor-ia) 25%, transparent);
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--text-color);
+}
+
+.alloc-apply-all input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin-top: 1px;
+    accent-color: var(--cor-ia);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.alloc-apply-all span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.35;
+}
+
+.alloc-apply-all small {
+    font-size: 0.72rem;
+    color: var(--light-text-color);
+    font-weight: 500;
+}
+
+/* Repetição (segmented) + contador de ocorrências */
+.alloc-repeat {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+
+.alloc-repeat__btn {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--light-text-color);
+    padding: 8px 6px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+body.dark-mode .alloc-repeat__btn {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.alloc-repeat__btn:hover:not(:disabled) {
+    color: var(--text-color);
+    border-color: var(--cor-ia);
+}
+
+.alloc-repeat__btn.is-active {
+    background: color-mix(in srgb, var(--cor-ia) 12%, transparent);
+    border-color: var(--cor-ia);
+    color: var(--text-color);
+    box-shadow: 0 0 0 1px var(--cor-ia);
+}
+
+.alloc-repeat__count {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: color-mix(in srgb, var(--cor-ia) 8%, transparent);
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--cor-ia) 25%, transparent);
+}
+
+.alloc-repeat__count label {
+    font-size: 0.78rem;
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.alloc-repeat__count input {
+    width: 64px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg-color);
+    color: var(--text-color);
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-align: center;
+    font-family: inherit;
+}
+
+/* Range de datas (início → fim) */
+.alloc-daterange {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+}
+
+.alloc-daterange__sep {
+    color: var(--light-text-color);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+/* ---------- PESO SEGMENTED ---------- */
+.alloc-peso {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.alloc-peso__btn {
+    --peso-color: var(--cor-default);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 8px;
+    border-radius: 9px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+}
+
+body.dark-mode .alloc-peso__btn {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.alloc-peso__btn--p1 { --peso-color: var(--cor-facil); }
+.alloc-peso__btn--p2 { --peso-color: var(--cor-sla); }
+.alloc-peso__btn--p3 { --peso-color: var(--cor-complexo); }
+
+.alloc-peso__btn:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--peso-color) 50%, transparent);
+}
+
+.alloc-peso__btn.is-active {
+    border-color: var(--peso-color);
+    background: color-mix(in srgb, var(--peso-color) 10%, transparent);
+    color: var(--text-color);
+    box-shadow: 0 0 0 1px var(--peso-color);
+}
+
+.alloc-peso__btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.alloc-peso__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--peso-color);
+    flex-shrink: 0;
+}
+
+/* ---------- RESPONSÁVEIS (multi-select) ---------- */
+.alloc-resp-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.alloc-resp {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 9px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+body.dark-mode .alloc-resp {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.alloc-resp:hover:not(:disabled) {
+    border-color: var(--cor-ia);
+}
+
+.alloc-resp.is-checked {
+    background: rgba(123, 113, 255, 0.10);
+    border-color: var(--cor-ia);
+    box-shadow: 0 0 0 1px var(--cor-ia);
+}
+
+.alloc-resp:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.alloc-resp__check {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.66rem;
+    flex-shrink: 0;
+    background: var(--card-bg-color);
+}
+
+.alloc-resp.is-checked .alloc-resp__check {
+    background: var(--cor-ia);
+    border-color: var(--cor-ia);
+    color: #fff;
+}
+
+.alloc-resp__name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.alloc-resp__admin {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: rgba(123, 113, 255, 0.15);
+    color: var(--cor-ia);
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   RESPONSIVO
+   ========================================================================== */
+@media (max-width: 1100px) {
+    /* Termômetro vai pra baixo da lista quando não cabe ao lado. */
+    .alloc-shell__grid {
+        grid-template-columns: 1fr;
+    }
+    .alloc-thermometer {
+        position: static;
+    }
+}
+
+@media (max-width: 880px) {
+    .alloc-shell__header { flex-direction: column; align-items: stretch; }
+    .alloc-shell__actions { flex-wrap: wrap; }
+    /* Estações empilham as 3 zonas em telas estreitas. */
+    .alloc-station {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .alloc-station__current,
+    .alloc-station__next {
+        border-left: none;
+        padding-left: 0;
+        border-top: 1px solid var(--border-color);
+        padding-top: 12px;
+    }
+    .alloc-station__next { border-top-style: dashed; }
+    .alloc-drawer { width: 100vw; }
+    .alloc-resp-list { grid-template-columns: 1fr; }
+    .alloc-daterange { grid-template-columns: 1fr; gap: 6px; }
+    .alloc-daterange__sep { display: none; }
+}

@@ -83,6 +83,13 @@ const PLACEHOLDER_PATTERNS = [
   'portrait_placeholder',
   // via.placeholder.com — serviço externo que estava caindo (ERR_CONNECTION_CLOSED).
   'via.placeholder.com',
+  // ui-avatars.com — gerador SVG por inicial. Não é foto real; tratamos como
+  // placeholder pra (a) não gravar no sticky cache (queremos sempre tentar a
+  // foto real do backend nas próximas sessões) e (b) preferir a real quando
+  // ela aparecer depois.
+  'ui-avatars.com',
+  // pravatar.cc — usado em rotações antigas como fallback; mesma lógica.
+  'pravatar.cc',
 ];
 
 function isPlaceholderUrl(url) {
