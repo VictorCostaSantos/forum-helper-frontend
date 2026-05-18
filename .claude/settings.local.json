@@ -1,7 +1,52 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx vite *)"
+      "Bash(npx vite *)",
+      "Bash(sed -i '273,584d' src/styles/allocation.css)",
+      "Read(//c/c/Users/Victor Costa/Desktop/forum_helper/frontend-react/src/styles/**)",
+      "Bash(rm src/features/allocation/AllocationBoard.jsx src/features/allocation/ActivityChip.jsx src/features/allocation/LoadBar.jsx)",
+      "Read(//c/c/Users/Victor Costa/Desktop/forum_helper/frontend-react/src/features/**)",
+      "Bash(cd \"/c/Users/Victor Costa/Desktop/forum_helper/frontend-react\" && sed -i '273,591d' src/styles/allocation.css && wc -l src/styles/allocation.css)",
+      "Bash(cd \"/c/Users/Victor Costa/Desktop/forum_helper/frontend-react\" && rm src/features/allocation/AllocationTierList.jsx src/features/allocation/ActivityCard.jsx src/features/allocation/PersonChip.jsx && ls src/features/allocation/)",
+      "Bash(git commit -m ' *)",
+      "Bash(grep -n \"^/\\\\* ====\\\\|^\\\\.sidebar\\\\|^}$\" \"src/styles/sidebar.css\")",
+      "Bash(curl -sSL -o article.svg \"https://cursos.alura.com.br/assets/images/search/article-tag.svg\")",
+      "Bash(curl -sSL -o suggestions.svg \"https://cursos.alura.com.br/assets/images/menu/community/engagement/icon-suggestions.svg\")",
+      "Bash(curl -sSL -o imersion.svg \"https://cursos.alura.com.br/assets/images/alura/topics/icon-moderador.svg\")",
+      "Bash(curl -sSL -o latam.png \"https://projeto-frontend-topico.vercel.app/assets/image-removebg-preview-CiRXlPtI.png\")",
+      "Bash(curl -sSL -o forum.svg \"https://cursos.alura.com.br/assets/images/dashboard/forum-icon.svg\")",
+      "Bash(curl -sSL -o forum.png \"https://img.icons8.com/?size=100&id=54385&format=png\")",
+      "Bash(curl -sSL -o article.png \"https://img.icons8.com/color/96/000000/news.png\")",
+      "Bash(curl -sSL -o article.png \"https://img.icons8.com/?size=100&id=94515&format=png\")",
+      "Bash(curl -sSL -o forum.png \"https://img.icons8.com/?size=100&id=122636&format=png\")",
+      "Bash(curl -sSL -o article-a.png \"https://img.icons8.com/fluency/96/news.png\")",
+      "Bash(curl -sSL -o article-b.png \"https://img.icons8.com/fluency/96/google-docs-logo.png\")",
+      "Bash(curl -sSL -o article-c.png \"https://img.icons8.com/fluency/96/edit-property.png\")",
+      "Bash(curl -sSL -o forum-a.png \"https://img.icons8.com/fluency/96/topic.png\")",
+      "Bash(curl -sSL -o forum-b.png \"https://img.icons8.com/fluency/96/forum.png\")",
+      "Bash(mv -f article-c.png article.png)",
+      "Bash(mv -f forum-a.png forum.png)",
+      "Bash(mv -f imersion-a.png imersion-cap.png)",
+      "Bash(curl -sSL -o scuba-1.png \"https://www.alura.com.br/assets/img/lp-marketing-digital/scuba.png\" -w \"scuba-1: %{http_code}\\\\n\")",
+      "Bash(curl -sSL -o scuba-2.png \"https://www.alura.com.br/assets/img/imersao-front-end/scuba.png\" -w \"scuba-2: %{http_code}\\\\n\")",
+      "Bash(curl -sSL -o scuba-3.png \"https://www.alura.com.br/assets/img/scuba.png\" -w \"scuba-3: %{http_code}\\\\n\")",
+      "Bash(curl -sSL -o scuba-4.png \"https://www.alura.com.br/assets/img/aluramais/scuba.png\" -w \"scuba-4: %{http_code}\\\\n\")",
+      "Bash(curl -sSL -o scuba-5.png \"https://www.alura.com.br/assets/img/home/topicos/scuba.png\" -w \"scuba-5: %{http_code}\\\\n\")",
+      "Bash(cd \"c:/Users/Victor Costa/Desktop/forum_helper/frontend-react/src/assets/activities\" && rm -f scuba-*.png)",
+      "Bash(curl -sSL -o scuba-mask.png \"https://img.icons8.com/fluency/96/scuba-mask.png\" -w \"scuba-mask: %{http_code}\\\\n\")",
+      "Bash(curl -sSL -o snorkel.png \"https://img.icons8.com/fluency/96/snorkel.png\" -w \"snorkel: %{http_code}\\\\n\")",
+      "Bash(curl -sSL -o diver.png \"https://img.icons8.com/fluency/96/diver.png\" -w \"diver: %{http_code}\\\\n\")",
+      "Bash(ls -la scuba-mask.png snorkel.png diver.png)",
+      "Bash(mv -f article-flat.png article.png)",
+      "Bash(mv -f scuba-mask.png scuba.png)",
+      "Bash(curl -sSL -o moderador.svg \"https://cursos.alura.com.br/assets/images/alura/topics/icon-moderador.svg\")",
+      "Bash(curl -sSL -o article.png \"https://img.icons8.com/?size=100&id=24870&format=png\")",
+      "Bash(rm -f scuba.png)"
+    ],
+    "additionalDirectories": [
+      "c:\\c\\Users\\Victor Costa\\Desktop\\forum_helper\\frontend-react\\src\\styles",
+      "c:\\c\\Users\\Victor Costa\\Desktop\\forum_helper\\frontend-react\\src\\features\\allocation",
+      "C:\\Users\\Victor Costa\\Desktop\\forum_helper\\frontend-react\\src\\assets\\activities"
     ]
   }
 }

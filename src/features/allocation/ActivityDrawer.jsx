@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useToast } from '../../shared/ui/ToastProvider';
-import { TEAM, canEditActivity, getDisplayName } from './team';
+import { PLACEHOLDER_USER, TEAM, canEditActivity, getDisplayName } from './team';
 import { addDays, fromISODate, toISODate } from './dateHelpers';
+import { brandContainerStyle, brandFor, brandImageStyle } from './activityBrands';
 // Subtitle customizado foi removido — só fazia sentido se persistisse no
 // backend; em localStorage só o próprio navegador via.
 
@@ -81,6 +82,7 @@ const EMPTY_FORM = {
   responsaveis: [],
   peso: 2,
   repeat: 'none',          // só usado em mode='create'
+  keepTeam: false,         // se true, replica responsáveis em todas as ocorrências
   repeatCount: 6,          // próximas ocorrências quando repeat ≠ 'none'
 };
 
@@ -216,16 +218,20 @@ function ActivityDrawer({
           showToast('Atividade fixa criada — sem data de fim definida.', 'success');
         } else {
           // Repetição cíclica (ou nenhuma): cria N instâncias com datas
-          // deslocadas. 1ª mantém os responsáveis; da 2ª em diante nasce só
-          // com o criador como semente (backend exige min 1).
+          // deslocadas. 1ª SEMPRE leva os responsáveis selecionados; da 2ª em
+          // diante depende do form.keepTeam:
+          //   - keepTeam=true  → replica mesma equipe (ex: Fórum Helper)
+          //   - keepTeam=false → nasce com placeholder (default, ex: Artigo)
+          // Backend exige min 1 responsável; PLACEHOLDER_USER atende isso e
+          // o front esconde visualmente como "Vago".
           const count = repeat === 'none' ? 1 : Math.max(1, Math.min(24, Number(form.repeatCount) || 1));
-          const seedUser = currentUsername || form.responsaveis[0];
           const payloads = [];
           for (let i = 0; i < count; i++) {
             const { di, df } = shiftPeriod(form.data_inicio, form.data_fim, repeat, i);
+            const isFirst = i === 0;
             payloads.push({
               ...basePayload,
-              responsaveis: i === 0 ? form.responsaveis : (seedUser ? [seedUser] : form.responsaveis),
+              responsaveis: isFirst || form.keepTeam ? form.responsaveis : [PLACEHOLDER_USER],
               data_inicio: di,
               data_fim: df,
             });
@@ -234,7 +240,9 @@ function ActivityDrawer({
           showToast(
             count === 1
               ? 'Atividade criada!'
-              : `${count} ocorrências criadas — preencha os próximos plantões conforme chegar a hora.`,
+              : form.keepTeam
+                ? `${count} ocorrências criadas com a mesma equipe.`
+                : `${count} ocorrências criadas — as próximas nascem vazias, preencha conforme chegar a hora.`,
             'success',
           );
         }
@@ -301,19 +309,43 @@ function ActivityDrawer({
             </p>
           ) : null}
 
-          {/* Nome */}
-          <div className="alloc-field">
-            <label className="alloc-field__label">Nome</label>
-            <input
-              type="text"
-              className="alloc-field__input"
-              value={form.nome}
-              maxLength={255}
-              disabled={readOnly}
-              onChange={(e) => setForm((f) => ({ ...f, nome: e.target.value }))}
-              placeholder="Ex: Revisão de tópicos pendentes"
-            />
-          </div>
+          {/* Nome — com preview do ícone/cor quando o texto bate com um
+              brand conhecido (Discord, Fórum, Imersão, etc). brandFor
+              retorna DEFAULT_BRAND quando não bate; usamos a presença de
+              `match` no retorno como sinal de "casou com um brand". */}
+          {(() => {
+            const brand = brandFor(form.nome);
+            const brandMatched = Boolean(brand?.match);
+            return (
+              <div className="alloc-field">
+                <label className="alloc-field__label">
+                  Nome
+                  {brandMatched ? (
+                    <span
+                      className="alloc-field__brand-preview"
+                      style={brandContainerStyle(brand)}
+                      title="Vai usar o ícone padrão dessa atividade"
+                    >
+                      {brand.image ? (
+                        <img src={brand.image} alt="" className="alloc-field__brand-preview-img" style={brandImageStyle(brand)} />
+                      ) : (
+                        <i className={brand.icon}></i>
+                      )}
+                    </span>
+                  ) : null}
+                </label>
+                <input
+                  type="text"
+                  className="alloc-field__input"
+                  value={form.nome}
+                  maxLength={255}
+                  disabled={readOnly}
+                  onChange={(e) => setForm((f) => ({ ...f, nome: e.target.value }))}
+                  placeholder="Ex: Revisão de tópicos pendentes"
+                />
+              </div>
+            );
+          })()}
 
           {/* Período (data_inicio + data_fim) */}
           <div className="alloc-field">
@@ -378,18 +410,34 @@ function ActivityDrawer({
                 ))}
               </div>
               {form.repeat !== 'none' && form.repeat !== 'fixed' ? (
-                <div className="alloc-repeat__count">
-                  <label htmlFor="alloc-repeat-count">Criar quantas?</label>
-                  <input
-                    id="alloc-repeat-count"
-                    type="number"
-                    min={2}
-                    max={24}
-                    step={1}
-                    value={form.repeatCount}
-                    onChange={(e) => setForm((f) => ({ ...f, repeatCount: Math.max(1, Math.min(24, Number(e.target.value) || 1)) }))}
-                  />
-                </div>
+                <>
+                  <div className="alloc-repeat__count">
+                    <label htmlFor="alloc-repeat-count">Criar quantas?</label>
+                    <input
+                      id="alloc-repeat-count"
+                      type="number"
+                      min={2}
+                      max={24}
+                      step={1}
+                      value={form.repeatCount}
+                      onChange={(e) => setForm((f) => ({ ...f, repeatCount: Math.max(1, Math.min(24, Number(e.target.value) || 1)) }))}
+                    />
+                  </div>
+                  <label className="alloc-repeat__keepteam">
+                    <input
+                      type="checkbox"
+                      checked={form.keepTeam}
+                      onChange={(e) => setForm((f) => ({ ...f, keepTeam: e.target.checked }))}
+                    />
+                    <span>
+                      Manter mesma equipe nas próximas ocorrências
+                      <small>
+                        Sem marcar, só a 1ª ocorrência leva os responsáveis selecionados;
+                        as demais nascem vazias pra você atribuir depois.
+                      </small>
+                    </span>
+                  </label>
+                </>
               ) : null}
             </div>
           ) : null}
@@ -425,7 +473,7 @@ function ActivityDrawer({
                 />
                 <span>
                   Aplicar nome e peso a <b>todas as {sameNameCount} ocorrências</b>
-                  <small>Datas e responsáveis de cada plantão ficam intactos.</small>
+                  <small>Datas e responsáveis de cada ocorrência ficam intactos.</small>
                 </span>
               </label>
             ) : null}
@@ -438,7 +486,7 @@ function ActivityDrawer({
               <span className="alloc-field__hint">{form.responsaveis.length} selecionado(s)</span>
             </label>
             <div className="alloc-resp-list">
-              {TEAM.map((m) => {
+              {TEAM.slice().sort((a, b) => a.displayName.localeCompare(b.displayName, 'pt-BR')).map((m) => {
                 const checked = form.responsaveis.includes(m.username);
                 return (
                   <button
@@ -452,7 +500,6 @@ function ActivityDrawer({
                       {checked ? <i className="fa-solid fa-check"></i> : null}
                     </span>
                     <span className="alloc-resp__name">{m.displayName}</span>
-                    {m.isAdmin ? <span className="alloc-resp__admin">admin</span> : null}
                   </button>
                 );
               })}

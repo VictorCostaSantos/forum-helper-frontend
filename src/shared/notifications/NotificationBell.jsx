@@ -3,51 +3,50 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useNotifications } from './NotificationsContext';
 import { scrollToTopicCard, scrollToTopicCardEventually } from './scrollToTopic';
 import ClickupIcon from './ClickupIcon';
+import UserAvatar from '../components/UserAvatar';
+import { useAvatar } from '../avatars/avatarStore';
+import { getDisplayName } from '../../features/allocation/team';
 
-function timeAgo(ts) {
+/*
+  Tempo relativo estilo X/Insta: "agora", "há 5min", "há 2h", "ontem",
+  "há 3d", "12 mai". Curto e direto.
+*/
+function formatRelative(ts) {
   if (!ts) return '';
   const diff = Math.max(0, Date.now() - ts);
-  const min = Math.floor(diff / 60000);
-  if (min < 1) return 'agora';
-  if (min < 60) return `${min}min`;
-  const h = Math.floor(min / 60);
-  if (h < 24) return `${h}h`;
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'agora';
+  if (m < 60) return `há ${m}min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `há ${h}h`;
   const d = Math.floor(h / 24);
-  return `${d}d`;
+  if (d === 1) return 'ontem';
+  if (d < 7) return `há ${d} dias`;
+  return new Date(ts).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }).replace('.', '');
 }
 
-// "30/04 14:30" — data absoluta compacta pra acompanhar o time-ago.
-function formatAbsolute(ts) {
-  if (!ts) return '';
-  const d = new Date(ts);
-  if (Number.isNaN(d.getTime())) return '';
-  const dd = String(d.getDate()).padStart(2, '0');
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
-  const min = String(d.getMinutes()).padStart(2, '0');
-  return `${dd}/${mm} ${hh}:${min}`;
+function categoryOf(kind) {
+  if (!kind) return 'outras';
+  if (kind.startsWith('alloc-')) return 'alocacao';
+  if (kind.startsWith('clickup-')) return 'clickup';
+  return 'outras';
 }
 
-// Mapeia kind do alerta pra um label curto de fonte (chip discreto).
-const SOURCE_LABELS = {
-  'clickup-new': 'ClickUp',
-  'clickup-new-digest': 'ClickUp',
-  'clickup-overdue': 'ClickUp',
-  'clickup-overdue-digest': 'ClickUp',
-  'clickup-event-new': 'Radar',
-  'clickup-event-new-digest': 'Radar',
-  'clickup-event-1d': 'Radar',
-  'clickup-event-7d': 'Radar',
-  'clickup-event-14d': 'Radar',
-  'clickup-event-live': 'Evento agora',
-  'meta-hit': 'Meta',
-  'topic-peak': 'Tópicos',
-  'focus-changed': 'Foco',
-};
+/*
+  Gradient do avatar conforme o tipo de alerta. Cada categoria tem sua
+  identidade visual (alocação roxo, tópicos laranja, foco verde, etc).
+*/
+function avatarVariant(kind) {
+  if (!kind) return 'alloc';
+  if (kind === 'alloc-danger') return 'people';
+  if (kind === 'alloc-cycle-missing') return 'cycle';
+  if (kind.startsWith('alloc-')) return 'alloc';
+  if (kind === 'topic-peak') return 'topics';
+  if (kind === 'focus-changed') return 'focus';
+  if (kind === 'meta-hit') return 'meta';
+  return 'alloc';
+}
 
-// Quais "kinds" de alerta são originários do ClickUp. Usado pra trocar o ícone
-// FA pelo logo gradiente oficial do ClickUp dentro do quadrado colorido — deixa
-// o feed mais legível (rapidamente bate o olho e sabe "isso é ClickUp").
 const CLICKUP_KINDS = new Set([
   'clickup-new',
   'clickup-new-digest',
@@ -61,45 +60,72 @@ const CLICKUP_KINDS = new Set([
   'clickup-event-live',
 ]);
 
-function getSourceLabel(kind) {
-  return SOURCE_LABELS[kind] || null;
-}
-
 function isClickUpKind(kind) {
   return CLICKUP_KINDS.has(kind);
 }
 
-/* Renderiza um ícone FA (ou logo do ClickUp) dentro de um quadrado colorido
-   por severidade. Quando o kind do alerta vem do ClickUp, mostra o logo
-   oficial em vez do FA — banded gradient roxo/ciano + rosa/amarelo. */
-function ItemIcon({ icon, severity, focused, kind }) {
-  const cls = [
-    'notification-item__icon',
-    `notification-item__icon--${severity || 'info'}`,
-    isClickUpKind(kind) ? 'notification-item__icon--clickup' : '',
-    focused ? 'is-focused' : '',
-  ].filter(Boolean).join(' ');
+/*
+  Extrai username "sobre quem é o alerta" a partir do id, pra
+  retrocompatibilidade com alerts persistidos antes de o bridge passar
+  `avatarUsername` explicitamente.
+*/
+function deriveAvatarUsername(item) {
+  if (item?.avatarUsername) return item.avatarUsername;
+  const id = String(item?.id || '');
+  if (id.startsWith('alloc-danger:')) {
+    return id.slice('alloc-danger:'.length) || null;
+  }
+  return null;
+}
 
-  if (isClickUpKind(kind)) {
+/* Avatar 44px circular. Três modos:
+   1. Foto do usuário (avatarUsername)
+   2. Logo do ClickUp dentro do gradient azul
+   3. Ícone dentro do gradient da categoria
+*/
+function ItemAvatarPhoto({ username }) {
+  const url = useAvatar(username);
+  const displayName = getDisplayName(username);
+  return (
+    <UserAvatar
+      name={displayName}
+      src={url}
+      size={44}
+      cacheKey={username}
+      className="notification-item__avatar-img"
+    />
+  );
+}
+
+function ItemAvatar({ icon, kind, avatarUsername }) {
+  if (avatarUsername) {
     return (
-      <span className={cls} aria-hidden="true">
-        <ClickupIcon className="notification-item__icon-svg" />
+      <span className="notification-item__avatar notification-item__avatar--photo" aria-hidden="true">
+        <ItemAvatarPhoto username={avatarUsername} />
       </span>
     );
   }
-
+  if (isClickUpKind(kind)) {
+    return (
+      <span className="notification-item__avatar notification-item__avatar--clickup" aria-hidden="true">
+        <ClickupIcon className="notification-item__avatar-svg" />
+      </span>
+    );
+  }
+  const variant = avatarVariant(kind);
   return (
-    <span className={cls} aria-hidden="true">
-      <i className={`fa-solid ${icon || 'fa-circle-info'}`}></i>
+    <span
+      className={`notification-item__avatar notification-item__avatar--${variant}`}
+      aria-hidden="true"
+    >
+      <i className={`fa-solid ${icon || 'fa-bell'}`}></i>
     </span>
   );
 }
 
 function NotificationItem({ item, isAlert, onDismiss, onActivate }) {
-  const interactive = !!(item.href || item.topicLink || onActivate);
+  const interactive = !!(item.href || item.topicLink || item.route || item.action || onActivate);
   const handleClick = (e) => {
-    // Se for link externo (anchor com href), deixa o browser abrir.
-    // Caso contrário, intercepta e chama onActivate.
     if (e.currentTarget.tagName === 'A' && item.href) return;
     if (interactive && onActivate) {
       e.preventDefault();
@@ -109,11 +135,13 @@ function NotificationItem({ item, isAlert, onDismiss, onActivate }) {
 
   const Tag = item.href ? 'a' : 'div';
   const linkProps = item.href ? { href: item.href, target: '_blank', rel: 'noreferrer' } : {};
+  const isUnread = isAlert && !item.read;
+  const meta = Array.isArray(item.meta) ? item.meta.filter(Boolean) : [];
 
   return (
     <Tag
       {...linkProps}
-      className={`notification-item notification-item--${item.severity || 'info'} ${item.read ? 'is-read' : ''} ${interactive ? 'is-interactive' : ''}`}
+      className={`notification-item ${isUnread ? 'is-unread' : ''} ${item.read ? 'is-read' : ''} ${interactive ? 'is-interactive' : ''}`}
       onClick={handleClick}
       role={interactive && !item.href ? 'button' : undefined}
       tabIndex={interactive && !item.href ? 0 : undefined}
@@ -124,26 +152,45 @@ function NotificationItem({ item, isAlert, onDismiss, onActivate }) {
         }
       }}
     >
-      <ItemIcon icon={item.icon} severity={item.severity} focused={item.focused} kind={item.kind} />
+      <ItemAvatar
+        icon={item.icon}
+        kind={item.kind}
+        avatarUsername={deriveAvatarUsername(item)}
+      />
+
       <div className="notification-item__main">
-        <div className="notification-item__title">
-          {item.title}
+        <div className="notification-item__head">
+          <span className="notification-item__subject">{item.title}</span>
+          {item.timestamp ? (
+            <>
+              <span className="notification-item__dot" aria-hidden="true">·</span>
+              <span className="notification-item__time">{formatRelative(item.timestamp)}</span>
+            </>
+          ) : null}
           {item.focused ? <span className="notification-item__chip">seu foco</span> : null}
         </div>
-        {item.body ? <div className="notification-item__body">{item.body}</div> : null}
-        {isAlert && item.timestamp ? (
+
+        {item.body ? (
+          <div className="notification-item__text">{item.body}</div>
+        ) : null}
+
+        {meta.length > 0 ? (
           <div className="notification-item__meta">
-            {getSourceLabel(item.kind) ? (
-              <span className="notification-item__source">{getSourceLabel(item.kind)}</span>
-            ) : null}
-            <span className="notification-item__time">{timeAgo(item.timestamp)}</span>
-            <span className="notification-item__date">{formatAbsolute(item.timestamp)}</span>
+            {meta.map((m, idx) => (
+              <React.Fragment key={idx}>
+                {idx > 0 ? (
+                  <span className="notification-item__meta-sep" aria-hidden="true">·</span>
+                ) : null}
+                <span className="notification-item__meta-item">
+                  {m.icon ? <i className={m.icon}></i> : null}
+                  <span>{m.label}</span>
+                </span>
+              </React.Fragment>
+            ))}
           </div>
         ) : null}
       </div>
-      {interactive ? (
-        <i className="fa-solid fa-chevron-right notification-item__chev" aria-hidden="true"></i>
-      ) : null}
+
       {isAlert && onDismiss ? (
         <button
           type="button"
@@ -180,9 +227,6 @@ export default function NotificationBell() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Publica o estado de abertura no contexto pro Layout reagir (colapsa o
-  // sidebar quando o dropdown abre, restaura ao fechar). Cleanup garante
-  // que se o componente desmontar com a central aberta, o sidebar volta.
   useEffect(() => {
     setBellOpen(open);
     return () => setBellOpen(false);
@@ -206,9 +250,14 @@ export default function NotificationBell() {
     };
   }, [open]);
 
-  /* Lógica de ativação: tenta scroll pro card, se não rolar abre o link. */
   const activateItem = (item) => {
     if (item.id) markRead(item.id);
+
+    if (item.action === 'open-settings') {
+      window.__openSettings?.();
+      setOpen(false);
+      return;
+    }
 
     if (item.topicLink) {
       const onTopics = location.pathname === '/topics' || location.pathname === '/';
@@ -225,7 +274,12 @@ export default function NotificationBell() {
       }
     }
 
-    // Fallback: se tem href externo, abre nova aba.
+    if (item.route) {
+      navigate(item.route);
+      setOpen(false);
+      return;
+    }
+
     if (item.href) {
       window.open(item.href, '_blank', 'noopener,noreferrer');
       setOpen(false);
@@ -234,6 +288,21 @@ export default function NotificationBell() {
 
   const decoratedAlerts = alerts.map((a) => ({ ...a, read: readIds.has(a.id) }));
   const total = alerts.length + radar.length;
+
+  const [activeTab, setActiveTab] = useState('unread');
+
+  const counts = {
+    unread: decoratedAlerts.filter((a) => !a.read).length,
+    read:   decoratedAlerts.filter((a) =>  a.read).length,
+    all:    decoratedAlerts.length + radar.length,
+  };
+
+  const visibleRadar = activeTab === 'all' ? radar : [];
+  const visibleAlerts = activeTab === 'all'
+    ? decoratedAlerts
+    : activeTab === 'unread'
+      ? decoratedAlerts.filter((a) => !a.read)
+      : decoratedAlerts.filter((a) =>  a.read);
 
   return (
     <div className={`notification-bell ${open ? 'is-open' : ''}`} ref={wrapRef}>
@@ -257,14 +326,16 @@ export default function NotificationBell() {
       {open ? (
         <div className="notification-dropdown" role="dialog" aria-label="Central de notificações">
           <div className="notification-dropdown__header">
-            <strong>Central</strong>
+            <h2 className="notification-dropdown__title">Notificações</h2>
             <div className="notification-dropdown__actions">
               {alerts.length > 0 && unreadCount > 0 ? (
-                <button type="button" onClick={markAllRead}>Marcar todas</button>
+                <button type="button" onClick={markAllRead} title="Marcar todas como lidas">
+                  <i className="fa-solid fa-check-double"></i>
+                </button>
               ) : null}
               <button
                 type="button"
-                title="Ver galeria de notificações"
+                title="Galeria de notificações"
                 onClick={() => {
                   setOpen(false);
                   navigate('/notifications-preview');
@@ -280,13 +351,51 @@ export default function NotificationBell() {
             </div>
           </div>
 
+          <div className="notification-tabs" role="tablist">
+            <button
+              type="button"
+              className={`notification-tab ${activeTab === 'unread' ? 'is-active' : ''}`}
+              onClick={() => setActiveTab('unread')}
+              role="tab"
+              aria-selected={activeTab === 'unread'}
+            >
+              Não lidas
+              {counts.unread > 0 ? (
+                <span className="notification-tab__badge">{counts.unread}</span>
+              ) : null}
+            </button>
+            <button
+              type="button"
+              className={`notification-tab ${activeTab === 'read' ? 'is-active' : ''}`}
+              onClick={() => setActiveTab('read')}
+              role="tab"
+              aria-selected={activeTab === 'read'}
+              disabled={counts.read === 0}
+            >
+              Lidas
+              {counts.read > 0 ? (
+                <span className="notification-tab__badge">{counts.read}</span>
+              ) : null}
+            </button>
+            <button
+              type="button"
+              className={`notification-tab ${activeTab === 'all' ? 'is-active' : ''}`}
+              onClick={() => setActiveTab('all')}
+              role="tab"
+              aria-selected={activeTab === 'all'}
+            >
+              Todas
+              {counts.all > 0 ? (
+                <span className="notification-tab__badge">{counts.all}</span>
+              ) : null}
+            </button>
+          </div>
+
           <div className="notification-dropdown__body">
-            {radar.length > 0 ? (
+            {visibleRadar.length > 0 ? (
               <section className="notification-section">
-                <h4 className="notification-section__title">
-                  <i className="fa-solid fa-satellite-dish"></i> Radar — o que tá vindo
-                </h4>
-                {radar.map((item) => (
+                <h4 className="notification-section__title">Próximos</h4>
+                {visibleRadar.map((item) => (
                   <NotificationItem
                     key={item.id}
                     item={item}
@@ -297,12 +406,9 @@ export default function NotificationBell() {
               </section>
             ) : null}
 
-            {decoratedAlerts.length > 0 ? (
+            {visibleAlerts.length > 0 ? (
               <section className="notification-section">
-                <h4 className="notification-section__title">
-                  <i className="fa-solid fa-bolt"></i> Agora
-                </h4>
-                {decoratedAlerts.map((item) => (
+                {visibleAlerts.map((item) => (
                   <NotificationItem
                     key={item.id}
                     item={item}
@@ -316,8 +422,13 @@ export default function NotificationBell() {
 
             {total === 0 ? (
               <div className="notification-empty">
-                <i className="fa-regular fa-circle-check"></i>
-                <span>Tudo tranquilo. Sem alertas no momento.</span>
+                <span className="notification-empty__title">Sem alertas no momento</span>
+                <span className="notification-empty__sub">Você está em dia.</span>
+              </div>
+            ) : visibleRadar.length === 0 && visibleAlerts.length === 0 ? (
+              <div className="notification-empty">
+                <span className="notification-empty__title">Nada nessa categoria</span>
+                <span className="notification-empty__sub">Tente outra aba.</span>
               </div>
             ) : null}
           </div>

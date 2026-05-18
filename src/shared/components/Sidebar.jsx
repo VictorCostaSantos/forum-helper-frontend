@@ -1,27 +1,30 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   fetchUserStats,
   fetchLatamStats,
-  fetchAvatarFromBackend,
   getLatamUsername,
 } from '../../api/apiService';
-import latamImage from '../../assets/image-removebg-preview.png';
 import { useTopics } from '../context/TopicsContext';
+import {
+  useAllocationItems,
+  useAllocationSummary,
+} from '../../features/allocation/useAllocationSummary';
+import { useAvatar, useAvatarsMap } from '../avatars/avatarStore';
+import {
+  addDays,
+  formatPeriodCompact,
+  isPerennial,
+  mondayOf,
+  toISODate,
+} from '../../features/allocation/dateHelpers';
+import {
+  getDisplayName,
+  isPlaceholder,
+} from '../../features/allocation/team';
+import { brandFor, brandImageStyle } from '../../features/allocation/activityBrands';
 
 const SHEET_ID = '1746BtlDdh97YV0CV0s941WezEgkhEJx8geFNPYf2ulk';
-
-const ALLOC_TABS = [
-  { id: 'sugestoes', gid: '1812290880', title: 'Sugestões', optional: false, icon: <img src="https://cursos.alura.com.br/assets/images/menu/community/engagement/icon-suggestions.svg" alt="Sugestões" className="tab-icon-custom" /> },
-  { id: 'discord', gid: '1034627386', title: 'Discord', optional: false, icon: <i className="fab fa-discord"></i> },
-  { id: 'latam', gid: '1145495672', title: 'Alura Latam', optional: true, icon: <img src={latamImage} alt="Alura Latam" className="tab-icon-custom tab-icon-latam" /> },
-  { id: 'imersao', gid: '1966976426', title: 'Imersão', optional: true, icon: <img src="https://cursos.alura.com.br/assets/images/alura/topics/icon-moderador.svg" alt="Imersão" className="tab-icon-custom" /> },
-  { id: 'artigos', gid: '1902907481', title: 'Artigos', optional: true, icon: <img src="https://cursos.alura.com.br/assets/images/search/article-tag.svg" alt="Artigos" className="tab-icon-custom" style={{ width: 20, height: 20 }} /> },
-];
-
-// O foco/área de cada pessoa (foco1/foco2 da planilha) deixou de ser exibido
-// aqui — o FocusBanner em TopicsView agora usa esse dado dinamicamente,
-// sugerindo onde a pessoa tem mais impacto. Manter como chip estático no
-// sidebar virou ruído. Os GIDs ainda são usados em outros lugares.
 const REMINDERS_GID = '1463294778';
 
 async function fetchSheetRows(gid) {
@@ -32,14 +35,6 @@ async function fetchSheetRows(gid) {
   return JSON.parse(text.substring(47).slice(0, -2));
 }
 
-async function fetchAllocationData(gid) {
-  const json = await fetchSheetRows(gid);
-  return json.table.rows.map((row) => ({
-    periodo: row.c[0]?.v || '',
-    responsaveis: Array.from({ length: row.c.length - 1 }, (_, i) => row.c[i + 1]?.v).filter(Boolean),
-  }));
-}
-
 function parseMessageToHTML(message) {
   if (!message) return '';
   let html = message;
@@ -47,27 +42,6 @@ function parseMessageToHTML(message) {
   html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
   html = html.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
   return `<p>${html}</p>`;
-}
-
-function findCurrentAllocation(rows) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const year = today.getFullYear();
-  return rows.find((item) => {
-    try {
-      if (!item.periodo || !item.periodo.includes(' - ')) return false;
-      const [inicioStr, fimStr] = item.periodo.split(' - ');
-      const [diaInicio, mesInicio] = inicioStr.split('/');
-      const [diaFim, mesFim] = fimStr.split('/');
-      if (Number.isNaN(Number(diaInicio)) || Number.isNaN(Number(mesInicio))) return false;
-      const dataInicio = new Date(year, mesInicio - 1, diaInicio);
-      const dataFim = new Date(year, mesFim - 1, diaFim);
-      dataFim.setHours(23, 59, 59, 999);
-      return today >= dataInicio && today <= dataFim;
-    } catch {
-      return false;
-    }
-  });
 }
 
 function PerformanceCard({ meta, statsBr, statsLatam, hasLatam }) {
@@ -168,92 +142,6 @@ function PerformanceCard({ meta, statsBr, statsLatam, hasLatam }) {
   );
 }
 
-function toFriendly(raw) {
-  if (!raw) return '';
-  const first = raw.split(/[-._\s\d]/).find(Boolean) || raw;
-  return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
-}
-
-function AllocationItem({ alloc, currentUserBr }) {
-  const [avatars, setAvatars] = useState([]);
-  // Marca avatares cuja URL backend deu sucesso MAS a imagem em si falhou
-  // ao carregar (404, CORS, bloqueio). Sem isso, a img quebrada fica num
-  // limbo visual (placeholder padrão do navegador). Index pra evitar
-  // re-render da lista inteira a cada erro.
-  const [imgErrors, setImgErrors] = useState(() => new Set());
-
-  useEffect(() => {
-    let alive = true;
-    setImgErrors(new Set());
-    Promise.all((alloc?.responsaveis || []).map((u) => fetchAvatarFromBackend(u.trim())))
-      .then((res) => { if (alive) setAvatars(res); });
-    return () => { alive = false; };
-  }, [alloc]);
-
-  const handleImgError = (idx) => {
-    setImgErrors((prev) => {
-      const next = new Set(prev);
-      next.add(idx);
-      return next;
-    });
-  };
-
-  if (!alloc || !alloc.responsaveis?.length) {
-    return (
-      <div className="alloc-card alloc-card--empty">
-        <i className="fa-regular fa-calendar-xmark"></i>
-        <span>Nenhuma alocação ativa.</span>
-      </div>
-    );
-  }
-
-  const myLatam = getLatamUsername(currentUserBr);
-  const normalize = (n) => (n || '').trim().toLowerCase();
-  const isMe = (uClean) =>
-    (currentUserBr && normalize(uClean) === normalize(currentUserBr)) ||
-    (myLatam && normalize(uClean) === normalize(myLatam));
-
-  return (
-    <div className="alloc-card">
-      <div className="alloc-card__period">
-        <i className="fa-regular fa-calendar"></i>
-        <span>{alloc.periodo}</span>
-      </div>
-
-      <div className="alloc-card__avatars">
-        {alloc.responsaveis.map((u, idx) => {
-          const uClean = u.trim();
-          const profileUrl = `https://cursos.alura.com.br/user/${uClean}`;
-          const avatar = avatars[idx];
-          const me = isMe(uClean);
-          return (
-            <a
-              key={`${uClean}-${idx}`}
-              href={profileUrl}
-              target="_blank"
-              rel="noreferrer"
-              title={toFriendly(uClean)}
-              className={`alloc-card__avatar ${me ? 'is-me' : ''}`}
-            >
-              {avatar?.success && !imgErrors.has(idx) ? (
-                <img
-                  src={avatar.url}
-                  alt={uClean}
-                  onError={() => handleImgError(idx)}
-                />
-              ) : (
-                <span className="alloc-card__avatar-fallback">
-                  {toFriendly(uClean).charAt(0) || '?'}
-                </span>
-              )}
-            </a>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 function formatTime(daysFloat) {
   if (!daysFloat || daysFloat <= 0) return '0min';
   const totalMinutes = Math.round(daysFloat * 24 * 60);
@@ -268,15 +156,289 @@ function formatTime(daysFloat) {
   return h > 0 ? `${d}d ${h}h` : `${d}d`;
 }
 
+/*
+  Chips de aviso de alocação no topo do sidebar. Mesma fonte de dados do
+  banner do /allocation (useAllocationSummary). Some quando não há vagos
+  nem sobrecarregados. Click leva pro painel.
+*/
+function AllocationAlertChips({ onNavigate }) {
+  const summary = useAllocationSummary();
+  if (!summary?.loaded || summary.total === 0) return null;
+  return (
+    <div className="alloc-chips-strip">
+      {summary.vagoCount > 0 ? (
+        <button
+          type="button"
+          className="alloc-chip alloc-chip--danger"
+          onClick={() => onNavigate('/allocation')}
+          title="Plantões vagos esta semana"
+        >
+          <i className="fa-solid fa-circle-exclamation"></i>
+          <span>{summary.vagoCount} vago{summary.vagoCount === 1 ? '' : 's'}</span>
+        </button>
+      ) : null}
+      {summary.dangerCount > 0 ? (
+        <button
+          type="button"
+          className="alloc-chip alloc-chip--warn"
+          onClick={() => onNavigate('/allocation')}
+          title="Pessoas acima do limite saudável"
+        >
+          <i className="fa-solid fa-bolt"></i>
+          <span>
+            {summary.dangerCount} sobrecarregad{summary.dangerCount === 1 ? 'o' : 'os'}
+          </span>
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+function MiniAvatar({ username, size = 18 }) {
+  // Lê do store central — sem fetch local, sem prop drilling de URL.
+  const url = useAvatar(username);
+  return (
+    <img
+      src={url}
+      alt={getDisplayName(username)}
+      title={getDisplayName(username)}
+      className="alloc-mini-avatar"
+      style={{ width: size, height: size }}
+    />
+  );
+}
+
+/*
+  Helper: filtra items pelas estações com currentShift nesta semana, opcionalmente
+  com filterFn (ex: só do user). Retorna stations já agrupadas por nome.
+*/
+function useWeekStations(items, filterFn) {
+  return useMemo(() => {
+    const monday = mondayOf(new Date());
+    const wkStart = toISODate(monday);
+    const wkEnd   = toISODate(addDays(monday, 4));
+    const byKey = new Map();
+    for (const a of items) {
+      if (!a?.nome) continue;
+      const di = String(a?.data_inicio || '').slice(0, 10);
+      const df = String(a?.data_fim || '').slice(0, 10);
+      if (!di || !df || di > wkEnd || df < wkStart) continue;
+      if (filterFn && !filterFn(a)) continue;
+      const key = String(a.nome).trim().toLowerCase();
+      if (!byKey.has(key)) {
+        byKey.set(key, {
+          id: key,
+          name: a.nome,
+          activity: a,
+          responsaveis: Array.isArray(a.responsaveis) ? a.responsaveis : [],
+        });
+      }
+    }
+    return Array.from(byKey.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [items, filterFn]);
+}
+
+/*
+  Carrossel "headless" — sem header próprio, recebe stations e renderiza:
+  - linha de ícones-tabs sutis (sem underline arredondado, só destaque por
+    cor da brand na ativa)
+  - slide com período + facepile
+
+  Auto-rotate 8s, pausa no hover.
+*/
+function AllocationCarousel({ stations, onNavigate, peerFilter, emptyLabel }) {
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (active >= stations.length && stations.length > 0) setActive(0);
+  }, [stations.length, active]);
+
+  useEffect(() => {
+    if (stations.length <= 1 || paused) return undefined;
+    const id = setInterval(() => {
+      setActive((i) => (i + 1) % stations.length);
+    }, 8000);
+    return () => clearInterval(id);
+  }, [stations.length, paused]);
+
+  if (stations.length === 0) {
+    return <p className="urgent-empty">{emptyLabel || 'Nada por aqui.'}</p>;
+  }
+
+  const current = stations[active] || stations[0];
+  const realPeers = (current.responsaveis || [])
+    .filter((u) => !isPlaceholder(u))
+    .filter((u) => (peerFilter ? peerFilter(u) : true));
+  const isVago = (current.responsaveis || []).filter((u) => !isPlaceholder(u)).length === 0;
+  const period = isPerennial(current.activity) ? 'Fixo' : formatPeriodCompact(current.activity);
+  const currentBrand = brandFor(current.name);
+
+  return (
+    <div
+      className="alloc-carousel"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {stations.length > 1 ? (
+        <div className="alloc-carousel__tabs" role="tablist">
+          {stations.map((st, i) => {
+            const brand = brandFor(st.name);
+            return (
+              <button
+                key={st.id}
+                type="button"
+                className={`alloc-carousel__tab ${i === active ? 'is-active' : ''}`}
+                style={{ '--tab-color': brand.color }}
+                onClick={(e) => { e.stopPropagation(); setActive(i); }}
+                title={st.name}
+                aria-label={`Ir pra ${st.name}`}
+                aria-selected={i === active}
+                role="tab"
+              >
+                {brand.image ? (
+                  <img src={brand.image} alt="" className="alloc-carousel__tab-img" style={brandImageStyle(brand)} />
+                ) : (
+                  <i className={brand.icon}></i>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {/* Nome da estação ativa logo abaixo das tabs — dá contexto sem precisar de hover. */}
+      <div className="alloc-carousel__station-name" style={{ color: currentBrand.color }}>
+        {current.name}
+      </div>
+
+        <div
+          key={current.id}
+          className={`alloc-carousel__slide ${isVago ? 'is-vago' : ''}`}
+          onClick={() => onNavigate('/allocation')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onNavigate('/allocation');
+            }
+          }}
+        >
+          <div className="alloc-carousel__period">
+            <i className="fa-regular fa-calendar"></i>
+            <span>{period}</span>
+          </div>
+          {isVago ? (
+            <span className="alloc-mini-item__tag">vago</span>
+          ) : realPeers.length === 0 ? (
+            <span className="alloc-carousel__solo">só você</span>
+          ) : (
+            <div className="alloc-carousel__peers">
+              {realPeers.slice(0, 4).map((u) => (
+                <MiniAvatar key={u} username={u} size={28} />
+              ))}
+              {realPeers.length > 4 ? (
+                <span className="alloc-mini-avatar alloc-mini-avatar--more alloc-mini-avatar--lg">
+                  +{realPeers.length - 4}
+                </span>
+              ) : null}
+            </div>
+          )}
+      </div>
+    </div>
+  );
+}
+
+const ALLOC_SEGMENTS = [
+  { id: 'meus',   label: 'Meus',    icon: 'fa-solid fa-user-check',     emptyLabel: 'Você não está alocado em nada essa semana.' },
+  { id: 'equipe', label: 'Equipe',  icon: 'fa-solid fa-people-group',  emptyLabel: 'Sem atividades essa semana.' },
+  { id: 'fixas',  label: 'Fixas',   icon: 'fa-solid fa-thumbtack',      emptyLabel: 'Sem atividades fixas.' },
+];
+
+/*
+  Painel único de alocações no sidebar. Substitui os dois <details> antigos
+  (Meus plantões + Alocações da Equipe). Segmented control de 3 botões em
+  cima (Equipe / Meus / Fixas) troca qual carrossel é exibido embaixo.
+  Visual premium: tabs internas do carrossel sem underline arredondado, só
+  destaque por cor da brand na ativa.
+*/
+function AllocationsPanel({ username, items, onNavigate }) {
+  // Default 'meus' — Victor pediu inversão: o que ME diz respeito primeiro,
+  // depois o que a equipe está fazendo, depois fixos.
+  const [segment, setSegment] = useState('meus');
+
+  const filterMine = useMemo(() => (
+    (a) => Array.isArray(a?.responsaveis) && a.responsaveis.includes(username)
+  ), [username]);
+  const filterFixas = useMemo(() => (a) => isPerennial(a), []);
+  const peerFilter = useMemo(() => (u) => u !== username, [username]);
+
+  const equipeStations = useWeekStations(items);
+  const myStations     = useWeekStations(items, filterMine);
+  const fixasStations  = useWeekStations(items, filterFixas);
+
+  const segmentData = {
+    equipe: { stations: equipeStations, peerFilter: undefined },
+    meus:   { stations: myStations,     peerFilter },
+    fixas:  { stations: fixasStations,  peerFilter: undefined },
+  };
+
+  const active = segmentData[segment];
+  const segmentMeta = ALLOC_SEGMENTS.find((s) => s.id === segment);
+
+  return (
+    <details className="sidebar-panel collapsible-panel" open>
+      <summary className="sidebar-panel-header">
+        <h3>
+          <i className="fa-solid fa-people-group"></i> Alocações
+        </h3>
+      </summary>
+      <div className="sidebar-panel-content">
+        <div className="alloc-segmented" role="tablist" aria-label="Filtro de alocações">
+          {ALLOC_SEGMENTS.map((seg) => {
+            const count = segmentData[seg.id].stations.length;
+            const disabled = seg.id === 'meus' && !username;
+            return (
+              <button
+                key={seg.id}
+                type="button"
+                className={`alloc-segmented__btn ${segment === seg.id ? 'is-active' : ''}`}
+                onClick={(e) => { e.stopPropagation(); setSegment(seg.id); }}
+                disabled={disabled}
+                role="tab"
+                aria-selected={segment === seg.id}
+              >
+                <i className={seg.icon}></i>
+                <span>{seg.label}</span>
+                {count > 0 ? <span className="alloc-segmented__count">{count}</span> : null}
+              </button>
+            );
+          })}
+        </div>
+
+        <AllocationCarousel
+          stations={active.stations}
+          onNavigate={onNavigate}
+          peerFilter={active.peerFilter}
+          emptyLabel={segmentMeta?.emptyLabel}
+        />
+      </div>
+    </details>
+  );
+}
+
 const Sidebar = ({ username, displayName, meta, collapsed = false, onToggle }) => {
   const { topics } = useTopics();
+  const navigate = useNavigate();
   const [statsBr, setStatsBr] = useState({ postsToday: 0, postsMonth: 0 });
   const [statsLatam, setStatsLatam] = useState({ postsToday: 0, postsMonth: 0 });
-  const [allocations, setAllocations] = useState({});
-  const [hiddenTabs, setHiddenTabs] = useState({});
-  const [activeTab, setActiveTab] = useState('sugestoes');
   const [reminder, setReminder] = useState(null);
-  const intervalRef = useRef(null);
+
+  // Items vêm do mesmo cache compartilhado com o sino e o /allocation.
+  // Avatares ficam no `avatarStore` central — cada <MiniAvatar /> lê de lá
+  // direto, sem prop drilling.
+  const allocItems  = useAllocationItems();
 
   useEffect(() => {
     if (!username) return;
@@ -300,35 +462,6 @@ const Sidebar = ({ username, displayName, meta, collapsed = false, onToggle }) =
 
   useEffect(() => {
     let alive = true;
-    const loadAllocs = async () => {
-      const results = {};
-      const hidden = {};
-      await Promise.all(
-        ALLOC_TABS.map(async (tab) => {
-          try {
-            const rows = await fetchAllocationData(tab.gid);
-            const current = findCurrentAllocation(rows);
-            results[tab.id] = current || null;
-            if (tab.optional && (!current || current.responsaveis.length === 0)) {
-              hidden[tab.id] = true;
-            }
-          } catch {
-            results[tab.id] = null;
-            if (tab.optional) hidden[tab.id] = true;
-          }
-        })
-      );
-      if (alive) {
-        setAllocations(results);
-        setHiddenTabs(hidden);
-      }
-    };
-    loadAllocs();
-    return () => { alive = false; };
-  }, []);
-
-  useEffect(() => {
-    let alive = true;
     (async () => {
       try {
         const json = await fetchSheetRows(REMINDERS_GID);
@@ -340,28 +473,6 @@ const Sidebar = ({ username, displayName, meta, collapsed = false, onToggle }) =
     })();
     return () => { alive = false; };
   }, []);
-
-  const visibleTabs = useMemo(() => ALLOC_TABS.filter((t) => !hiddenTabs[t.id]), [hiddenTabs]);
-
-  useEffect(() => {
-    if (!visibleTabs.length) return;
-    if (!visibleTabs.find((t) => t.id === activeTab)) {
-      setActiveTab(visibleTabs[0].id);
-    }
-  }, [visibleTabs, activeTab]);
-
-  useEffect(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    if (visibleTabs.length <= 1) return;
-    intervalRef.current = setInterval(() => {
-      setActiveTab((current) => {
-        const idx = visibleTabs.findIndex((t) => t.id === current);
-        const next = visibleTabs[(idx + 1) % visibleTabs.length];
-        return next?.id || current;
-      });
-    }, 10000);
-    return () => clearInterval(intervalRef.current);
-  }, [visibleTabs]);
 
   const overview = useMemo(() => {
     const total = topics.length;
@@ -530,47 +641,11 @@ const Sidebar = ({ username, displayName, meta, collapsed = false, onToggle }) =
         </div>
       </details>
 
-      <details className="sidebar-panel collapsible-panel" open>
-        <summary className="sidebar-panel-header">
-          <h3>
-            <a
-              className="alocacao"
-              href="https://docs.google.com/spreadsheets/d/1746BtlDdh97YV0CV0s941WezEgkhEJx8geFNPYf2ulk/edit?gid=1812290880#gid=1812290880"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <i className="fas fa-users"></i> Alocações da Equipe
-            </a>
-          </h3>
-        </summary>
-        <div id="team-allocations-panel" className="sidebar-panel-content allocation-panel">
-          <div className="tab-nav">
-            {ALLOC_TABS.map((tab) => (
-              <button
-                key={tab.id}
-                className={`tab-btn ${activeTab === tab.id ? 'active' : ''} ${hiddenTabs[tab.id] ? 'is-hidden' : ''}`}
-                data-tab={tab.id}
-                title={tab.title}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                {tab.icon}
-              </button>
-            ))}
-          </div>
-          <div className="tab-content">
-            {ALLOC_TABS.map((tab) => (
-              <div
-                key={tab.id}
-                id={`${tab.id}-data`}
-                className={`tab-pane ${activeTab === tab.id ? 'active' : ''}`}
-                data-tab-content={tab.id}
-              >
-                <AllocationItem alloc={allocations[tab.id]} currentUserBr={username} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </details>
+      <AllocationsPanel
+        username={username}
+        items={allocItems}
+        onNavigate={navigate}
+      />
 
       {reminder ? (
         <details className="sidebar-panel collapsible-panel">

@@ -7,6 +7,7 @@ import { ToastProvider } from './shared/ui/ToastProvider';
 import { TopicsProvider } from './shared/context/TopicsContext';
 import { NotificationsProvider, useNotifications } from './shared/notifications/NotificationsContext';
 import NotificationsHub from './shared/notifications/NotificationsHub';
+import AllocationAlertsBridge from './features/allocation/AllocationAlertsBridge';
 import TopicsView from './features/topics/TopicsView';
 
 // Rotas secundárias com lazy load: cortam ~400kB do bundle inicial.
@@ -156,16 +157,30 @@ function Layout({ settingsOpen, setSettingsOpen, settings, onSettingsChange, the
     document.body.classList.toggle('pdi-active', isPdi);
   }, [isDashboard, isMural, isCatalog, isStatus, isAllocation, isNotificationsPreview, isPdi]);
 
+  // Ponte global pra notificações abrirem o modal de Settings via
+  // `action: 'open-settings'`. Mesmo padrão do window.__showToast.
+  useEffect(() => {
+    window.__openSettings = () => setSettingsOpen(true);
+    return () => {
+      if (window.__openSettings) delete window.__openSettings;
+    };
+  }, [setSettingsOpen]);
+
   return (
     <>
       <div id="toast-container"></div>
 
       {settings.username ? (
-        <NotificationsHub
-          username={settings.username}
-          meta={settings.meta}
-          clickupToken={settings.clickupToken}
-        />
+        <>
+          <NotificationsHub
+            username={settings.username}
+            meta={settings.meta}
+            clickupToken={settings.clickupToken}
+          />
+          {/* Bridge headless: alocação → notificações do sino. Watch o sumário
+              (compartilhado com o badge do header) e anuncia/dispensa alerts. */}
+          <AllocationAlertsBridge />
+        </>
       ) : null}
 
       <Header

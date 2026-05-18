@@ -1127,4 +1127,424 @@ body.dark-mode .sidebar-focus-inline {
 }
 
 .alocacao { text-decoration: none; color: inherit; }
+
+/* ============================================
+   ALLOCATION CHIPS + MINI-LISTS (novos blocos do sidebar)
+   Conectam o painel /allocation ao sidebar.
+   ============================================ */
+
+/* Strip de chips de aviso logo abaixo da topbar. Só renderiza quando
+   há vago ou sobrecarga — caso contrário some sem deixar gap. */
+.alloc-chips-strip {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    padding: 0 12px 8px;
+}
+
+.alloc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 600;
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background 0.15s ease;
+    font-family: inherit;
+}
+
+.alloc-chip:hover {
+    background: rgba(15, 23, 42, 0.05);
+}
+
+body.dark-mode .alloc-chip:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.alloc-chip i {
+    font-size: 0.68rem;
+}
+
+.alloc-chip--danger {
+    color: var(--cor-complexo);
+    border-color: rgba(220, 53, 69, 0.32);
+    background: rgba(220, 53, 69, 0.06);
+}
+
+.alloc-chip--warn {
+    color: #FF9500;
+    border-color: rgba(255, 149, 0, 0.32);
+    background: rgba(255, 149, 0, 0.06);
+}
+
+/* === Lista compacta de plantões (Meus + Alocações da Equipe) === */
+.alloc-mini-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.alloc-mini-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    background: transparent;
+    border: 1px solid transparent;
+    outline: none;
+    min-height: 0;
+}
+
+.alloc-mini-item:hover,
+.alloc-mini-item:focus-visible {
+    background: rgba(15, 23, 42, 0.05);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .alloc-mini-item {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+body.dark-mode .alloc-mini-item:hover,
+body.dark-mode .alloc-mini-item:focus-visible {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.alloc-mini-item.is-vago {
+    background: rgba(220, 53, 69, 0.06);
+    border-color: rgba(220, 53, 69, 0.18);
+}
+
+.alloc-mini-item.is-vago:hover {
+    background: rgba(220, 53, 69, 0.1);
+}
+
+/* Body do item: nome em cima, período embaixo (apenas em "Meus plantões") */
+.alloc-mini-item__body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.alloc-mini-item__name {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: -0.005em;
+    line-height: 1.25;
+}
+
+.alloc-mini-item__name--single {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.alloc-mini-item__period {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.62rem;
+    color: var(--light-text-color);
+    line-height: 1.2;
+}
+
+.alloc-mini-item__period i {
+    opacity: 0.6;
+    font-size: 0.6rem;
+}
+
+.alloc-mini-item__tag {
+    font-size: 0.56rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgba(220, 53, 69, 0.16);
+    color: var(--cor-complexo);
+    flex-shrink: 0;
+}
+
+/* Facepile: avatares sobrepostos. Usa border-color do card pra
+   "recortar" o avatar de baixo no overlap. */
+.alloc-mini-item__peers {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.alloc-mini-avatar {
+    border-radius: 50%;
+    margin-left: -5px;
+    border: 1.5px solid var(--card-bg-color);
+    object-fit: cover;
+    background: var(--bg-color);
+}
+
+.alloc-mini-avatar:first-child {
+    margin-left: 0;
+}
+
+.alloc-mini-avatar--more {
+    width: 18px;
+    height: 18px;
+    font-size: 0.55rem;
+    font-weight: 700;
+    background: var(--bg-color);
+    color: var(--light-text-color);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: -0.02em;
+}
+
+body.dark-mode .alloc-mini-avatar {
+    border-color: var(--card-bg-color);
+}
+
+.alloc-mini-avatar--lg {
+    width: 26px;
+    height: 26px;
+    font-size: 0.62rem;
+}
+
+/* ============================================
+   CARROSSEL DE ALOCAÇÕES — 1 estação por slide, auto-rotate 8s.
+   Substitui o painel de tabs antigo (5 GIDs do Sheets).
+   ============================================ */
+.alloc-carousel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 4px 2px;
+}
+
+/* Tabs de estação — ícone com cor da brand, underline na ativa.
+   Estilo herdado do painel legado (Sheets) que o Victor curtia. */
+/* Segmented control superior — 3 botões "Equipe / Meus / Fixas" lado a lado.
+   Visual premium: bg neutro, botão ativo recebe fundo destacado + sombra
+   sutil. Sem pílula arredondada exagerada. */
+.alloc-segmented {
+    display: flex;
+    gap: 0;
+    padding: 3px;
+    border-radius: 9px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    margin-bottom: 10px;
+}
+
+body.dark-mode .alloc-segmented {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.alloc-segmented__btn {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px 8px;
+    border-radius: 7px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--light-text-color);
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    font-family: inherit;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.alloc-segmented__btn:hover:not(:disabled):not(.is-active) {
+    color: var(--text-color);
+}
+
+.alloc-segmented__btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.alloc-segmented__btn.is-active {
+    background: var(--card-bg-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+body.dark-mode .alloc-segmented__btn.is-active {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.alloc-segmented__btn i {
+    font-size: 0.72rem;
+    opacity: 0.9;
+}
+
+.alloc-segmented__count {
+    background: var(--border-color);
+    color: var(--light-text-color);
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0 5px;
+    border-radius: 999px;
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
+    min-width: 14px;
+    text-align: center;
+}
+
+.alloc-segmented__btn.is-active .alloc-segmented__count {
+    background: var(--text-color);
+    color: var(--card-bg-color);
+}
+
+body.dark-mode .alloc-segmented__count {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Tabs internas do carrossel — ícones sutis. SEM underline arredondado
+   embaixo (era o "feio" do feedback). Estado ativo = bg pill discreto. */
+.alloc-carousel__tabs {
+    display: flex;
+    gap: 2px;
+    padding: 2px 0;
+    flex-wrap: wrap;
+}
+
+.alloc-carousel__tab {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 7px;
+    color: var(--light-text-color);
+    cursor: pointer;
+    font-size: 0.82rem;
+    padding: 0;
+    transition: color 0.15s ease, background 0.15s ease;
+    opacity: 0.5;
+}
+
+.alloc-carousel__tab:hover {
+    opacity: 0.95;
+    color: var(--tab-color, var(--text-color));
+    background: rgba(127, 127, 127, 0.08);
+}
+
+.alloc-carousel__tab.is-active {
+    opacity: 1;
+    color: var(--tab-color, var(--text-color));
+    background: color-mix(in srgb, var(--tab-color, var(--text-color)) 14%, transparent);
+}
+
+/* Nome da estação selecionada — small caps na cor da brand, dá contexto
+   imediato sem precisar hover na tab. */
+.alloc-carousel__station-name {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    margin: 2px 2px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.alloc-carousel__slide {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background 0.15s ease;
+    outline: none;
+    animation: alloc-slide-fade 0.32s ease;
+}
+
+@keyframes alloc-slide-fade {
+    from { opacity: 0; transform: translateY(3px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.alloc-carousel__slide:hover,
+.alloc-carousel__slide:focus-visible {
+    background: rgba(15, 23, 42, 0.04);
+    border-color: var(--cor-feedback);
+}
+
+body.dark-mode .alloc-carousel__slide {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+body.dark-mode .alloc-carousel__slide:hover,
+body.dark-mode .alloc-carousel__slide:focus-visible {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.alloc-carousel__slide.is-vago {
+    border-color: rgba(220, 53, 69, 0.3);
+    background: rgba(220, 53, 69, 0.05);
+}
+
+.alloc-carousel__period {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-color);
+    letter-spacing: -0.005em;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.alloc-carousel__period i {
+    color: var(--light-text-color);
+    opacity: 0.8;
+    font-size: 0.78rem;
+}
+
+.alloc-carousel__peers {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.alloc-carousel__solo {
+    font-size: 0.7rem;
+    color: var(--light-text-color);
+    font-style: italic;
+    flex-shrink: 0;
+}
 .alocacao:hover { color: var(--cor-frontend); }

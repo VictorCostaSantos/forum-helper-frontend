@@ -5,9 +5,15 @@ import {
   updateAtividade,
   deleteAtividade,
 } from '../../api/apiService';
-import { PLACEHOLDER_USER, TEAM, getMaxLoad, isAdmin, isPlaceholder } from './team';
+import {
+  PLACEHOLDER_USER,
+  TEAM,
+  getMaxLoad,
+  isAdmin,
+  isPlaceholder,
+} from './team';
 import { refreshAllocationSummary } from './useAllocationSummary';
-import { addDays, detectCycle, fromISODate, mondayOf, toISODate, workWeekDays } from './dateHelpers';
+import { addDays, detectCycle, fromISODate, isPerennial, mondayOf, toISODate, workWeekDays } from './dateHelpers';
 
 /*
   Hook do painel de Alocação — modelo "flight board" (estações).
@@ -140,10 +146,25 @@ export function useAllocation(anchorDate) {
     }
 
     // Ordena: estações com currentShift primeiro, depois por nome.
+    // Ordem de listagem:
+    //   1. Fixas (perenes) primeiro — alfabético entre si, peso ignorado
+    //   2. Não-fixas com currentShift, ordenadas por peso desc (3→1) + alfa
+    //   3. Não-fixas sem currentShift (futuras/passadas), alfa
     stationList.sort((a, b) => {
-      const ac = a.currentShift ? 0 : 1;
-      const bc = b.currentShift ? 0 : 1;
-      if (ac !== bc) return ac - bc;
+      const aFixed = a.reference ? isPerennial(a.reference) ? 0 : 1 : 2;
+      const bFixed = b.reference ? isPerennial(b.reference) ? 0 : 1 : 2;
+      if (aFixed !== bFixed) return aFixed - bFixed;
+
+      // Mesmo bucket — comparações finas.
+      if (aFixed === 1) {
+        // Não-fixas com currentShift: peso desc primeiro.
+        const aHas = a.currentShift ? 0 : 1;
+        const bHas = b.currentShift ? 0 : 1;
+        if (aHas !== bHas) return aHas - bHas;
+        const aPeso = Number(a.reference?.peso) || 0;
+        const bPeso = Number(b.reference?.peso) || 0;
+        if (aPeso !== bPeso) return bPeso - aPeso; // desc
+      }
       return a.name.localeCompare(b.name);
     });
 
@@ -362,12 +383,17 @@ export function useAllocation(anchorDate) {
       newDi = addDays(lastDi, 14); newDf = addDays(lastDf, 14);
     }
 
+    // Próxima ocorrência nasce VAZIA (placeholder) — admin preenche depois.
+    // Decisão: replicar responsáveis da última só faz sentido pra atividades
+    // realmente fixas (Fórum Helper), o que se modela com `keepTeam` na
+    // criação. Pra extensão em massa não há essa intenção declarada, então
+    // o seguro é nascer vazio.
     return createActivity({
       nome: last.nome,
       data_inicio: toISODate(newDi),
       data_fim:    toISODate(newDf),
       peso: Number(last.peso),
-      responsaveis: seedUser ? [seedUser] : (last.responsaveis || []).slice(0, 1),
+      responsaveis: [PLACEHOLDER_USER],
     });
   }, [items, createActivity]);
 

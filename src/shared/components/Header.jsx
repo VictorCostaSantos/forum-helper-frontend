@@ -16,7 +16,7 @@ const FORUM_URL = 'https://cursos.alura.com.br/forum/todos/1?hasAccessMGM=true';
 function buildAllocBadgeTitle(summary) {
   if (!summary?.total) return null;
   const parts = [];
-  if (summary.vagoCount > 0) parts.push(`${summary.vagoCount} plantão(ões) vago(s)`);
+  if (summary.vagoCount > 0) parts.push(`${summary.vagoCount} atividade(s) sem alocação`);
   if (summary.dangerCount > 0) parts.push(`${summary.dangerCount} sobrecarregado(s)`);
   return `Alocação · ${parts.join(' · ')}`;
 }

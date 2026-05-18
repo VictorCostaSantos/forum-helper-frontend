@@ -1,12 +1,11 @@
 import React from 'react';
 import Facepile from './Facepile';
 import RotatingLabel from './RotatingLabel';
-import { brandFor } from './activityBrands';
+import { brandContainerStyle, brandFor, brandImageStyle } from './activityBrands';
 import {
   detectCycle,
   formatPeriodCompact,
   formatPeriodRelative,
-  isPerennial,
 } from './dateHelpers';
 import { isAdmin, isPlaceholder } from './team';
 
@@ -35,27 +34,11 @@ function ActivityRow({
   const brand = brandFor(name);
   const userIsAdmin = isAdmin(currentUsername);
   const cycle = detectCycle(instances || []);
-  const cycleLabel = cycle === 'weekly' ? 'semanal'
+  // Label curto pra tooltip do botão "próxima ocorrência" (mais terse).
+  const cycleShort = cycle === 'weekly' ? 'semanal'
     : cycle === 'biweekly' ? 'quinzenal'
     : cycle === 'monthly' ? 'mensal'
     : null;
-
-  // Subtítulo enriquecido — pedaços separados por "·".
-  // Ex: "Moderação · quinzenal · 6 ocorrências"
-  const subtitleParts = (() => {
-    const parts = [];
-    if (reference && isPerennial(reference)) {
-      parts.push('Fixo');
-    } else if (brand.subtitle) {
-      parts.push(brand.subtitle);
-    } else {
-      parts.push('Pontual');
-    }
-    if (cycleLabel) parts.push(cycleLabel);
-    const count = (instances || []).length;
-    if (count > 1) parts.push(`${count} ocorrências`);
-    return parts;
-  })();
 
   // Permissão de INTERAGIR com a estação. Estamos sempre liberados pra abrir
   // o popover/clicar — a regra fina (admin vê todos, demais só si mesmo) é
@@ -80,10 +63,19 @@ function ActivityRow({
       <div className="alloc-station__identity">
         <div
           className="alloc-station__icon"
-          style={{ color: brand.color, borderColor: `${brand.color}33`, background: `${brand.color}14` }}
+          style={brandContainerStyle(brand)}
           aria-hidden="true"
         >
-          <i className={brand.icon}></i>
+          {brand.image ? (
+            <img
+              src={brand.image}
+              alt=""
+              className="alloc-station__icon-img"
+              style={brandImageStyle(brand)}
+            />
+          ) : (
+            <i className={brand.icon}></i>
+          )}
         </div>
         <div className="alloc-station__id-text">
           <button
@@ -94,14 +86,6 @@ function ActivityRow({
           >
             {name}
           </button>
-          <div className="alloc-station__sub">
-            {subtitleParts.map((part, idx) => (
-              <React.Fragment key={idx}>
-                {idx > 0 ? <span className="alloc-station__sub-sep" aria-hidden="true">·</span> : null}
-                <span>{part}</span>
-              </React.Fragment>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -135,33 +119,28 @@ function ActivityRow({
         />
       </div>
 
-      {/* Atalho "Virar plantão" — aparece quando NÃO tem nextShift mas a
-          estação é cíclica (já tem padrão detectado). SÓ admin pode usar
-          (decisão pra evitar que responsável crie ciclos descontroladamente). */}
+      {/* Atalho "Próxima ocorrência" — aparece quando NÃO tem nextShift
+          mas a estação é cíclica. Só admin. */}
       {!nextShift && cycle && onExtendStation && userIsAdmin ? (
         <button
           type="button"
           className="alloc-station__extend"
           onClick={() => onExtendStation(station)}
-          title={`Criar próxima ocorrência ${cycleLabel}`}
+          title={`Criar próxima ocorrência ${cycleShort || ''}`.trim()}
         >
           <i className="fa-solid fa-rotate-right"></i>
-          Virar plantão
+          Próxima ocorrência
         </button>
       ) : null}
 
-      {/* 3. PRÓXIMO PLANTÃO — só aparece se houver próxima instância agendada.
-            Atividades cíclicas vão preencher isso automaticamente. */}
+      {/* 3. PRÓXIMO PLANTÃO — só aparece se houver próxima instância
+            agendada. Mostra a DATA direta (sem rotating com "Próxima
+            semana", que confundia visualmente). */}
       {nextShift ? (
         <div className="alloc-station__next">
           <div className="alloc-station__next-label">
             <span>Próximo · </span>
-            <RotatingLabel
-              labels={[
-                formatPeriodRelative(nextShift, anchorMonday),
-                formatPeriodCompact(nextShift),
-              ]}
-            />
+            <span>{formatPeriodCompact(nextShift)}</span>
           </div>
           <Facepile
             usernames={Array.isArray(nextShift.responsaveis) ? nextShift.responsaveis : []}

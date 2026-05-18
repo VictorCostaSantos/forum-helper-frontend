@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { brandFor } from './activityBrands';
+import { brandContainerStyle, brandFor, brandImageStyle } from './activityBrands';
 import { detectCycle, formatDateShort } from './dateHelpers';
 import { isAdmin } from './team';
 
@@ -105,7 +105,7 @@ function AllocationCentral({
     setBusy(station.name);
     try {
       await onExtendStation?.(station);
-      window.__showToast?.(`Próximo plantão de "${station.name}" criado.`, 'success');
+      window.__showToast?.(`Próxima ocorrência de "${station.name}" criada.`, 'success');
     } catch (e) {
       window.__showToast?.(e?.message || 'Erro ao estender ciclo.', 'error');
     } finally {
@@ -137,7 +137,7 @@ function AllocationCentral({
         <div className="alloc-central__notice">
           <i className="fa-solid fa-circle-info"></i>
           <div>
-            <b>Apagar futuras</b> remove só os plantões agendados pra frente —
+            <b>Apagar futuras</b> remove só as ocorrências agendadas pra frente —
             histórico do que já passou fica intacto e ninguém é "expulso" do
             presente. Pra recolocar, use <b>Estender ciclo</b> (ou crie nova
             atividade com o mesmo nome).
@@ -160,9 +160,13 @@ function AllocationCentral({
                 <div className="alloc-central__identity">
                   <div
                     className="alloc-central__icon"
-                    style={{ color: brand.color, background: `${brand.color}14`, borderColor: `${brand.color}33` }}
+                    style={brandContainerStyle(brand)}
                   >
-                    <i className={brand.icon}></i>
+                    {brand.image ? (
+                      <img src={brand.image} alt="" className="alloc-central__icon-img" style={brandImageStyle(brand)} />
+                    ) : (
+                      <i className={brand.icon}></i>
+                    )}
                   </div>
                   <div>
                     <div className="alloc-central__name">{station.name}</div>

@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import UserAvatar from '../../shared/components/UserAvatar';
 import AddPersonPopover from './AddPersonPopover';
-import { avatarFallbackUrl, getDisplayName, isAdmin, isPlaceholder } from './team';
+import {
+  avatarFallbackUrl,
+  getDisplayName,
+  isAdmin,
+  isPlaceholder,
+} from './team';
 
 /*
   Stack de avatares sobrepostos (-8px margin-left) + botão "+" no fim.
 
-  - `usernames`: lista de quem está alocado nessa instância
-  - `onTogglePerson`: handler chamado com username quando o usuário marca/desmarca
-                     no popover OU clica em um avatar pra remover.
-  - `variant`: "current" (32px, colorido) ou "next" (24px, grayscale + opaco)
-  - `canManage`: se false, esconde botão + e desativa click nos avatares
+  `usernames` pode conter 2 tipos de strings:
+    - Username real (membro do TEAM)
+    - `__vago__` placeholder (filtrado, esconde)
 
-  Confirmação de remoção é inline no avatar (segundo click). Pra trocas mais
-  finas (em massa), usar o popover do botão +.
+  Confirmação de remoção é inline no avatar (segundo click). Pra trocas
+  mais finas (em massa), usar o popover do botão +.
 */
 function Facepile({
   usernames = [],
@@ -21,15 +24,23 @@ function Facepile({
   variant = 'current',
   canManage = true,
   emptyLabel = null,
-  avatarsMap = null,         // Map<username, url> preloaded (backend ou fallback)
-  highlightedUser = null,    // quando setado, esmaece TODOS os outros
-  loadByUser = null,         // passa pro popover pra mostrar alerta de carga
-  stationsByUser = null,     // pro tooltip rico do avatar
-  currentUsername = '',      // pra restringir remoção a si mesmo (não-admin)
+  avatarsMap = null,
+  highlightedUser = null,
+  loadByUser = null,
+  stationsByUser = null,
+  currentUsername = '',
 }) {
-  // Filtra placeholder "vago" — internamente representa "card vazio".
-  const realUsernames = usernames.filter((u) => !isPlaceholder(u));
+  // Placeholders são ignorados (representam "card vazio" — sem avatar).
+  // Ordenação alfabética por displayName pra não parecer que sempre são
+  // "as mesmas pessoas primeiro" — a ordem do array no backend reflete a
+  // ordem de adição, mas visualmente queremos imparcialidade.
+  const realUsernames = usernames
+    .filter((u) => !isPlaceholder(u))
+    .slice()
+    .sort((a, b) => getDisplayName(a).localeCompare(getDisplayName(b), 'pt-BR'));
+
   const userIsAdmin = isAdmin(currentUsername);
+  const userIsCurrentlyIn = realUsernames.includes(currentUsername);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [confirmingUser, setConfirmingUser] = useState(null);
   const size = variant === 'next' ? 24 : 32;
@@ -64,8 +75,6 @@ function Facepile({
       try {
         await onTogglePerson?.(username);
       } catch (err) {
-        // Backend pode rejeitar (ex: validate "min 1 responsável"). Mostra
-        // a mensagem mais útil que conseguir extrair.
         const data = err?.response?.data;
         const msg = (Array.isArray(data?.detalhes) && data.detalhes[0])
           || data?.erro
@@ -77,7 +86,6 @@ function Facepile({
       return;
     }
     setConfirmingUser(username);
-    // Reset depois de 2.5s sem confirmar.
     setTimeout(() => setConfirmingUser((u) => (u === username ? null : u)), 2500);
   };
 
@@ -90,6 +98,8 @@ function Facepile({
       {realUsernames.length === 0 && canManage ? (
         <span className="alloc-facepile__empty">Vago</span>
       ) : null}
+
+      {/* Avatares reais (membros alocados de fato) */}
       {realUsernames.map((u) => {
         const isHighlighted = highlightedUser === u;
         const isDimmedOther = Boolean(highlightedUser) && !isHighlighted;
@@ -126,37 +136,39 @@ function Facepile({
         );
       })}
 
+      {/* Botão "+/sair" — comportamento muda conforme contexto:
+          - Admin: abre popover de gestão (qualquer estado).
+          - Não-admin alocado: vira "sair".
+          - Não-admin fora: vira "entrar". */}
       {canManage && variant === 'current' ? (
         <div className="alloc-facepile__add-wrap">
           <button
             type="button"
             className={`alloc-facepile__add ${popoverOpen ? 'is-open' : ''} ${
-              !userIsAdmin && realUsernames.includes(currentUsername) ? 'is-self-in' : ''
+              !userIsAdmin && userIsCurrentlyIn ? 'is-self-in' : ''
             }`}
             onClick={(e) => {
               e.stopPropagation();
-              // Não-admin: 1 clique = entra/sai direto (sem popover).
               if (!userIsAdmin && currentUsername) {
                 onTogglePerson?.(currentUsername);
                 return;
               }
-              // Admin: abre o popover pra escolher quem adicionar/remover.
               setPopoverOpen((v) => !v);
             }}
             aria-label={
               !userIsAdmin
-                ? (realUsernames.includes(currentUsername) ? 'Sair da atividade' : 'Entrar na atividade')
+                ? (userIsCurrentlyIn ? 'Sair da atividade' : 'Entrar na atividade')
                 : 'Adicionar pessoa'
             }
             aria-expanded={userIsAdmin ? popoverOpen : undefined}
             title={
               !userIsAdmin
-                ? (realUsernames.includes(currentUsername) ? 'Sair da atividade' : 'Entrar na atividade')
+                ? (userIsCurrentlyIn ? 'Sair da atividade' : 'Entrar na atividade')
                 : 'Adicionar pessoa'
             }
           >
             <i className={
-              !userIsAdmin && realUsernames.includes(currentUsername)
+              !userIsAdmin && userIsCurrentlyIn
                 ? 'fa-solid fa-arrow-right-from-bracket'
                 : 'fa-solid fa-plus'
             }></i>

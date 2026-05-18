@@ -3,11 +3,12 @@ import ActivityRow from './ActivityRow';
 import ActivityDrawer from './ActivityDrawer';
 import AllocationCentral from './AllocationCentral';
 import ThermometerSidebar from './ThermometerSidebar';
+import UserAvatar from '../../shared/components/UserAvatar';
+import { brandFor, brandImageStyle } from './activityBrands';
 import { useAllocation } from './useAllocation';
-import { useAllocationSummary } from './useAllocationSummary';
 import { useTeamAvatars } from './useTeamAvatars';
 import { addDays, formatWeekRange, mondayOf } from './dateHelpers';
-import { isAdmin } from './team';
+import { avatarFallbackUrl, isAdmin, isPlaceholder, TEAM } from './team';
 
 /*
   Painel de Alocação — Flight Board.
@@ -22,11 +23,13 @@ function AllocationView() {
   // Filtro por pessoa: quando setado, esmaece estações onde a pessoa NÃO
   // está. Toggle: click no row do termômetro liga/desliga.
   const [focusUser, setFocusUser] = useState(null);
+  // Banner dismissal — fica fechado até o conteúdo MUDAR (key derivada da
+  // contagem + chips ativos). Quando algo novo cai, reabre automaticamente.
+  const [bannerDismissedAt, setBannerDismissedAt] = useState(null);
 
   // Map { username -> avatarUrl } com preload (backend) + fallback (ui-avatars).
   // Mesma estratégia do Mural. Sempre populado pra todo TEAM no 1º render.
   const avatarsMap = useTeamAvatars();
-  const summary = useAllocationSummary();
 
   const [drawer, setDrawer] = useState({
     open: false,
@@ -59,6 +62,40 @@ function AllocationView() {
 
   const weekLabel = useMemo(() => formatWeekRange(monday), [monday]);
 
+  /*
+    Sumário LOCAL (mesma fonte do termômetro): garante que o banner conte
+    o mesmo número de vagos/sobrecarregados que o sidebar mostra. Antes
+    usávamos useAllocationSummary (cache global compartilhado c/ header),
+    mas o TTL/inflight do cache fazia o banner ficar defasado por alguns
+    segundos depois de uma edição — o usuário via o termômetro com 2
+    pessoas em 110% e o banner dizendo "1 pessoa". Aqui não tem latência.
+  */
+  const summary = useMemo(() => {
+    const vagoStations = [];
+    for (const st of stations) {
+      if (!st.currentShift) continue;
+      const list = Array.isArray(st.currentShift.responsaveis) ? st.currentShift.responsaveis : [];
+      const real = list.filter((u) => !isPlaceholder(u));
+      if (real.length === 0) vagoStations.push(st.name);
+    }
+    const dangerUsers = [];
+    for (const m of TEAM) {
+      const info = loadByUser.get(m.username);
+      if (info && info.pct >= 90) {
+        dangerUsers.push({ username: m.username, displayName: m.displayName, pct: info.pct });
+      }
+    }
+    const total = vagoStations.length + dangerUsers.length;
+    return {
+      vagoStations,
+      vagoCount: vagoStations.length,
+      dangerUsers,
+      dangerCount: dangerUsers.length,
+      total,
+      tone: vagoStations.length > 0 ? 'danger' : (dangerUsers.length > 0 ? 'warn' : 'ok'),
+    };
+  }, [stations, loadByUser]);
+
   const goToWeek  = (delta) => setAnchor((curr) => addDays(curr, delta));
   const goToToday = () => setAnchor(mondayOf(new Date()));
 
@@ -87,9 +124,9 @@ function AllocationView() {
   const handleExtend = async (station) => {
     try {
       await extendStation(station.name, currentUsername);
-      window.__showToast?.('Próximo plantão criado.', 'success');
+      window.__showToast?.('Próxima ocorrência criada.', 'success');
     } catch (e) {
-      window.__showToast?.(e?.message || 'Erro ao virar plantão.', 'error');
+      window.__showToast?.(e?.message || 'Erro ao criar ocorrência.', 'error');
     }
   };
 
@@ -102,7 +139,7 @@ function AllocationView() {
           <div>
             <h1 className="alloc-shell__title">Alocações Operacionais</h1>
             <p className="alloc-shell__subtitle">
-              Visão de plantões e carga de trabalho da equipe de suporte.
+              Visão das atividades e da carga da equipe de suporte.
             </p>
           </div>
 
@@ -167,41 +204,114 @@ function AllocationView() {
             Chips clicáveis: vago foca o filtro pelo termômetro indireto
             (não dá pra "filtrar por vago" hoje, então só faz scrollIntoView
             do primeiro card vago); danger filtra pela pessoa em sobrecarga. */}
-        {summary.total > 0 ? (
-          <div className={`alloc-warnings alloc-warnings--${summary.tone}`} role="status">
-            <i className="fa-solid fa-triangle-exclamation alloc-warnings__icon"></i>
-            <span className="alloc-warnings__label">Atenção:</span>
-            <div className="alloc-warnings__chips">
-              {summary.vagoStations.map((name) => (
-                <button
-                  key={`vago-${name}`}
-                  type="button"
-                  className="alloc-warnings__chip alloc-warnings__chip--danger"
-                  onClick={() => {
-                    const el = document.querySelector(`[data-station-name="${CSS.escape(name)}"]`);
-                    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  }}
-                  title={`Plantão vago: ${name}`}
-                >
-                  <i className="fa-solid fa-circle-exclamation"></i>
-                  {name} · vago
-                </button>
-              ))}
+        {(() => {
+          // Assinatura do banner atual: muda quando entra/sai vago ou
+          // sobrecarga. Comparada com bannerDismissedAt — se mudou, reabre.
+          const bannerKey = [
+            ...summary.vagoStations,
+            ...summary.dangerUsers.map((u) => `${u.username}:${u.pct}`),
+          ].join('|');
+          const showBanner = summary.total > 0 && bannerDismissedAt !== bannerKey;
+          return showBanner ? (
+          <section
+            className={`alloc-warnings alloc-warnings--${summary.tone}`}
+            role="status"
+            aria-label="Avisos da alocação"
+          >
+            <header className="alloc-warnings__head">
+              <div className="alloc-warnings__head-left">
+                <span className="alloc-warnings__icon" aria-hidden="true">
+                  <i className="fa-solid fa-triangle-exclamation"></i>
+                </span>
+                <div>
+                  <h3 className="alloc-warnings__title">
+                    {summary.total === 1
+                      ? '1 aviso pedindo atenção'
+                      : `${summary.total} avisos pedindo atenção`}
+                  </h3>
+                  <p className="alloc-warnings__desc">
+                    {summary.vagoCount > 0 && summary.dangerCount > 0
+                      ? `${summary.vagoCount} atividade(s) sem ninguém e ${summary.dangerCount} pessoa(s) acima do limite saudável.`
+                      : summary.vagoCount > 0
+                        ? `${summary.vagoCount} atividade(s) sem ninguém esta semana.`
+                        : `${summary.dangerCount} pessoa(s) acima do limite saudável de alocação.`}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="alloc-warnings__close"
+                onClick={() => setBannerDismissedAt(bannerKey)}
+                title="Ignorar até a próxima mudança"
+                aria-label="Fechar aviso"
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </header>
+
+            <div className="alloc-warnings__list">
+              {summary.vagoStations.map((name) => {
+                const brand = brandFor(name);
+                return (
+                  <button
+                    key={`vago-${name}`}
+                    type="button"
+                    className="alloc-warnings__item"
+                    onClick={() => {
+                      const el = document.querySelector(`[data-station-name="${CSS.escape(name)}"]`);
+                      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }}
+                    title={`Ir pro card "${name}"`}
+                  >
+                    <span
+                      className="alloc-warnings__item-avatar alloc-warnings__item-avatar--activity"
+                      style={{ background: brand.image ? brand.color : `linear-gradient(135deg, ${brand.color}, ${brand.color}AA)` }}
+                      aria-hidden="true"
+                    >
+                      {brand.image ? (
+                        <img src={brand.image} alt="" className="alloc-warnings__item-avatar-pic" style={brandImageStyle(brand)} />
+                      ) : (
+                        <i className={brand.icon}></i>
+                      )}
+                    </span>
+                    <span className="alloc-warnings__item-text">
+                      <b>{name}</b>
+                      <span className="alloc-warnings__item-meta">esta semana sem alocação</span>
+                    </span>
+                    <span className="alloc-warnings__item-status alloc-warnings__item-status--text">vaga</span>
+                  </button>
+                );
+              })}
               {summary.dangerUsers.map((u) => (
                 <button
                   key={`danger-${u.username}`}
                   type="button"
-                  className="alloc-warnings__chip alloc-warnings__chip--warn"
+                  className="alloc-warnings__item"
                   onClick={() => setFocusUser(u.username)}
-                  title={`${u.displayName} em ${u.pct}% de carga`}
+                  title={`Filtrar pelas atividades de ${u.displayName}`}
                 >
-                  <i className="fa-solid fa-bolt"></i>
-                  {u.displayName.split(' ')[0]} · {u.pct}%
+                  <span className="alloc-warnings__item-avatar alloc-warnings__item-avatar--person" aria-hidden="true">
+                    <UserAvatar
+                      name={u.displayName}
+                      src={avatarsMap?.get?.(u.username) || avatarFallbackUrl(u.username)}
+                      size={32}
+                      cacheKey={u.username}
+                      className="alloc-warnings__item-avatar-img"
+                    />
+                  </span>
+                  <span className="alloc-warnings__item-text">
+                    <b>{u.displayName}</b>
+                    <span className="alloc-warnings__item-meta">carga semanal alta</span>
+                  </span>
+                  <span className={`alloc-warnings__item-status ${u.pct >= 100 ? '' : 'alloc-warnings__item-status--warn'}`}>
+                    {u.pct}%
+                  </span>
                 </button>
               ))}
             </div>
-          </div>
-        ) : null}
+          </section>
+        ) : null;
+        })()}
 
         <div className={`alloc-shell__grid ${loading ? 'is-loading' : ''}`}>
           <section className="alloc-stations" aria-label="Estações de alocação">

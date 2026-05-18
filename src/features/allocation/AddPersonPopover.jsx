@@ -37,9 +37,12 @@ function AddPersonPopover({ open, currentSelection, onToggle, onClose, loadByUse
   const userIsAdmin = isAdmin(currentUsername);
 
   // Não-admin só vê e pode mexer NA SUA PRÓPRIA entrada. Admin vê todos.
-  const visibleTeam = userIsAdmin
+  // Ordem alfabética por displayName — evita "sempre as mesmas pessoas
+   // primeiro" na lista. Usa pt-BR pra acentos.
+  const visibleTeam = (userIsAdmin
     ? TEAM
-    : TEAM.filter((m) => m.username === currentUsername);
+    : TEAM.filter((m) => m.username === currentUsername)
+  ).slice().sort((a, b) => a.displayName.localeCompare(b.displayName, 'pt-BR'));
 
   // Sugestor: 2 pessoas com MENOR carga atual, não selecionadas e fora do
   // danger zone. Greedy simples. Se não houver `loadByUser`, não sugere nada.

@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>Variantes — Notificações e Banner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<style>
+  :root {
+    --bg: #0F1115;
+    --card: #1A1D24;
+    --card-2: #20242C;
+    --border: #292D36;
+    --border-soft: #20242C;
+    --text: #E7E9EF;
+    --text-2: #C5C9D2;
+    --muted: #9CA3AF;
+    --accent: #5B6CFF;
+    --info: #38BDF8;
+    --warn: #F59E0B;
+    --danger: #EF4444;
+    --success: #22C55E;
+    --shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+    line-height: 1.5;
+    padding: 32px 24px 64px;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; }
+  h1 {
+    font-size: 1.7rem; font-weight: 700; letter-spacing: -0.02em;
+    margin: 0 0 6px;
+  }
+  .subtitle {
+    color: var(--muted); font-size: 0.9rem; margin: 0 0 32px;
+  }
+  h2 {
+    font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em;
+    margin: 36px 0 14px;
+    color: var(--text);
+  }
+  .section-desc {
+    color: var(--muted); font-size: 0.84rem; margin: 0 0 18px;
+  }
+
+  /* Grid de variantes */
+  .variants {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  @media (max-width: 900px) {
+    .variants { grid-template-columns: 1fr; }
+  }
+
+  .variant {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px 22px;
+    box-shadow: var(--shadow);
+  }
+  .variant__head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .variant__id {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--accent);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  .variant__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .variant__desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin: 0 0 18px;
+    line-height: 1.45;
+  }
+  .variant__demo {
+    background: var(--bg);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 8px;
+    min-height: 200px;
+  }
+
+  /* ============= NOTIFICATION VARIANT A — Inbox enxuto ============= */
+  .nA-list { display: flex; flex-direction: column; }
+  .nA-item {
+    display: grid;
+    grid-template-columns: 14px 1fr auto;
+    align-items: start;
+    gap: 8px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border-soft);
+    cursor: pointer;
+  }
+  .nA-item:last-child { border-bottom: none; }
+  .nA-item:hover { background: rgba(255,255,255,0.02); }
+  .nA-bullet {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text);
+    margin-top: 8px;
+    opacity: 0;
+  }
+  .nA-item.is-unread .nA-bullet { opacity: 1; }
+  .nA-title {
+    font-size: 0.83rem;
+    color: var(--text-2);
+    line-height: 1.35;
+    font-weight: 400;
+  }
+  .nA-item.is-unread .nA-title {
+    color: var(--text);
+    font-weight: 700;
+  }
+  .nA-body {
+    font-size: 0.76rem;
+    color: var(--muted);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+  .nA-time {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    margin-top: 2px;
+  }
+
+  /* ============= NOTIFICATION VARIANT B — Chat ============= */
+  .nB-list { display: flex; flex-direction: column; gap: 2px; }
+  .nB-item {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    align-items: start;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .nB-item:hover { background: rgba(255,255,255,0.03); }
+  .nB-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5B6CFF, #8B5CF6);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .nB-avatar--green { background: linear-gradient(135deg, #22C55E, #10B981); }
+  .nB-avatar--orange { background: linear-gradient(135deg, #F59E0B, #EA580C); }
+  .nB-name {
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: var(--text-2);
+  }
+  .nB-item.is-unread .nB-name {
+    color: var(--text);
+    font-weight: 700;
+  }
+  .nB-preview {
+    font-size: 0.76rem;
+    color: var(--muted);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+  .nB-time {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .nB-item.is-unread .nB-time {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ============= NOTIFICATION VARIANT C — Activity flat ============= */
+  .nC-list { display: flex; flex-direction: column; gap: 0; }
+  .nC-item {
+    display: grid;
+    grid-template-columns: 22px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    border-radius: 6px;
+  }
+  .nC-item:hover { background: rgba(255,255,255,0.03); }
+  .nC-icon {
+    width: 22px; height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .nC-item.is-unread .nC-icon { color: var(--accent); }
+  .nC-title {
+    font-size: 0.82rem;
+    color: var(--text-2);
+    line-height: 1.35;
+  }
+  .nC-item.is-unread .nC-title {
+    color: var(--text);
+    font-weight: 700;
+  }
+  .nC-time {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* ============= NOTIFICATION VARIANT D — Twitter card ============= */
+  .nD-list { display: flex; flex-direction: column; gap: 4px; }
+  .nD-item {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .nD-item:hover { background: rgba(255,255,255,0.03); }
+  .nD-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5B6CFF, #8B5CF6);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .nD-source {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .nD-item.is-unread .nD-source { color: var(--accent); }
+  .nD-source-sep { opacity: 0.5; margin: 0 4px; }
+  .nD-title {
+    font-size: 0.85rem;
+    color: var(--text-2);
+    line-height: 1.4;
+    font-weight: 400;
+  }
+  .nD-item.is-unread .nD-title {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .nD-body {
+    font-size: 0.76rem;
+    color: var(--muted);
+    line-height: 1.45;
+    margin-top: 3px;
+  }
+
+  /* ============= BANNER VARIANT α — Stack with icons ============= */
+  .ba {
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.10), transparent 70%), var(--card);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+  .ba__title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--danger);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .ba__list { display: flex; flex-direction: column; gap: 2px; }
+  .ba__item {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .ba__item:hover { background: rgba(255,255,255,0.03); }
+  .ba__icon {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5B6CFF, #8B5CF6);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+  .ba__icon--activity {
+    background: linear-gradient(135deg, #38BDF8, #6366F1);
+    font-size: 0.76rem;
+    font-weight: 500;
+  }
+  .ba__text {
+    font-size: 0.83rem;
+    color: var(--text-2);
+  }
+  .ba__text b { color: var(--text); font-weight: 600; }
+  .ba__text .ba__meta { color: var(--muted); font-size: 0.76rem; margin-left: 6px; }
+
+  /* ============= BANNER VARIANT β — Hero metrics ============= */
+  .bb {
+    padding: 22px 24px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.10), transparent 70%), var(--card);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-items: center;
+  }
+  .bb__metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .bb__num {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--danger);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .bb__num--warn { color: var(--warn); }
+  .bb__lbl {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+  .bb__footer {
+    grid-column: 1 / -1;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .bb__total {
+    font-size: 0.86rem;
+    color: var(--text-2);
+    font-weight: 500;
+  }
+  .bb__link {
+    font-size: 0.82rem;
+    color: var(--accent);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* ============= BANNER VARIANT γ — One-liner ============= */
+  .bc {
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.10), transparent 70%), var(--card);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .bc__icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+  .bc__text {
+    flex: 1;
+    font-size: 0.85rem;
+    color: var(--text-2);
+    line-height: 1.45;
+  }
+  .bc__text b { color: var(--text); font-weight: 600; }
+  .bc__cta {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    flex-shrink: 0;
+  }
+
+  /* ============= BANNER VARIANT δ — Stack discreto com seta ============= */
+  .bd {
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+  .bd__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .bd__head-icon {
+    color: var(--danger);
+    font-size: 0.86rem;
+  }
+  .bd__head-text {
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .bd__list { display: flex; flex-direction: column; }
+  .bd__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 4px;
+    border-bottom: 1px solid var(--border-soft);
+    cursor: pointer;
+    transition: background 0.15s ease;
+    border-radius: 4px;
+  }
+  .bd__item:last-child { border-bottom: none; }
+  .bd__item:hover { background: rgba(255,255,255,0.03); }
+  .bd__item-text {
+    font-size: 0.83rem;
+    color: var(--text-2);
+  }
+  .bd__item-text b { color: var(--text); font-weight: 600; }
+  .bd__item-chev {
+    color: var(--muted);
+    font-size: 0.72rem;
+    opacity: 0.5;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .bd__item:hover .bd__item-chev {
+    opacity: 1;
+    transform: translateX(2px);
+    color: var(--accent);
+  }
+
+  /* Helper: section divider */
+  .section-divider {
+    margin: 56px 0 24px;
+    border: none;
+    border-top: 1px dashed var(--border);
+  }
+
+  .legend {
+    margin-top: 8px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    padding: 6px 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    border-left: none;
+  }
+  .legend strong { color: var(--text-2); }
+
+  .footer {
+    margin-top: 56px; padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 0.78rem; color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Variantes — Notificações e Banner</h1>
+<p class="subtitle">Cada bloco é uma proposta renderizada. Indicador de "não lida" usa só peso da fonte / cor sutil — sem barra lateral, sem dot verde. Banner sem pílulas.</p>
+
+<h2>1. Notificações (4 opções)</h2>
+<p class="section-desc">Cada variante mostra 4 items: 2 não-lidos (acima) e 2 lidos (abaixo) pra você ver o contraste.</p>
+
+<div class="variants">
+
+  <!-- VARIANT A — Inbox enxuto -->
+  <div class="variant">
+    <div class="variant__head">
+      <span class="variant__id">A.</span>
+      <span class="variant__title">Inbox enxuto (Gmail-like)</span>
+    </div>
+    <p class="variant__desc">
+      Linha super fina. Sem fundo, sem avatar grande. Bullet 6px à esquerda só nos não-lidos. Título bold quando não-lido. Padding 8px/10px — muito compacto.
+    </p>
+    <div class="variant__demo">
+      <div class="nA-list">
+        <div class="nA-item is-unread">
+          <span class="nA-bullet"></span>
+          <div>
+            <div class="nA-title">Você foi alocado em Fórum</div>
+            <div class="nA-body">Confira datas e equipe</div>
+          </div>
+          <span class="nA-time">Hoje 15:19</span>
+        </div>
+        <div class="nA-item is-unread">
+          <span class="nA-bullet"></span>
+          <div>
+            <div class="nA-title">Pico de tópicos novos</div>
+            <div class="nA-body">6 tópicos nas últimas 2h</div>
+          </div>
+          <span class="nA-time">14:01</span>
+        </div>
+        <div class="nA-item">
+          <span class="nA-bullet"></span>
+          <div>
+            <div class="nA-title">Foco do dia mudou: Java + JavaScript</div>
+            <div class="nA-body">Agora foca nesse tópico</div>
+          </div>
+          <span class="nA-time">09:00</span>
+        </div>
+        <div class="nA-item">
+          <span class="nA-bullet"></span>
+          <div>
+            <div class="nA-title">Discord termina hoje</div>
+            <div class="nA-body">Último dia da sua alocação</div>
+          </div>
+          <span class="nA-time">Ontem</span>
+        </div>
+      </div>
+    </div>
+    <div class="legend"><strong>Unread:</strong> bullet + título em bold · <strong>Lida:</strong> sem bullet, regular</div>
+  </div>
+
+  <!-- VARIANT B — Chat -->
+  <div class="variant">
+    <div class="variant__head">
+      <span class="variant__id">B.</span>
+      <span class="variant__title">Chat (WhatsApp/iMessage)</span>
+    </div>
+    <p class="variant__desc">
+      Avatar circular 32px à esquerda com gradiente da categoria. Nome em negrito (bold quando unread), preview em cinza. Hora pequena à direita — em accent (azul) quando unread.
+    </p>
+    <div class="variant__demo">
+      <div class="nB-list">
+        <div class="nB-item is-unread">
+          <span class="nB-avatar"><i class="fa-solid fa-calendar-check"></i></span>
+          <div>
+            <div class="nB-name">Alocação</div>
+            <div class="nB-preview">Você foi alocado em Fórum · confira datas</div>
+          </div>
+          <span class="nB-time">15:19</span>
+        </div>
+        <div class="nB-item is-unread">
+          <span class="nB-avatar nB-avatar--orange"><i class="fa-solid fa-arrow-trend-up"></i></span>
+          <div>
+            <div class="nB-name">Tópicos</div>
+            <div class="nB-preview">Pico de 6 nas últimas 2h, 60% acima</div>
+          </div>
+          <span class="nB-time">14:01</span>
+        </div>
+        <div class="nB-item">
+          <span class="nB-avatar nB-avatar--green"><i class="fa-solid fa-bullseye"></i></span>
+          <div>
+            <div class="nB-name">Foco</div>
+            <div class="nB-preview">Agora: Java + JavaScript</div>
+          </div>
+          <span class="nB-time">09:00</span>
+        </div>
+        <div class="nB-item">
+          <span class="nB-avatar"><i class="fa-solid fa-flag-checkered"></i></span>
+          <div>
+            <div class="nB-name">Alocação</div>
+            <div class="nB-preview">Discord termina hoje</div>
+          </div>
+          <span class="nB-time">Ontem</span>
+        </div>
+      </div>
+    </div>
+    <div class="legend"><strong>Unread:</strong> nome bold + hora em azul · <strong>Lida:</strong> tudo cinza</div>
+  </div>
+
+  <!-- VARIANT C — Activity flat -->
+  <div class="variant">
+    <div class="variant__head">
+      <span class="variant__id">C.</span>
+      <span class="variant__title">Activity flat (Notion/Linear)</span>
+    </div>
+    <p class="variant__desc">
+      Super denso. Linha única por item. Ícone monocromático 22px (em azul quando unread). Sem body, sem source. Tempo relativo discreto à direita.
+    </p>
+    <div class="variant__demo">
+      <div class="nC-list">
+        <div class="nC-item is-unread">
+          <span class="nC-icon"><i class="fa-solid fa-user-plus"></i></span>
+          <div class="nC-title">Você foi alocado em Fórum</div>
+          <span class="nC-time">1h</span>
+        </div>
+        <div class="nC-item is-unread">
+          <span class="nC-icon"><i class="fa-solid fa-arrow-trend-up"></i></span>
+          <div class="nC-title">Pico de 6 tópicos nas últimas 2h</div>
+          <span class="nC-time">2h</span>
+        </div>
+        <div class="nC-item is-unread">
+          <span class="nC-icon"><i class="fa-solid fa-scale-balanced"></i></span>
+          <div class="nC-title">Fórum: peso 1 → 2</div>
+          <span class="nC-time">3h</span>
+        </div>
+        <div class="nC-item">
+          <span class="nC-icon"><i class="fa-solid fa-bullseye"></i></span>
+          <div class="nC-title">Foco do dia: Java + JavaScript</div>
+          <span class="nC-time">ontem</span>
+        </div>
+        <div class="nC-item">
+          <span class="nC-icon"><i class="fa-solid fa-flag-checkered"></i></span>
+          <div class="nC-title">Discord termina hoje</div>
+          <span class="nC-time">ontem</span>
+        </div>
+        <div class="nC-item">
+          <span class="nC-icon"><i class="fa-solid fa-circle-plus"></i></span>
+          <div class="nC-title">Nova atividade: Imersão Frontend</div>
+          <span class="nC-time">2d</span>
+        </div>
+      </div>
+    </div>
+    <div class="legend"><strong>Unread:</strong> ícone em azul + título bold · <strong>Lida:</strong> tudo cinza</div>
+  </div>
+
+  <!-- VARIANT D — Twitter card -->
+  <div class="variant">
+    <div class="variant__head">
+      <span class="variant__id">D.</span>
+      <span class="variant__title">Twitter card</span>
+    </div>
+    <p class="variant__desc">
+      Avatar 36px + source label uppercase com tempo no topo ("ALOCAÇÃO · 1h"). Source em accent quando unread. Título e body abaixo. Mais "social".
+    </p>
+    <div class="variant__demo">
+      <div class="nD-list">
+        <div class="nD-item is-unread">
+          <span class="nD-avatar"><i class="fa-solid fa-calendar-check"></i></span>
+          <div>
+            <div class="nD-source">Alocação<span class="nD-source-sep">·</span>1h</div>
+            <div class="nD-title">Você foi alocado em Fórum</div>
+            <div class="nD-body">Confira datas e equipe</div>
+          </div>
+        </div>
+        <div class="nD-item is-unread">
+          <span class="nD-avatar nB-avatar--orange"><i class="fa-solid fa-arrow-trend-up"></i></span>
+          <div>
+            <div class="nD-source">Tópicos<span class="nD-source-sep">·</span>2h</div>
+            <div class="nD-title">Pico de 6 tópicos em 2h</div>
+            <div class="nD-body">60% acima do normal</div>
+          </div>
+        </div>
+        <div class="nD-item">
+          <span class="nD-avatar nB-avatar--green"><i class="fa-solid fa-bullseye"></i></span>
+          <div>
+            <div class="nD-source">Foco<span class="nD-source-sep">·</span>ontem</div>
+            <div class="nD-title">Foco do dia mudou</div>
+            <div class="nD-body">Agora: Java + JavaScript</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="legend"><strong>Unread:</strong> source em azul + título bold · <strong>Lida:</strong> tudo cinza</div>
+  </div>
+
+</div>
+
+<hr class="section-divider" />
+
+<h2>2. Banner do painel (4 opções)</h2>
+<p class="section-desc">Cenário: 2 atividades sem alocação + 2 pessoas em sobrecarga. Sem pílulas/chips.</p>
+
+<div class="variants">
+
+  <!-- BANNER α — Stack with icons -->
+  <div class="variant">
+    <div class="variant__head">
+      <span class="variant__id">α.</span>
+      <span class="variant__title">Stack com ícones</span>
+    </div>
+    <p class="variant__desc">
+      Lista vertical. Cada problema vira uma linha com mini-ícone (atividade ou avatar de pessoa). Click leva pro card respectivo.
+    </p>
+    <div class="variant__demo">
+      <div class="ba">
+        <div class="ba__title">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          4 avisos pedindo atenção
+        </div>
+        <div class="ba__list">
+          <div class="ba__item">
+            <span class="ba__icon ba__icon--activity"><i class="fa-solid fa-bolt"></i></span>
+            <span class="ba__text"><b>Imersão</b><span class="ba__meta">sem alocação</span></span>
+          </div>
+          <div class="ba__item">
+            <span class="ba__icon ba__icon--activity"><i class="fa-brands fa-discord"></i></span>
+            <span class="ba__text"><b>Discord</b><span class="ba__meta">sem alocação</span></span>
+          </div>
+          <div class="ba__item">
+            <span class="ba__icon">LG</span>
+            <span class="ba__text"><b>Lorena Garcia</b><span class="ba__meta">110% de carga</span></span>
+          </div>
+          <div class="ba__item">
+            <span class="ba__icon">MS</span>
+            <span class="ba__text"><b>Mike de Sousa</b><span class="ba__meta">95% de carga</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="legend">Visual: cada linha tem identidade (atividade vs pessoa). Funciona bem com 3-8 avisos.</div>
+  </div>
+
+  <!-- BANNER β — Hero metrics -->
+  <div class="variant">
+    <div class="variant__head">
+      <span class="variant__id">β.</span>
+      <span class="variant__title">Métricas grandes</span>
+    </div>
+    <p class="variant__desc">
+      Dois números gigantes lado a lado (vagas / sobrecarga). Sem listar items. Texto curto + link "Ver detalhes" no rodapé.
+    </p>
+    <div class="variant__demo">
+      <div class="bb">
+        <div class="bb__metric">
+          <span class="bb__num">2</span>
+          <span class="bb__lbl">atividades<br/>sem alocação</span>
+        </div>
+        <div class="bb__metric">
+          <span class="bb__num bb__num--warn">2</span>
+          <span class="bb__lbl">pessoas em<br/>sobrecarga</span>
+        </div>
+        <div class="bb__footer">
+          <span class="bb__total">4 avisos pedindo atenção</span>
+          <span class="bb__link">Ver detalhes →</span>
+        </div>
+      </div>
+    </div>
+    <div class="legend">Visual: estilo dashboard. Não mostra <em>quem</em>/<em>qual</em>, só agregado.</div>
+  </div>
+
+  <!-- BANNER γ — One-liner -->
+  <div class="variant">
+    <div class="variant__head">
+      <span class="variant__id">γ.</span>
+      <span class="variant__title">One-liner conversacional</span>
+    </div>
+    <p class="variant__desc">
+      Frase única descrevendo a situação, com botão "Resolver" à direita. Super compacto, fica bem com 2-3 avisos. Estoura visualmente com muitos items.
+    </p>
+    <div class="variant__demo">
+      <div class="bc">
+        <span class="bc__icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <span class="bc__text">
+          <b>Imersão</b> e <b>Discord</b> sem alocação · <b>Lorena</b> e <b>Mike</b> em sobrecarga
+        </span>
+        <button class="bc__cta">Resolver</button>
+      </div>
+    </div>
+    <div class="legend">Visual: super enxuto. Não escala bem se passar de ~4 problemas.</div>
+  </div>
+
+  <!-- BANNER δ — Stack discreto com seta -->
+  <div class="variant">
+    <div class="variant__head">
+      <span class="variant__id">δ.</span>
+      <span class="variant__title">Lista discreta</span>
+    </div>
+    <p class="variant__desc">
+      Lista vertical sem cor de severidade no card. Cada linha: texto + seta à direita (aparece no hover). Sem tom de alerta — fica mais "sereno", tipo lista de tarefas.
+    </p>
+    <div class="variant__demo">
+      <div class="bd">
+        <div class="bd__head">
+          <i class="fa-solid fa-triangle-exclamation bd__head-icon"></i>
+          <span class="bd__head-text">4 avisos</span>
+        </div>
+        <div class="bd__list">
+          <div class="bd__item">
+            <span class="bd__item-text"><b>Imersão</b> precisa de alocação</span>
+            <i class="fa-solid fa-arrow-right bd__item-chev"></i>
+          </div>
+          <div class="bd__item">
+            <span class="bd__item-text"><b>Discord</b> precisa de alocação</span>
+            <i class="fa-solid fa-arrow-right bd__item-chev"></i>
+          </div>
+          <div class="bd__item">
+            <span class="bd__item-text"><b>Lorena Garcia</b> está em 110% de carga</span>
+            <i class="fa-solid fa-arrow-right bd__item-chev"></i>
+          </div>
+          <div class="bd__item">
+            <span class="bd__item-text"><b>Mike de Sousa</b> está em 95% de carga</span>
+            <i class="fa-solid fa-arrow-right bd__item-chev"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="legend">Visual: sem cor de severidade. Mais "calmo" — não chama atenção como alerta urgente.</div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Forum Helper · Painel de Alocação · variantes pra aprovação. Indique qual aprovar (ex: <code>B + α</code>) e eu aplico no app.
+</div>
+
+</div>
+</body>
+</html>

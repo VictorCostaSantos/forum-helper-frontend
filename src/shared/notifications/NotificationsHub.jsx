@@ -27,11 +27,6 @@ function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function currentHourISO() {
-  const d = new Date();
-  return `${todayISO()}T${String(d.getHours()).padStart(2, '0')}`;
-}
-
 function hoursLeftToUrgent(ageInDays) {
   const remainingDays = 1 - (ageInDays || 0);
   return Math.max(0, remainingDays * 24);
@@ -47,9 +42,30 @@ function formatHoursLeft(hoursLeft) {
 
 function NotificationsHub({ username, meta, clickupToken }) {
   const { topics } = useTopics();
-  const { announce, setRadarItems, setClickupSummary } = useNotifications();
+  const { announce, dismiss, setRadarItems, setClickupSummary } = useNotifications();
   const [focusCategories, setFocusCategories] = useState([]);
   const [clickupRadar, setClickupRadar] = useState([]);
+
+  /* ============== CLICKUP CONNECT NUDGE ============== */
+  // Onboarding leve: enquanto não tem token, anuncia 1 alerta sticky
+  // sugerindo conectar. Quando o token aparece, dispensa automaticamente.
+  // Pode ser dispensado pelo user (vai pra dismissedIds e não reaparece).
+  useEffect(() => {
+    if (!username) return;
+    if (clickupToken) {
+      dismiss('clickup-not-connected');
+      return;
+    }
+    announce({
+      id: 'clickup-not-connected',
+      kind: 'clickup-connect',
+      severity: 'info',
+      icon: 'fa-plug',
+      title: 'Conecte seu ClickUp',
+      body: 'Tarefas e eventos da operação aparecem aqui depois que vc plugar o token',
+      action: 'open-settings',
+    });
+  }, [username, clickupToken, announce, dismiss]);
 
   const statsBrRef = useRef({ postsToday: 0, postsMonth: 0 });
   const statsLatamRef = useRef({ postsToday: 0, postsMonth: 0 });
@@ -100,6 +116,10 @@ function NotificationsHub({ username, meta, clickupToken }) {
   }, [username, meta, announce]);
 
   /* ============== PICO WATCHER ============== */
+  // Limiares conservadores: o sinal era impreciso (disparava com 3 tópicos
+  // em 2h e 50% acima do "normal"). Agora exige volume ABSOLUTO (>=6) +
+  // baseline mínimo (>=2/janela) + pelo menos DOBRO do baseline. Combinado
+  // com id-por-dia, fica raríssimo — só dispara quando vale olhar.
   useEffect(() => {
     if (!topics || topics.length === 0) return;
 
@@ -108,20 +128,20 @@ function NotificationsHub({ username, meta, clickupToken }) {
       (t) => (t.ageInDays || 0) >= 2 / 24 && (t.ageInDays || 0) <= 1,
     );
 
-    if (recentTopics.length < 3) return;
+    if (recentTopics.length < 6) return;
     const expectedPerTwoHours = baselineTopics.length / 11;
-    if (expectedPerTwoHours < 1) return;
+    if (expectedPerTwoHours < 2) return;
 
     const ratio = recentTopics.length / expectedPerTwoHours;
-    if (ratio < 1.5) return;
+    if (ratio < 2.0) return;
 
     announce({
-      id: `peak-${currentHourISO()}`,
+      id: `peak-${todayISO()}`,
       kind: 'topic-peak',
       icon: 'fa-arrow-trend-up',
       severity: 'warning',
       title: 'Pico de tópicos novos',
-      body: `${recentTopics.length} tópicos nas últimas 2h · ${Math.round((ratio - 1) * 100)}% acima do normal.`,
+      body: `${recentTopics.length} tópicos nas últimas 2h · ${Math.round((ratio - 1) * 100)}% acima do normal`,
     });
   }, [topics, announce]);
 

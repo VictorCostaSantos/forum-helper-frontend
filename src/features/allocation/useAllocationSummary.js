@@ -23,12 +23,35 @@ const cache = {
 
 const listeners = new Set();
 
+/*
+  Canal de sincronização entre tabs do mesmo navegador. Quando uma tab
+  faz uma mutation (refreshAllocationSummary), publica `{ type: 'refresh' }`
+  e as outras tabs também invalidam o cache + refetch. Sem isso, abrir o
+  painel em 2 tabs deixava elas dessincronizadas até o próximo tick de 60s.
+
+  Wrap em try/catch porque BroadcastChannel não existe em browsers antigos.
+*/
+let bc = null;
+try {
+  bc = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('fhAllocSync') : null;
+} catch {
+  bc = null;
+}
+
 function notify() {
   listeners.forEach((fn) => { try { fn(); } catch { /* ignore */ } });
 }
 
 async function fetchIfStale(force = false) {
-  if (cache.inflight) return cache.inflight;
+  // Se já tem um fetch em voo e NÃO foi forçado, espera ele. Mas se foi
+  // forçado (post-mutation), agenda um novo logo após o atual — o inflight
+  // pode ter começado ANTES da mutação chegar no servidor, lendo dados
+  // velhos. Sem isso, refresh pós-edit ficava "perdido" e o banner do sino
+  // mostrava menos alertas que a realidade.
+  if (cache.inflight) {
+    if (!force) return cache.inflight;
+    return cache.inflight.then(() => fetchIfStale(true));
+  }
   if (!force && cache.items && Date.now() - cache.timestamp < TTL_MS) {
     return cache.items;
   }
@@ -125,17 +148,57 @@ export function useAllocationSummary() {
     listeners.add(refresh);
     fetchIfStale();
     const id = setInterval(() => fetchIfStale(true), TTL_MS);
+
+    // Quando a aba volta a ficar visível, força fetch imediato. Cobre o
+    // caso "estava com outra coisa aberta, alguém mexeu, voltei pro app"
+    // sem esperar o próximo tick de 60s.
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        fetchIfStale(true);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    // Outra tab fez mutation → invalida e refaz fetch aqui também.
+    const onMessage = (event) => {
+      if (event?.data?.type === 'refresh') {
+        fetchIfStale(true);
+      }
+    };
+    bc?.addEventListener('message', onMessage);
+
     return () => {
       listeners.delete(refresh);
       clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisibility);
+      bc?.removeEventListener('message', onMessage);
     };
   }, []);
   return computeSummary(cache.items);
 }
 
+/*
+  Expõe os items raw do cache compartilhado pra quem precisa diffar
+  mudanças (ex: bridge que detecta "vc foi alocado em X"). Mesmo store
+  do useAllocationSummary — sem novo fetch.
+*/
+export function useAllocationItems() {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const refresh = () => setTick((t) => t + 1);
+    listeners.add(refresh);
+    fetchIfStale();
+    return () => { listeners.delete(refresh); };
+  }, []);
+  return Array.isArray(cache.items) ? cache.items : [];
+}
+
 // Chamado depois de mutations no painel pra atualizar o badge imediatamente.
+// Também publica no canal de sync pra que outras tabs do mesmo browser
+// reajam — quem aceitou uma cobertura noutra aba não vê estado defasado.
 export function refreshAllocationSummary() {
   // Limpa o sentinel `__vago__` não importa — o cache só guarda o raw items.
   void PLACEHOLDER_USER;
+  try { bc?.postMessage({ type: 'refresh' }); } catch { /* canal fechou */ }
   return fetchIfStale(true);
 }
