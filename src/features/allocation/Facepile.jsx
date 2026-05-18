@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import UserAvatar from '../../shared/components/UserAvatar';
 import AddPersonPopover from './AddPersonPopover';
 import {
@@ -43,6 +43,12 @@ function Facepile({
   const userIsCurrentlyIn = realUsernames.includes(currentUsername);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [confirmingUser, setConfirmingUser] = useState(null);
+  // Ref do timer da confirmação — limpa no cleanup pra evitar setState
+  // num componente já desmontado (warning React 18).
+  const confirmTimerRef = useRef(null);
+  useEffect(() => () => {
+    if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
+  }, []);
   const size = variant === 'next' ? 24 : 32;
 
   const PESO_LABEL = { 1: 'baixa', 2: 'média', 3: 'alta' };
@@ -86,7 +92,11 @@ function Facepile({
       return;
     }
     setConfirmingUser(username);
-    setTimeout(() => setConfirmingUser((u) => (u === username ? null : u)), 2500);
+    if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
+    confirmTimerRef.current = setTimeout(
+      () => setConfirmingUser((u) => (u === username ? null : u)),
+      2500,
+    );
   };
 
   if (realUsernames.length === 0 && !canManage) {

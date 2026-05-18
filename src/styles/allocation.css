@@ -16,188 +16,6 @@
     box-sizing: border-box;
 }
 
-.allocation-view__inner {
-    max-width: 1280px;
-    margin: 0 auto;
-}
-
-.allocation-view__back {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--light-text-color);
-    padding: 7px 14px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 18px;
-    font-family: inherit;
-    transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
-}
-
-.allocation-view__back:hover {
-    color: var(--text-color);
-    border-color: var(--light-text-color);
-    background: rgba(127, 127, 127, 0.05);
-}
-
-/* ---------- HEAD ---------- */
-.alloc-head {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-bottom: 18px;
-    gap: 16px;
-}
-
-.alloc-head__title {
-    margin: 0 0 6px;
-    font-size: 1.7rem;
-    font-weight: 800;
-    letter-spacing: -0.025em;
-    color: var(--text-color);
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.alloc-head__title i {
-    color: var(--cor-ia);
-    font-size: 1.4rem;
-}
-
-.alloc-head__subtitle {
-    margin: 0;
-    color: var(--light-text-color);
-    font-size: 0.92rem;
-    line-height: 1.55;
-    max-width: 60ch;
-}
-
-/* ---------- TOOLBAR ---------- */
-.alloc-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 18px;
-    flex-wrap: wrap;
-}
-
-.alloc-toolbar__group {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.alloc-toolbar__group--filters {
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.alloc-toolbar__week {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 14px;
-    border-radius: 10px;
-    border: 1px solid var(--border-color);
-    background: var(--card-bg-color);
-    min-width: 220px;
-    justify-content: center;
-}
-
-body.dark-mode .alloc-toolbar__week {
-    border-color: rgba(255, 255, 255, 0.08);
-}
-
-.alloc-toolbar__week-label {
-    font-weight: 700;
-    color: var(--text-color);
-    font-size: 0.92rem;
-    letter-spacing: -0.01em;
-}
-
-.alloc-toolbar__today {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--light-text-color);
-    border-radius: 6px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 3px 9px;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-family: inherit;
-    transition: color 0.15s ease, border-color 0.15s ease;
-}
-
-.alloc-toolbar__today:hover {
-    color: var(--text-color);
-    border-color: var(--light-text-color);
-}
-
-.alloc-iconbtn {
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background: var(--card-bg-color);
-    color: var(--light-text-color);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-}
-
-.alloc-iconbtn:hover {
-    color: var(--text-color);
-    border-color: var(--light-text-color);
-    background: rgba(127, 127, 127, 0.05);
-}
-
-body.dark-mode .alloc-iconbtn { border-color: rgba(255, 255, 255, 0.08); }
-
-/* ---------- FILTRO POR PESO (segmented) ---------- */
-.alloc-pesofilter {
-    display: inline-flex;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    background: var(--card-bg-color);
-    padding: 3px;
-    gap: 2px;
-}
-
-body.dark-mode .alloc-pesofilter { border-color: rgba(255, 255, 255, 0.08); }
-
-.alloc-pesofilter__btn {
-    background: transparent;
-    border: none;
-    color: var(--light-text-color);
-    padding: 5px 12px;
-    border-radius: 7px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: color 0.15s ease, background 0.15s ease;
-}
-
-.alloc-pesofilter__btn:hover { color: var(--text-color); }
-
-.alloc-pesofilter__btn.is-active {
-    background: var(--bg-color);
-    color: var(--text-color);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-body.dark-mode .alloc-pesofilter__btn.is-active {
-    background: rgba(255, 255, 255, 0.06);
-}
 
 /* ---------- BTN GENÉRICO ---------- */
 .alloc-btn {
@@ -464,84 +282,6 @@ body.dark-mode .alloc-warnings__item:hover {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-}
-
-/* ===== Chip de user premium (compartilhado banner + futuras telas) ===== */
-.user-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 5px 11px 5px 7px;
-    border-radius: 9999px;
-    background: var(--card-bg-color);
-    border: 1px solid var(--border-color);
-    color: var(--text-color);
-    font-size: 0.74rem;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-    max-width: 240px;
-}
-
-body.dark-mode .user-chip {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-.user-chip:hover {
-    transform: translateY(-1px);
-    border-color: var(--light-text-color);
-}
-
-.user-chip__icon {
-    width: 18px;
-    height: 18px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--light-text-color);
-    font-size: 0.7rem;
-    flex-shrink: 0;
-}
-
-.user-chip__name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;
-}
-
-.user-chip__value {
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-    color: var(--light-text-color);
-    margin-left: 1px;
-}
-
-/* Variantes */
-.user-chip--critical {
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.28);
-}
-.user-chip--critical .user-chip__icon,
-.user-chip--critical .user-chip__value {
-    color: #ef4444;
-}
-.user-chip--critical:hover {
-    border-color: #ef4444;
-}
-
-.user-chip--warning {
-    background: rgba(245, 158, 11, 0.1);
-    border-color: rgba(245, 158, 11, 0.28);
-}
-.user-chip--warning .user-chip__icon,
-.user-chip--warning .user-chip__value {
-    color: var(--warn-color, #F59E0B);
-}
-.user-chip--warning:hover {
-    border-color: #F59E0B;
 }
 
 .alloc-warnings__close {
@@ -1166,11 +906,6 @@ body.dark-mode .alloc-central__row {
     box-shadow: inset 3px 0 0 var(--cor-complexo);
 }
 
-.alloc-station.is-vago::before {
-    /* Sem ::before extra — o inset box-shadow já faz o trabalho. */
-    content: none;
-}
-
 /* Atalho "Virar plantão" — ocupa o lugar onde estaria o nextShift quando
    a estação é cíclica mas tá sem próximo agendado. Visual discreto, vira
    chip dashed que convida a clicar. */
@@ -1323,30 +1058,6 @@ body.dark-mode .alloc-central__row {
 
 .alloc-station__title:hover {
     color: var(--cor-ia);
-}
-
-.alloc-station__sub {
-    font-size: 0.74rem;
-    color: var(--light-text-color);
-    font-weight: 500;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px 8px;
-    line-height: 1.4;
-}
-
-/* Cada pedaço do subtítulo não quebra palavra. Quebra é só ENTRE
-   pedaços, na altura do separador "·". */
-.alloc-station__sub > span:not(.alloc-station__sub-sep) {
-    white-space: nowrap;
-}
-
-/* Separador entre pedaços do subtitle (·) — discreto, sem cor forte */
-.alloc-station__sub-sep {
-    color: var(--light-text-color);
-    opacity: 0.6;
-    font-weight: 500;
 }
 
 /* 2. PLANTÃO ATUAL — destaque */
@@ -1770,12 +1481,6 @@ body.dark-mode .alloc-thermometer__bar {
     /* sem glow pulsante — fica mais sóbrio e menos "alerta de painel" */
 }
 
-@keyframes alloc-pulse-danger {
-    /* mantido pra retrocompatibilidade, mas não é mais usado */
-    0%, 100% { box-shadow: 0 0 8px rgba(220, 53, 69, 0.45); }
-    50%      { box-shadow: 0 0 16px rgba(220, 53, 69, 0.7); }
-}
-
 .alloc-popover {
     position: absolute;
     top: calc(100% + 6px);
@@ -1848,6 +1553,17 @@ body.dark-mode .alloc-popover__head {
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--light-text-color);
+}
+
+/* Notice mostrado pra não-admin quando o user dele não está em TEAM —
+   nesse caso a lista vem vazia. Mensagem curta de orientação. */
+.alloc-popover__notice {
+    margin: 0;
+    padding: 14px 16px;
+    font-size: 0.82rem;
+    color: var(--light-text-color);
+    line-height: 1.45;
+    text-align: center;
 }
 
 .alloc-popover__close {
@@ -1927,43 +1643,6 @@ body.dark-mode .alloc-popover__head {
     white-space: nowrap;
     min-width: 0;
 }
-
-.alloc-popover__admin {
-    font-size: 0.58rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    background: rgba(123, 113, 255, 0.15);
-    color: var(--cor-ia);
-    padding: 1px 5px;
-    border-radius: 999px;
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-/* Aviso de carga ao adicionar pessoa (já em warn/danger) */
-.alloc-popover__load {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.66rem;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 999px;
-    font-variant-numeric: tabular-nums;
-    flex-shrink: 0;
-}
-
-.alloc-popover__load--warn {
-    background: color-mix(in srgb, #F59E0B 16%, transparent);
-    color: #F59E0B;
-}
-
-.alloc-popover__load--danger {
-    background: color-mix(in srgb, var(--cor-complexo) 18%, transparent);
-    color: var(--cor-complexo);
-}
-
-.alloc-popover__load i { font-size: 0.62rem; }
 
 /* Sugerido: borda esquerda colorida + ícone de varinha */
 .alloc-popover__item.is-suggested {
@@ -2461,17 +2140,6 @@ body.dark-mode .alloc-resp {
     min-width: 0;
 }
 
-.alloc-resp__admin {
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    background: rgba(123, 113, 255, 0.15);
-    color: var(--cor-ia);
-    padding: 1px 6px;
-    border-radius: 999px;
-    font-weight: 700;
-}
-
 /* ==========================================================================
    RESPONSIVO
    ========================================================================== */
@@ -2560,82 +2228,6 @@ body.dark-mode .alloc-chip:hover {
   background: rgba(255, 149, 0, 0.06);
 }
 
-/* === Lista mini de plantões === */
-.alloc-mini-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.alloc-mini-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
-  border-radius: 9px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-  background: var(--bg-color);
-  border: 1px solid transparent;
-}
-
-body.dark-mode .alloc-mini-item {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.alloc-mini-item:hover {
-  background: rgba(15, 23, 42, 0.05);
-  border-color: var(--border-color);
-}
-
-body.dark-mode .alloc-mini-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-.alloc-mini-item.is-vago {
-  background: rgba(220, 53, 69, 0.07);
-  border-color: rgba(220, 53, 69, 0.18);
-}
-
-.alloc-mini-item__body {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.alloc-mini-item__name {
-  font-size: 0.79rem;
-  font-weight: 600;
-  color: var(--text-color);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  letter-spacing: -0.005em;
-}
-
-.alloc-mini-item__name--single {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.alloc-mini-item__period {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.7rem;
-  color: var(--light-text-color);
-}
-
-.alloc-mini-item__period i {
-  font-size: 0.65rem;
-  opacity: 0.7;
-}
 
 .alloc-mini-item__tag {
   flex-shrink: 0;
@@ -2649,11 +2241,6 @@ body.dark-mode .alloc-mini-item:hover {
   color: var(--cor-complexo);
 }
 
-.alloc-mini-item__peers {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-}
 
 .alloc-mini-avatar {
   width: 22px;
@@ -2683,290 +2270,6 @@ body.dark-mode .alloc-mini-avatar {
   border-color: var(--card-bg-color);
 }
 
-
-.alloc-sidebar-tabs {
-    display: inline-flex;
-    gap: 4px;
-    padding: 4px;
-    background: var(--card-bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    align-self: flex-start;
-    width: 100%;
-}
-
-.alloc-sidebar-tab {
-    flex: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 7px 12px;
-    border: none;
-    background: transparent;
-    color: var(--light-text-color);
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: -0.005em;
-    border-radius: 7px;
-    cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
-}
-
-.alloc-sidebar-tab i {
-    font-size: 0.78rem;
-}
-
-.alloc-sidebar-tab:hover:not(.is-active) {
-    background: color-mix(in srgb, var(--text-color) 5%, transparent);
-    color: var(--text-color);
-}
-
-.alloc-sidebar-tab.is-active {
-    background: color-mix(in srgb, var(--cor-ia) 14%, transparent);
-    color: var(--cor-ia);
-}
-
-.alloc-sidebar-tab:focus-visible {
-    outline: 2px solid var(--cor-ia);
-    outline-offset: 1px;
-}
-
-/* ==========================================================================
-   ACTIVITY TIMELINE — linha do tempo lateral com eventos do painel.
-   Mesma vibe visual do termômetro (card branco, borda, padding 14px) pra
-   manter coerência quando a aba alterna. Itens são botões — click leva o
-   foco pro card da estação envolvida e flasha ele.
-   ========================================================================== */
-.alloc-timeline {
-    background: var(--card-bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 14px 14px 16px;
-    background-image: linear-gradient(180deg, color-mix(in srgb, var(--cor-ia) 4%, transparent), transparent 30%);
-    /* Limita altura pra não esticar a sidebar quando o log fica grande.
-       Conteúdo rola dentro com scrollbar fininha. */
-    max-height: calc(100vh - 200px);
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-}
-
-.alloc-timeline__head {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding-bottom: 10px;
-    margin-bottom: 12px;
-    border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
-}
-
-.alloc-timeline__head > i {
-    font-size: 0.82rem;
-    color: var(--cor-ia);
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: color-mix(in srgb, var(--cor-ia) 14%, transparent);
-}
-
-.alloc-timeline__head > span {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: var(--text-color);
-    letter-spacing: -0.005em;
-    flex: 1;
-}
-
-.alloc-timeline__clear {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--light-text-color);
-    width: 24px;
-    height: 24px;
-    min-width: 24px;
-    flex-shrink: 0;
-    aspect-ratio: 1 / 1;
-    box-sizing: border-box;
-    padding: 0;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.72rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
-}
-
-.alloc-timeline__clear:hover {
-    color: var(--cor-complexo);
-    background: color-mix(in srgb, var(--cor-complexo) 12%, transparent);
-}
-
-.alloc-timeline__empty {
-    text-align: center;
-    padding: 24px 8px;
-    color: var(--light-text-color);
-}
-
-.alloc-timeline__empty i {
-    font-size: 1.4rem;
-    opacity: 0.5;
-    margin-bottom: 6px;
-}
-
-.alloc-timeline__empty p {
-    font-size: 0.86rem;
-    color: var(--text-color);
-    margin: 4px 0 2px;
-}
-
-.alloc-timeline__empty small {
-    font-size: 0.75rem;
-    opacity: 0.8;
-}
-
-.alloc-timeline__list {
-    list-style: none;
-    margin: 0;
-    padding: 0 2px 0 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    overflow-y: auto;
-    flex: 1;
-    min-height: 0;
-}
-
-/* Scrollbar fininha — alinha com o resto do app */
-.alloc-timeline__list::-webkit-scrollbar { width: 6px; }
-.alloc-timeline__list::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--text-color) 15%, transparent);
-    border-radius: 3px;
-}
-
-.alloc-timeline__day {
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--light-text-color);
-    padding: 10px 4px 4px;
-    border-top: 1px dashed var(--border-color);
-    margin-top: 4px;
-}
-
-.alloc-timeline__day:first-child {
-    border-top: none;
-    margin-top: 0;
-    padding-top: 0;
-}
-
-.alloc-timeline__entry {
-    margin: 0;
-}
-
-.alloc-timeline__btn {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 28px 1fr auto;
-    align-items: start;
-    gap: 9px;
-    padding: 8px 8px 9px;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    text-align: left;
-    transition: background 0.15s ease;
-}
-
-.alloc-timeline__btn:hover {
-    background: color-mix(in srgb, var(--text-color) 5%, transparent);
-}
-
-.alloc-timeline__btn:focus-visible {
-    outline: 2px solid var(--cor-ia);
-    outline-offset: -2px;
-}
-
-.alloc-timeline__icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.76rem;
-    flex-shrink: 0;
-    /* Cor padrão (info) — variants ajustam abaixo. */
-    background: color-mix(in srgb, var(--cor-ia) 14%, transparent);
-    color: var(--cor-ia);
-}
-
-.alloc-timeline__entry--warning .alloc-timeline__icon {
-    background: color-mix(in srgb, #F59E0B 16%, transparent);
-    color: #F59E0B;
-}
-
-.alloc-timeline__entry--critical .alloc-timeline__icon {
-    background: color-mix(in srgb, var(--cor-complexo) 16%, transparent);
-    color: var(--cor-complexo);
-}
-
-.alloc-timeline__entry--success .alloc-timeline__icon {
-    background: color-mix(in srgb, var(--cor-facil) 16%, transparent);
-    color: var(--cor-facil);
-}
-
-.alloc-timeline__content {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;     /* impede overflow do título de empurrar layout */
-}
-
-.alloc-timeline__title {
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: var(--text-color);
-    line-height: 1.3;
-    /* clamp 2 linhas — entradas longas não estouram a coluna */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.alloc-timeline__body {
-    font-size: 0.74rem;
-    color: var(--light-text-color);
-    line-height: 1.3;
-}
-
-.alloc-timeline__time {
-    font-size: 0.7rem;
-    color: var(--light-text-color);
-    white-space: nowrap;
-    padding-top: 2px;
-    opacity: 0.85;
-}
-
-/* Flash visual quando timeline navega pra um card. Combinado com o
-   scrollIntoView no JS, comunica "isso aqui é o item que vc clicou". */
-.alloc-station.is-flashing {
-    animation: alloc-station-flash 1.4s ease-out;
-}
-
-@keyframes alloc-station-flash {
-    0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--cor-ia) 60%, transparent); }
-    30%  { box-shadow: 0 0 0 4px color-mix(in srgb, var(--cor-ia) 35%, transparent); }
-    100% { box-shadow: 0 0 0 0 transparent; }
-}
 
 /* ==========================================================================
    Imagens de brand — quando um ACTIVITY_BRANDS tem `image` em vez de

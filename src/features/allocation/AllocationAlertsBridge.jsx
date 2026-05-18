@@ -95,6 +95,15 @@ function AllocationAlertsBridge() {
     lastIdsRef.current = nextIds;
   }, [summary, announce, dismiss]);
 
+  // Cleanup APENAS no unmount real (sem deps). Antes o cleanup estava
+  // colado no effect acima e rodava a cada re-render, dispensando alertas
+  // permanentemente em loop → congelava o React Router (bug: navegação
+  // entre rotas /topics → /catalog não atualizava a UI).
+  useEffect(() => () => {
+    for (const id of lastIdsRef.current) dismiss(id);
+    lastIdsRef.current = new Set();
+  }, [dismiss]);
+
   /* === "Vc foi alocado em X" + "Vc saiu de X" (snapshot diff) === */
   useEffect(() => {
     const username = (localStorage.getItem('forumHelperUsername') || '').trim();
@@ -236,7 +245,9 @@ function AllocationAlertsBridge() {
         const lastDf = String(last.data_fim || '').slice(0, 10);
         if (lastDf >= todayISO && lastDf <= in7daysISO) {
           announce({
-            id: `alloc-cycle:${st.name.toLowerCase()}:${todayISO}`,
+            // ID sem data — re-anuncia substitui o anterior. Senão gera
+            // 1 alerta novo por dia pra mesma estação acabando.
+            id: `alloc-cycle:${st.name.toLowerCase()}`,
             kind: 'alloc-cycle-missing',
             severity: 'warning',
             icon: 'fa-rotate',
@@ -266,7 +277,9 @@ function AllocationAlertsBridge() {
       const nextRealList = (next.responsaveis || []).filter((u) => !isPlaceholder(u));
       if (nextRealList.length === 0) {
         announce({
-          id: `alloc-next-vago:${st.name.toLowerCase()}:${todayISO}`,
+          // ID sem data — re-anuncia substitui o anterior. Sem isso,
+          // polui a central com 1 alerta/dia por estação enquanto vazia.
+          id: `alloc-next-vago:${st.name.toLowerCase()}`,
           kind: 'alloc-next-vago',
           severity: 'warning',
           icon: 'fa-circle-question',

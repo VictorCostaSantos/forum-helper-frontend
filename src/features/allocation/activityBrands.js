@@ -124,10 +124,3 @@ export function brandImageStyle(brand) {
   return s;
 }
 
-// Subtítulo customizado por estação mora em subtitleStore.js; re-exportamos
-// aqui com nomes alternativos pra retrocompatibilidade dos consumidores que
-// importam de activityBrands.
-export {
-  getStationSubtitle as getCustomSubtitle,
-  setStationSubtitle as setCustomSubtitle,
-} from './subtitleStore';

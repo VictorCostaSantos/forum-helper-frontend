@@ -41,7 +41,11 @@
       "Bash(mv -f scuba-mask.png scuba.png)",
       "Bash(curl -sSL -o moderador.svg \"https://cursos.alura.com.br/assets/images/alura/topics/icon-moderador.svg\")",
       "Bash(curl -sSL -o article.png \"https://img.icons8.com/?size=100&id=24870&format=png\")",
-      "Bash(rm -f scuba.png)"
+      "Bash(rm -f scuba.png)",
+      "Bash(sed -i '2231,2306d' allocation.css)",
+      "Bash(sed -i '2244,2248d' allocation.css)",
+      "Bash(npx eslint *)",
+      "Bash(node --check src/features/allocation/useAllocation.js src/features/allocation/dateHelpers.js src/features/allocation/activityBrands.js)"
     ],
     "additionalDirectories": [
       "c:\\c\\Users\\Victor Costa\\Desktop\\forum_helper\\frontend-react\\src\\styles",

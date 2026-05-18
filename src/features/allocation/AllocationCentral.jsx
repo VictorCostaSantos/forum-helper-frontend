@@ -76,6 +76,10 @@ function AllocationCentral({
   };
 
   const handleChangePeso = async (station, newPeso) => {
+    // Defesa em profundidade: a Central só é acessível pelo botão "Gerenciar"
+    // que só aparece pra admin, mas garantir aqui evita escalation se um dia
+    // alguém abrir a Central por outra via.
+    if (!userIsAdmin) return;
     try {
       await onUpdateStation?.(station.name, { nome: station.name, peso: newPeso });
     } catch (e) {

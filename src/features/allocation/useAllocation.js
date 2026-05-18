@@ -9,7 +9,6 @@ import {
   PLACEHOLDER_USER,
   TEAM,
   getMaxLoad,
-  isAdmin,
   isPlaceholder,
 } from './team';
 import { refreshAllocationSummary } from './useAllocationSummary';
@@ -196,7 +195,11 @@ export function useAllocation(anchorDate) {
       if (!st.currentShift) continue;
       const peso = Number(st.currentShift.peso) || 0;
       const list = Array.isArray(st.currentShift.responsaveis) ? st.currentShift.responsaveis : [];
+      // Filtra placeholder __vago__ explicitamente — hoje totals.has() já
+      // ignora porque ele não está em TEAM, mas dependência implícita é
+      // frágil. Filtrar antes deixa a intenção clara.
       for (const u of list) {
+        if (isPlaceholder(u)) continue;
         if (totals.has(u)) totals.set(u, totals.get(u) + peso);
       }
     }
@@ -471,10 +474,8 @@ export function useAllocation(anchorDate) {
         responsaveis: next,
       });
     } catch (e) {
-      const body = e?.response?.data;
-      const detalhes = Array.isArray(body?.detalhes) ? body.detalhes.join(' · ') : '';
-      const msg = `${body?.message || body?.erro || e?.message || 'Erro ao atualizar.'}${detalhes ? ` · ${detalhes}` : ''}`;
-      window.__showToast?.(msg, 'error');
+      // NÃO mostrar toast aqui — o Facepile já faz catch e exibe o toast
+      // com a mensagem completa. Mostrar nos dois lugares gerava duplicata.
       throw e;
     }
   }, [items, editActivity]);

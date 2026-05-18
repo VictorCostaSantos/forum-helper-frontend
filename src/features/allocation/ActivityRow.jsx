@@ -52,7 +52,9 @@ function ActivityRow({
   return (
     <article
       className={`alloc-station ${dimmed ? 'is-dimmed' : ''} ${
-        currentShift && (currentShift.responsaveis || []).every(isPlaceholder)
+        currentShift
+          && (currentShift.responsaveis || []).length > 0
+          && (currentShift.responsaveis || []).every(isPlaceholder)
           ? 'is-vago'
           : ''
       }`}

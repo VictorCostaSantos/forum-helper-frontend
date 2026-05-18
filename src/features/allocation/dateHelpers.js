@@ -162,56 +162,6 @@ export function detectCycle(instances) {
 }
 
 /*
-  Formata cadência de uma estação cíclica em linguagem natural:
-    - weekly  + N>1 → "toda terça · próximas 3 semanas"
-    - weekly  + N=1 → "toda terça"
-    - biweekly + N>1 → "terça quinzenal · próximas 2 vezes"
-    - biweekly + N=1 → "terça quinzenal"
-    - monthly + N>1 → "mensal · próximas 4 vezes"
-    - monthly + N=1 → "mensal"
-  Retorna null se não há cycle detectado.
-
-  N é a contagem de instâncias FUTURAS (data_inicio >= hoje). Se não
-  houver nenhuma futura, usa a contagem total das instâncias da estação.
-  diaSemana é tirado da próxima instância (ou da última se todas passaram).
-*/
-const DAY_NAMES_LONG = [
-  'domingo', 'segunda', 'terça', 'quarta',
-  'quinta', 'sexta', 'sábado',
-];
-
-export function formatCadence(instances, cycle) {
-  if (!cycle || !Array.isArray(instances) || instances.length === 0) return null;
-
-  const todayIso = toISODate(new Date());
-  const futureSorted = instances
-    .filter((i) => String(i?.data_inicio || '').slice(0, 10) >= todayIso)
-    .sort((a, b) => String(a.data_inicio).localeCompare(String(b.data_inicio)));
-  const reference = futureSorted[0]
-    || [...instances].sort((a, b) => String(b.data_inicio).localeCompare(String(a.data_inicio)))[0];
-
-  const di = fromISODate(String(reference?.data_inicio || '').slice(0, 10));
-  const dayName = di ? DAY_NAMES_LONG[di.getDay()] : null;
-
-  // Quantidade restante a aparecer no painel. Se não houver futuras,
-  // mostra o total — útil pra olhar histórico ("toda terça · 6 vezes").
-  const count = futureSorted.length > 0 ? futureSorted.length : instances.length;
-
-  if (cycle === 'weekly') {
-    const base = dayName ? `toda ${dayName}` : 'semanal';
-    return count > 1 ? `${base} · próximas ${count} semanas` : base;
-  }
-  if (cycle === 'biweekly') {
-    const base = dayName ? `${dayName} quinzenal` : 'quinzenal';
-    return count > 1 ? `${base} · próximas ${count} vezes` : base;
-  }
-  if (cycle === 'monthly') {
-    return count > 1 ? `mensal · próximas ${count} vezes` : 'mensal';
-  }
-  return null;
-}
-
-/*
   Greedy lane packing pro layout de barras: ordena por startIdx e atribui
   cada segmento à primeira lane onde não colide com o último segmento já
   colocado. Como a ordenação é por startIdx, basta checar o "topo" de cada
