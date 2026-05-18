@@ -239,13 +239,17 @@ function useWeekStations(items, filterFn) {
 }
 
 /*
-  Carrossel "headless" — sem header próprio, recebe stations e renderiza:
-  - linha de ícones-tabs sutis (sem underline arredondado, só destaque por
-    cor da brand na ativa)
-  - slide com período + facepile
+  Carrossel ultra-compacto — 1 atividade visível por vez numa viewport de
+  52px. Track desliza verticalmente entre items com easing bouncy.
 
-  Auto-rotate 8s, pausa no hover.
+  - Auto-rotate a cada AUTO_ROTATE_MS (pausado no hover).
+  - Click em qualquer ponto do viewport pula pra próxima + reseta o timer.
+  - Barra de progresso visual no footer mostra tempo até a próxima.
+  - Counter "X / N" no footer.
+  - Botão "abrir painel" leva pra /allocation.
 */
+const AUTO_ROTATE_MS = 3500;
+
 function AllocationCarousel({ stations, onNavigate, peerFilter, emptyLabel }) {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -258,21 +262,17 @@ function AllocationCarousel({ stations, onNavigate, peerFilter, emptyLabel }) {
     if (stations.length <= 1 || paused) return undefined;
     const id = setInterval(() => {
       setActive((i) => (i + 1) % stations.length);
-    }, 8000);
+    }, AUTO_ROTATE_MS);
     return () => clearInterval(id);
-  }, [stations.length, paused]);
+  }, [stations.length, paused, active]);
 
   if (stations.length === 0) {
     return <p className="urgent-empty">{emptyLabel || 'Nada por aqui.'}</p>;
   }
 
-  const current = stations[active] || stations[0];
-  const realPeers = (current.responsaveis || [])
-    .filter((u) => !isPlaceholder(u))
-    .filter((u) => (peerFilter ? peerFilter(u) : true));
-  const isVago = (current.responsaveis || []).filter((u) => !isPlaceholder(u)).length === 0;
-  const period = isPerennial(current.activity) ? 'Fixo' : formatPeriodCompact(current.activity);
-  const currentBrand = brandFor(current.name);
+  const advance = () => {
+    setActive((i) => (i + 1) % stations.length);
+  };
 
   return (
     <div
@@ -280,72 +280,87 @@ function AllocationCarousel({ stations, onNavigate, peerFilter, emptyLabel }) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {stations.length > 1 ? (
-        <div className="alloc-carousel__tabs" role="tablist">
-          {stations.map((st, i) => {
+      <div
+        className="alloc-carousel__viewport"
+        onClick={advance}
+        role="button"
+        tabIndex={0}
+        aria-label="Pular pra próxima atividade"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            advance();
+          }
+        }}
+      >
+        <div
+          className="alloc-carousel__track"
+          style={{ transform: `translateX(-${active * 100}%)` }}
+        >
+          {stations.map((st) => {
             const brand = brandFor(st.name);
+            const realPeers = (st.responsaveis || [])
+              .filter((u) => !isPlaceholder(u))
+              .filter((u) => (peerFilter ? peerFilter(u) : true));
+            const isVago = (st.responsaveis || []).filter((u) => !isPlaceholder(u)).length === 0;
+            const period = isPerennial(st.activity) ? 'Fixo' : formatPeriodCompact(st.activity);
+            // Mesmo visual do ícone no painel principal: gradient da brand
+            // + imagem (com imageWhite quando aplicável). Sem shadow pesada.
+            const iconBg = brand.gradient
+              || (brand.solidBg
+                ? `linear-gradient(135deg, ${brand.color}, ${brand.color}D8)`
+                : `linear-gradient(160deg, ${brand.color}26, ${brand.color}0A)`);
             return (
-              <button
-                key={st.id}
-                type="button"
-                className={`alloc-carousel__tab ${i === active ? 'is-active' : ''}`}
-                style={{ '--tab-color': brand.color }}
-                onClick={(e) => { e.stopPropagation(); setActive(i); }}
-                title={st.name}
-                aria-label={`Ir pra ${st.name}`}
-                aria-selected={i === active}
-                role="tab"
-              >
-                {brand.image ? (
-                  <img src={brand.image} alt="" className="alloc-carousel__tab-img" style={brandImageStyle(brand)} />
-                ) : (
-                  <i className={brand.icon}></i>
-                )}
-              </button>
+              <div key={st.id} className="alloc-carousel__item">
+                <div className="alloc-carousel__item-left">
+                  <span
+                    className="alloc-carousel__item-icon"
+                    style={{ background: iconBg, color: brand.color }}
+                    aria-hidden="true"
+                  >
+                    {brand.image ? (
+                      <img
+                        src={brand.image}
+                        alt=""
+                        className="alloc-carousel__item-icon-img"
+                        style={brandImageStyle(brand)}
+                      />
+                    ) : (
+                      <i className={brand.icon || 'fa-solid fa-circle-dot'}></i>
+                    )}
+                  </span>
+                  <div className="alloc-carousel__item-texts">
+                    <span className="alloc-carousel__item-name">{st.name}</span>
+                    <span className="alloc-carousel__item-date">
+                      <i className="fa-regular fa-calendar"></i>
+                      {period}
+                    </span>
+                  </div>
+                </div>
+                <div className="alloc-carousel__item-right">
+                  {isVago ? (
+                    <span className="alloc-mini-item__tag">vago</span>
+                  ) : realPeers.length === 0 ? (
+                    <span className="alloc-carousel__solo">só você</span>
+                  ) : (
+                    <div className="alloc-carousel__peers">
+                      {realPeers.slice(0, 3).map((u) => (
+                        <MiniAvatar key={u} username={u} size={24} />
+                      ))}
+                      {realPeers.length > 3 ? (
+                        <span className="alloc-mini-avatar alloc-mini-avatar--more">
+                          +{realPeers.length - 3}
+                        </span>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              </div>
             );
           })}
         </div>
-      ) : null}
-
-      {/* Nome da estação ativa logo abaixo das tabs — dá contexto sem precisar de hover. */}
-      <div className="alloc-carousel__station-name" style={{ color: currentBrand.color }}>
-        {current.name}
       </div>
 
-        <div
-          key={current.id}
-          className={`alloc-carousel__slide ${isVago ? 'is-vago' : ''}`}
-          onClick={() => onNavigate('/allocation')}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              onNavigate('/allocation');
-            }
-          }}
-        >
-          <div className="alloc-carousel__period">
-            <i className="fa-regular fa-calendar"></i>
-            <span>{period}</span>
-          </div>
-          {isVago ? (
-            <span className="alloc-mini-item__tag">vago</span>
-          ) : realPeers.length === 0 ? (
-            <span className="alloc-carousel__solo">só você</span>
-          ) : (
-            <div className="alloc-carousel__peers">
-              {realPeers.slice(0, 4).map((u) => (
-                <MiniAvatar key={u} username={u} size={28} />
-              ))}
-              {realPeers.length > 4 ? (
-                <span className="alloc-mini-avatar alloc-mini-avatar--more alloc-mini-avatar--lg">
-                  +{realPeers.length - 4}
-                </span>
-              ) : null}
-            </div>
-          )}
-      </div>
     </div>
   );
 }
@@ -391,7 +406,15 @@ function AllocationsPanel({ username, items, onNavigate }) {
     <details className="sidebar-panel collapsible-panel" open>
       <summary className="sidebar-panel-header">
         <h3>
-          <i className="fa-solid fa-people-group"></i> Alocações
+          <button
+            type="button"
+            className="sidebar-panel-header__link"
+            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onNavigate('/allocation'); }}
+            title="Abrir painel completo"
+          >
+            <i className="fa-solid fa-people-group"></i> Alocações
+            <i className="fa-solid fa-up-right-from-square sidebar-panel-header__link-icon"></i>
+          </button>
         </h3>
       </summary>
       <div className="sidebar-panel-content">

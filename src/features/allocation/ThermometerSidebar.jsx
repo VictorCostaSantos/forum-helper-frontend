@@ -1,6 +1,6 @@
 import React from 'react';
 import UserAvatar from '../../shared/components/UserAvatar';
-import { TEAM, avatarFallbackUrl } from './team';
+import { DEFAULT_MAX_LOAD, LOAD_THRESHOLDS, TEAM, avatarFallbackUrl } from './team';
 
 function ThermometerRow({ m, focusUser, onClick, avatarsMap }) {
   const isFocused = focusUser === m.username;
@@ -100,6 +100,49 @@ function ThermometerSidebar({ loadByUser, avatarsMap = null, focusUser = null, o
           />
         ))}
       </ul>
+
+      {/* Card "Como funciona" — explica peso e faixas pra que a pessoa
+          consiga planejar (ex: "2 altas + 1 baixa = 7pts, ainda saudável"). */}
+      <div className="alloc-thermometer__legend">
+        <div className="alloc-thermometer__legend-head">
+          <i className="fa-regular fa-circle-question"></i>
+          Como funciona
+        </div>
+        <ul className="alloc-thermometer__legend-pesos">
+          <li>
+            <span className="alloc-thermometer__legend-dot alloc-thermometer__legend-dot--p1" />
+            <span className="alloc-thermometer__legend-name">Baixa</span>
+            <span className="alloc-thermometer__legend-pts">1 pt</span>
+          </li>
+          <li>
+            <span className="alloc-thermometer__legend-dot alloc-thermometer__legend-dot--p2" />
+            <span className="alloc-thermometer__legend-name">Média</span>
+            <span className="alloc-thermometer__legend-pts">2 pts</span>
+          </li>
+          <li>
+            <span className="alloc-thermometer__legend-dot alloc-thermometer__legend-dot--p3" />
+            <span className="alloc-thermometer__legend-name">Alta</span>
+            <span className="alloc-thermometer__legend-pts">3 pts</span>
+          </li>
+        </ul>
+        <div className="alloc-thermometer__legend-bar">
+          <span className="alloc-thermometer__legend-seg alloc-thermometer__legend-seg--ok" style={{ flex: LOAD_THRESHOLDS.light.max }}>
+            <span>leve</span>
+            <small>&lt;{LOAD_THRESHOLDS.light.max + 1}</small>
+          </span>
+          <span className="alloc-thermometer__legend-seg alloc-thermometer__legend-seg--warn" style={{ flex: LOAD_THRESHOLDS.healthy.max - LOAD_THRESHOLDS.light.max }}>
+            <span>saudável</span>
+            <small>{LOAD_THRESHOLDS.light.max + 1}–{LOAD_THRESHOLDS.healthy.max}</small>
+          </span>
+          <span className="alloc-thermometer__legend-seg alloc-thermometer__legend-seg--danger" style={{ flex: LOAD_THRESHOLDS.heavy.max - LOAD_THRESHOLDS.healthy.max }}>
+            <span>alta</span>
+            <small>{LOAD_THRESHOLDS.healthy.max + 1}–{LOAD_THRESHOLDS.heavy.max}</small>
+          </span>
+        </div>
+        <div className="alloc-thermometer__legend-foot">
+          Limite saudável: <b>{DEFAULT_MAX_LOAD} pts</b> · acima de {LOAD_THRESHOLDS.heavy.max} é <b>sobrecarga</b>
+        </div>
+      </div>
     </aside>
   );
 }

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>Sidebar Alocações v2 — Compacto + Animado</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<style>
+  :root {
+    --bg: #0B0D11;
+    --card: #15171D;
+    --card-2: #1B1E26;
+    --border: #262932;
+    --border-soft: #1F232B;
+    --text: #ECEEF3;
+    --text-2: #BCC1CC;
+    --muted: #8B91A0;
+    --muted-2: #6B7080;
+    --accent: #6366F1;
+    --info: #38BDF8;
+    --warn: #F59E0B;
+    --danger: #EF4444;
+    --success: #22C55E;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    padding: 32px 20px 64px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; }
+  h1 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.025em; margin: 0 0 6px; text-align: center; }
+  .sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 36px; text-align: center; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+
+  .variant {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+  }
+  .variant__head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .variant__id {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--accent);
+    font-family: ui-monospace, monospace;
+  }
+  .variant__title { font-size: 1rem; font-weight: 700; }
+  .variant__desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0 0 16px;
+  }
+  .variant__height {
+    font-size: 0.7rem;
+    color: var(--accent);
+    font-weight: 600;
+    font-family: ui-monospace, monospace;
+    margin-left: auto;
+  }
+
+  /* Sidebar simulado — 240px */
+  .sidebar {
+    width: 240px;
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 12px;
+    margin: 0 auto;
+  }
+  .sidebar__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+  }
+  .sidebar__head i { color: var(--muted); }
+  .sidebar__count {
+    margin-left: auto;
+    font-size: 0.66rem;
+    background: rgba(255,255,255,0.05);
+    color: var(--muted);
+    padding: 2px 7px;
+    border-radius: 99px;
+    font-weight: 700;
+  }
+
+  .seg {
+    display: flex;
+    background: rgba(255,255,255,0.04);
+    border-radius: 7px;
+    padding: 2px;
+    margin-bottom: 10px;
+    gap: 2px;
+  }
+  .seg__btn {
+    flex: 1;
+    padding: 5px 4px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+  }
+  .seg__btn.is-active { background: var(--card); color: var(--text); }
+  .seg__btn i { font-size: 0.62rem; }
+  .seg__count {
+    font-size: 0.58rem;
+    background: rgba(255,255,255,0.08);
+    padding: 1px 5px;
+    border-radius: 99px;
+    font-weight: 700;
+  }
+
+
+  /* ============= VARIANTE E1 — CARROSSEL PURO COM SETAS + DOTS ============= */
+  .vE1-stage {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 10px 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  .vE1-row {
+    display: grid;
+    grid-template-columns: 22px 1fr 22px;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .vE1-nav {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    width: 22px; height: 22px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  .vE1-nav:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .vE1-name {
+    text-align: center;
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.005em;
+    transition: opacity 0.18s ease;
+    animation: vE1-fade 0.4s ease;
+  }
+  @keyframes vE1-fade {
+    from { opacity: 0; transform: translateY(3px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .vE1-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 0 4px;
+    margin-top: 6px;
+  }
+  .vE1-info__period {
+    font-size: 0.72rem;
+    color: var(--muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .vE1-info__period i { font-size: 0.62rem; }
+  .vE1-info__tag {
+    font-size: 0.58rem;
+    padding: 1px 6px;
+    border-radius: 99px;
+    background: rgba(239,68,68,0.18);
+    color: var(--danger);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .vE1-avs {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+  }
+  .vE1-av {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    color: #fff;
+    font-size: 0.54rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: -5px;
+    border: 2px solid var(--card-2);
+  }
+  .vE1-av:first-child { margin-left: 0; }
+  .vE1-av--more { background: rgba(255,255,255,0.08); color: var(--muted); }
+  .vE1-dots {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 10px;
+  }
+  .vE1-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .vE1-dot.is-active {
+    background: var(--accent);
+    transform: scale(1.4);
+  }
+
+
+  /* ============= VARIANTE E2 — PILLS GRID 2 COLS + CARROSSEL CARD ============= */
+  .vE2-pills {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+    margin-bottom: 8px;
+  }
+  .vE2-pill {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 5px 7px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    position: relative;
+  }
+  .vE2-pill:hover:not(.is-active) { color: var(--text); }
+  .vE2-pill.is-active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .vE2-pill__dot {
+    position: absolute;
+    top: 3px; right: 3px;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--danger);
+  }
+  .vE2-card {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--border-soft);
+    border-radius: 9px;
+    padding: 10px 11px;
+    animation: vE2-slide 0.32s cubic-bezier(0.34, 1.2, 0.64, 1);
+  }
+  @keyframes vE2-slide {
+    from { opacity: 0; transform: translateX(-6px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .vE2-card__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 7px;
+  }
+  .vE2-card__period {
+    font-size: 0.72rem;
+    color: var(--muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .vE2-card__period i { font-size: 0.64rem; }
+  .vE2-tag {
+    font-size: 0.58rem;
+    padding: 1px 6px;
+    border-radius: 99px;
+    background: rgba(239,68,68,0.18);
+    color: var(--danger);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .vE2-avs { display: flex; }
+  .vE2-av {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    color: #fff;
+    font-size: 0.54rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: -5px;
+    border: 2px solid var(--card-2);
+  }
+  .vE2-av:first-child { margin-left: 0; }
+  .vE2-av--more { background: rgba(255,255,255,0.08); color: var(--muted); }
+
+
+  /* ============= VARIANTE E3 — DROPDOWN COM POPOVER ============= */
+  .vE3-stage { position: relative; }
+  .vE3-trigger {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--text);
+    transition: background 0.15s ease;
+  }
+  .vE3-trigger:hover { background: rgba(255,255,255,0.06); }
+  .vE3-trigger__name {
+    font-size: 0.86rem;
+    font-weight: 700;
+    flex: 1;
+    text-align: left;
+  }
+  .vE3-trigger__nav {
+    color: var(--muted);
+    font-size: 0.62rem;
+  }
+  .vE3-card {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--border-soft);
+    border-radius: 9px;
+    padding: 10px 11px;
+    margin-top: 8px;
+    animation: vE2-slide 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
+  }
+  /* Popover dropdown - aparece sobreposto, não empurra layout. */
+  .vE3-popover {
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    margin-top: 4px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    padding: 4px;
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    animation: vE3-pop 0.2s ease;
+  }
+  @keyframes vE3-pop {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .vE3-popover__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 9px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.76rem;
+    color: var(--text-2);
+  }
+  .vE3-popover__item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+  .vE3-popover__item.is-active {
+    background: rgba(99,102,241,0.16);
+    color: var(--text);
+    font-weight: 700;
+  }
+  .vE3-popover__item-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--danger);
+    margin-left: 6px;
+  }
+
+
+  /* legend */
+  .pro-cons {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 0.7rem;
+  }
+  .pro, .con {
+    background: rgba(255,255,255,0.02);
+    padding: 7px 10px;
+    border-radius: 6px;
+    line-height: 1.45;
+  }
+  .pro { border-left: 2px solid var(--success); }
+  .con { border-left: 2px solid var(--warn); }
+  .pro::before { content: '✓ '; color: var(--success); font-weight: 700; }
+  .con::before { content: '⚠ '; color: var(--warn); font-weight: 700; }
+
+  .footer {
+    margin-top: 40px; padding-top: 16px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 0.84rem; color: var(--muted);
+  }
+  .footer code {
+    background: var(--card);
+    padding: 2px 7px;
+    border-radius: 5px;
+    color: var(--accent);
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Sidebar Alocações — v2 (compacto + animado)</h1>
+<p class="sub">3 modelos sem extensão vertical. Altura fixa, transições suaves entre atividades.</p>
+
+<div class="grid">
+
+  <!-- VARIANTE E1 -->
+  <div class="variant">
+    <div class="variant__head">
+      <span class="variant__id">E1.</span>
+      <span class="variant__title">Carrossel puro</span>
+      <span class="variant__height">~180px</span>
+    </div>
+    <p class="variant__desc">
+      Nome da atividade no centro com setas <b>◀ ▶</b> ao redor. Card de info abaixo (período, vaga, avatares).
+      <b>Dots</b> embaixo indicam posição. Auto-rotate 6s. Click numa dot pula direto. Animação <b>fade</b> entre estados.
+      Zero pills/lista — economia máxima de espaço.
+    </p>
+
+    <div class="sidebar">
+      <div class="sidebar__head">
+        <i class="fa-solid fa-people-group"></i>
+        Alocações
+        <span class="sidebar__count">7</span>
+      </div>
+      <div class="seg">
+        <button class="seg__btn"><i class="fa-solid fa-user-check"></i>Meus<span class="seg__count">2</span></button>
+        <button class="seg__btn is-active"><i class="fa-solid fa-people-group"></i>Equipe<span class="seg__count">7</span></button>
+        <button class="seg__btn"><i class="fa-solid fa-thumbtack"></i>Fixas</button>
+      </div>
+
+      <div class="vE1-stage">
+        <div class="vE1-row">
+          <button class="vE1-nav"><i class="fa-solid fa-chevron-left"></i></button>
+          <div class="vE1-name">Fórum</div>
+          <button class="vE1-nav"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <div class="vE1-info">
+          <span class="vE1-info__period"><i class="fa-regular fa-calendar"></i>18/05 – 22/05</span>
+          <span class="vE1-info__tag">vaga</span>
+        </div>
+        <div class="vE1-avs">
+          <span class="vE1-av">VC</span>
+          <span class="vE1-av" style="background: linear-gradient(135deg, #F59E0B, #EA580C);">MS</span>
+          <span class="vE1-av" style="background: linear-gradient(135deg, #22C55E, #14B8A6);">RP</span>
+          <span class="vE1-av vE1-av--more">+5</span>
+        </div>
+        <div class="vE1-dots">
+          <span class="vE1-dot is-active"></span>
+          <span class="vE1-dot"></span>
+          <span class="vE1-dot"></span>
+          <span class="vE1-dot"></span>
+          <span class="vE1-dot"></span>
+          <span class="vE1-dot"></span>
+          <span class="vE1-dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pro-cons">
+      <div class="pro">Altura mínima. Animação clara. Auto-rotate "vivo".</div>
+      <div class="con">Pra escolher uma específica precisa clicar dot ou setar várias vezes</div>
+    </div>
+  </div>
+
+  <!-- VARIANTE E2 -->
+  <div class="variant">
+    <div class="variant__head">
+      <span class="variant__id">E2.</span>
+      <span class="variant__title">Pills 2 cols + carrossel</span>
+      <span class="variant__height">~210px</span>
+    </div>
+    <p class="variant__desc">
+      Pills grid 2 colunas (8 atividades cabem). Click numa pill → card embaixo anima slide horizontal pra info dela.
+      Selecionada azul cheio. Dot vermelho mini = "vaga". <b>Clicar é direto</b>, não precisa rolar.
+      Se passar de 8 atividades, pills viram scroll vertical INTERNO de 1 linha extra.
+    </p>
+
+    <div class="sidebar">
+      <div class="sidebar__head">
+        <i class="fa-solid fa-people-group"></i>
+        Alocações
+        <span class="sidebar__count">7</span>
+      </div>
+      <div class="seg">
+        <button class="seg__btn"><i class="fa-solid fa-user-check"></i>Meus</button>
+        <button class="seg__btn is-active"><i class="fa-solid fa-people-group"></i>Equipe<span class="seg__count">7</span></button>
+        <button class="seg__btn"><i class="fa-solid fa-thumbtack"></i>Fixas</button>
+      </div>
+
+      <div class="vE2-pills">
+        <button class="vE2-pill is-active">Fórum<span class="vE2-pill__dot"></span></button>
+        <button class="vE2-pill">Discord</button>
+        <button class="vE2-pill">Latam</button>
+        <button class="vE2-pill">Sugestões</button>
+        <button class="vE2-pill">WhatsApp</button>
+        <button class="vE2-pill">Imersão<span class="vE2-pill__dot"></span></button>
+        <button class="vE2-pill">Artigo</button>
+        <button class="vE2-pill">F. Helper</button>
+      </div>
+
+      <div class="vE2-card">
+        <div class="vE2-card__row">
+          <span class="vE2-card__period"><i class="fa-regular fa-calendar"></i>18/05 – 22/05</span>
+          <span class="vE2-tag">vaga</span>
+        </div>
+        <div class="vE2-avs">
+          <span class="vE2-av">VC</span>
+          <span class="vE2-av" style="background: linear-gradient(135deg, #F59E0B, #EA580C);">MS</span>
+          <span class="vE2-av" style="background: linear-gradient(135deg, #22C55E, #14B8A6);">RP</span>
+          <span class="vE2-av vE2-av--more">+5</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pro-cons">
+      <div class="pro">Tudo visível, click direto. Animação no card só.</div>
+      <div class="con">Pills truncam nomes longos (F.Helper)</div>
+    </div>
+  </div>
+
+  <!-- VARIANTE E3 -->
+  <div class="variant">
+    <div class="variant__head">
+      <span class="variant__id">E3.</span>
+      <span class="variant__title">Dropdown + card</span>
+      <span class="variant__height">~135px</span>
+    </div>
+    <p class="variant__desc">
+      O <b>mais compacto</b>. Botão dropdown com nome atual + seta. Card abaixo. Click no botão abre <b>popover sobreposto</b>
+      (não empurra layout) com lista de todas. Cada item da lista mostra dot vermelho se vago. Escala pra <b>50+ atividades</b>
+      sem alterar altura do sidebar.
+    </p>
+
+    <div class="sidebar">
+      <div class="sidebar__head">
+        <i class="fa-solid fa-people-group"></i>
+        Alocações
+        <span class="sidebar__count">7</span>
+      </div>
+      <div class="seg">
+        <button class="seg__btn"><i class="fa-solid fa-user-check"></i>Meus</button>
+        <button class="seg__btn is-active"><i class="fa-solid fa-people-group"></i>Equipe<span class="seg__count">7</span></button>
+        <button class="seg__btn"><i class="fa-solid fa-thumbtack"></i>Fixas</button>
+      </div>
+
+      <div class="vE3-stage">
+        <button class="vE3-trigger">
+          <span class="vE3-trigger__name">Fórum</span>
+          <i class="fa-solid fa-chevron-down vE3-trigger__nav"></i>
+        </button>
+
+        <div class="vE3-card">
+          <div class="vE2-card__row">
+            <span class="vE2-card__period"><i class="fa-regular fa-calendar"></i>18/05 – 22/05</span>
+            <span class="vE2-tag">vaga</span>
+          </div>
+          <div class="vE2-avs">
+            <span class="vE2-av">VC</span>
+            <span class="vE2-av" style="background: linear-gradient(135deg, #F59E0B, #EA580C);">MS</span>
+            <span class="vE2-av vE2-av--more">+5</span>
+          </div>
+        </div>
+
+        <!-- Popover aberto pra simular click -->
+        <div class="vE3-popover" style="top: 70px;">
+          <div class="vE3-popover__item is-active">Fórum<span class="vE3-popover__item-dot"></span></div>
+          <div class="vE3-popover__item">Discord</div>
+          <div class="vE3-popover__item">Latam</div>
+          <div class="vE3-popover__item">Página de sugestões</div>
+          <div class="vE3-popover__item">WhatsApp</div>
+          <div class="vE3-popover__item">Imersão<span class="vE3-popover__item-dot"></span></div>
+          <div class="vE3-popover__item">Artigo</div>
+          <div class="vE3-popover__item">Fórum Helper</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pro-cons">
+      <div class="pro">Altura mínima absoluta. Escala infinito. Popover sobrepõe.</div>
+      <div class="con">1 click extra pra trocar atividade</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Me diz: <code>E1</code>, <code>E2</code>, <code>E3</code>, ou mistura.<br/>
+  <span style="opacity: 0.6;">Minha intuição: <b>E2</b> é o melhor balanço — compacto, todos visíveis, animação só no card. Mas <b>E3</b> ganha em escala se chegar a 10+ atividades.</span>
+</div>
+
+</div>
+</body>
+</html>

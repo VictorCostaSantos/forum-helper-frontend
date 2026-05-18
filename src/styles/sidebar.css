@@ -1135,19 +1135,12 @@ body.dark-mode .alloc-mini-avatar {
 /* Segmented control superior — 3 botões "Equipe / Meus / Fixas" lado a lado.
    Visual premium: bg neutro, botão ativo recebe fundo destacado + sombra
    sutil. Sem pílula arredondada exagerada. */
+/* Segmented control quadrado e elegante — bordas retas, contraste forte
+   no ativo, sem hover dramático. */
 .alloc-segmented {
     display: flex;
-    gap: 0;
-    padding: 3px;
-    border-radius: 9px;
-    background: var(--bg-color);
-    border: 1px solid var(--border-color);
+    gap: 4px;
     margin-bottom: 10px;
-}
-
-body.dark-mode .alloc-segmented {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.08);
 }
 
 .alloc-segmented__btn {
@@ -1157,9 +1150,9 @@ body.dark-mode .alloc-segmented {
     align-items: center;
     justify-content: center;
     gap: 5px;
-    padding: 5px 8px;
-    border-radius: 7px;
-    border: 1px solid transparent;
+    padding: 7px 6px;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
     background: transparent;
     color: var(--light-text-color);
     cursor: pointer;
@@ -1167,29 +1160,33 @@ body.dark-mode .alloc-segmented {
     font-weight: 600;
     letter-spacing: -0.005em;
     font-family: inherit;
-    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+body.dark-mode .alloc-segmented__btn {
+    border-color: rgba(255, 255, 255, 0.08);
 }
 
 .alloc-segmented__btn:hover:not(:disabled):not(.is-active) {
     color: var(--text-color);
+    border-color: var(--light-text-color);
 }
 
 .alloc-segmented__btn:disabled {
-    opacity: 0.45;
+    opacity: 0.4;
     cursor: not-allowed;
 }
 
 .alloc-segmented__btn.is-active {
-    background: var(--card-bg-color);
-    color: var(--text-color);
-    border-color: var(--border-color);
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    background: var(--text-color);
+    color: var(--card-bg-color);
+    border-color: var(--text-color);
 }
 
 body.dark-mode .alloc-segmented__btn.is-active {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    background: #fff;
+    color: #0B0D11;
+    border-color: #fff;
 }
 
 .alloc-segmented__btn i {
@@ -1198,147 +1195,195 @@ body.dark-mode .alloc-segmented__btn.is-active {
 }
 
 .alloc-segmented__count {
-    background: var(--border-color);
-    color: var(--light-text-color);
+    background: rgba(127, 127, 127, 0.18);
+    color: inherit;
     font-size: 0.6rem;
     font-weight: 700;
-    padding: 0 5px;
-    border-radius: 999px;
+    padding: 1px 6px;
+    border-radius: 4px;
     line-height: 1.4;
     font-variant-numeric: tabular-nums;
-    min-width: 14px;
+    min-width: 16px;
     text-align: center;
 }
 
 .alloc-segmented__btn.is-active .alloc-segmented__count {
-    background: var(--text-color);
-    color: var(--card-bg-color);
+    background: rgba(0, 0, 0, 0.18);
 }
 
-body.dark-mode .alloc-segmented__count {
-    background: rgba(255, 255, 255, 0.1);
+body.dark-mode .alloc-segmented__btn.is-active .alloc-segmented__count {
+    background: rgba(0, 0, 0, 0.14);
 }
 
-/* Tabs internas do carrossel — ícones sutis. SEM underline arredondado
-   embaixo (era o "feio" do feedback). Estado ativo = bg pill discreto. */
-.alloc-carousel__tabs {
+/* ============================================
+   Carrossel ultra-compacto — 1 atividade visível por vez na viewport
+   de 52px. Track desliza vertical com easing bouncy.
+   ============================================ */
+.alloc-carousel {
     display: flex;
-    gap: 2px;
-    padding: 2px 0;
-    flex-wrap: wrap;
+    flex-direction: column;
 }
 
-.alloc-carousel__tab {
-    width: 28px;
-    height: 28px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    border-radius: 7px;
-    color: var(--light-text-color);
-    cursor: pointer;
-    font-size: 0.82rem;
-    padding: 0;
-    transition: color 0.15s ease, background 0.15s ease;
-    opacity: 0.5;
-}
-
-.alloc-carousel__tab:hover {
-    opacity: 0.95;
-    color: var(--tab-color, var(--text-color));
-    background: rgba(127, 127, 127, 0.08);
-}
-
-.alloc-carousel__tab.is-active {
-    opacity: 1;
-    color: var(--tab-color, var(--text-color));
-    background: color-mix(in srgb, var(--tab-color, var(--text-color)) 14%, transparent);
-}
-
-/* Nome da estação selecionada — small caps na cor da brand, dá contexto
-   imediato sem precisar hover na tab. */
-.alloc-carousel__station-name {
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: -0.005em;
-    margin: 2px 2px 0;
+.alloc-carousel__viewport {
+    width: 100%;
+    height: 56px;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    position: relative;
+    cursor: pointer;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--border-color);
+    outline: none;
 }
 
-.alloc-carousel__slide {
+body.dark-mode .alloc-carousel__viewport {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.alloc-carousel__viewport:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.alloc-carousel__viewport:focus-visible {
+    box-shadow: 0 0 0 2px var(--cor-ia);
+}
+
+.alloc-carousel__track {
+    /* Grid em vez de flex porque `grid-auto-columns: 100%` torna cada
+       coluna 100% da viewport (o container) — não da soma das colunas.
+       Flex row tinha problema de width circular (filho 100% = track auto
+       = item auto = um sobre o outro). */
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 100%;
+    width: 100%;
+    height: 100%;
+    /* easeInOutQuart — suave nos dois lados, sem overshoot bouncy. */
+    transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.alloc-carousel__item {
+    /* width vem do grid-auto-columns: 100% */
+    height: 56px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: var(--bg-color);
-    border: 1px solid var(--border-color);
-    cursor: pointer;
-    transition: background 0.15s ease;
-    outline: none;
-    animation: alloc-slide-fade 0.32s ease;
+    gap: 12px;
+    padding: 0 12px;
+    min-width: 0;
 }
 
-@keyframes alloc-slide-fade {
-    from { opacity: 0; transform: translateY(3px); }
-    to   { opacity: 1; transform: translateY(0); }
+.alloc-carousel__item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
 }
 
-.alloc-carousel__slide:hover,
-.alloc-carousel__slide:focus-visible {
-    background: rgba(15, 23, 42, 0.04);
-    border-color: var(--cor-feedback);
-}
-
-body.dark-mode .alloc-carousel__slide {
-    background: rgba(255, 255, 255, 0.03);
-}
-
-body.dark-mode .alloc-carousel__slide:hover,
-body.dark-mode .alloc-carousel__slide:focus-visible {
-    background: rgba(255, 255, 255, 0.06);
-}
-
-.alloc-carousel__slide.is-vago {
-    border-color: rgba(220, 53, 69, 0.3);
-    background: rgba(220, 53, 69, 0.05);
-}
-
-.alloc-carousel__period {
+.alloc-carousel__item-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: var(--text-color);
-    letter-spacing: -0.005em;
+    justify-content: center;
+    font-size: 0.84rem;
+    flex-shrink: 0;
+    overflow: hidden;
+    /* color e background vêm do inline style com a brand */
+}
+
+/* Imagem dentro do ícone do carrossel — mesmo padrão do painel,
+   tamanho menor (32px container). */
+.alloc-carousel__item-icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 4px;
+    box-sizing: border-box;
+    display: block;
+}
+
+.alloc-carousel__item-texts {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    overflow: hidden;
     min-width: 0;
+}
+
+.alloc-carousel__item-name {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    letter-spacing: -0.005em;
+    line-height: 1.2;
 }
 
-.alloc-carousel__period i {
+.alloc-carousel__item-date {
+    font-size: 0.68rem;
+    font-weight: 600;
     color: var(--light-text-color);
-    opacity: 0.8;
-    font-size: 0.78rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.2;
+}
+
+.alloc-carousel__item-date i {
+    font-size: 0.62rem;
+    opacity: 0.7;
+}
+
+.alloc-carousel__item-right {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
 }
 
 .alloc-carousel__peers {
     display: inline-flex;
     align-items: center;
-    flex-shrink: 0;
 }
 
 .alloc-carousel__solo {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     color: var(--light-text-color);
     font-style: italic;
-    flex-shrink: 0;
+}
+
+/* Link no header "Alocações" — vai pro painel completo. */
+.sidebar-panel-header__link {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.15s ease;
+}
+
+.sidebar-panel-header__link:hover {
+    color: var(--cor-ia);
+}
+
+.sidebar-panel-header__link-icon {
+    font-size: 0.62rem;
+    opacity: 0.55;
+    margin-left: 2px;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.sidebar-panel-header__link:hover .sidebar-panel-header__link-icon {
+    opacity: 1;
+    transform: translateX(1px) translateY(-1px);
 }
 .alocacao:hover { color: var(--cor-frontend); }

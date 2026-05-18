@@ -47,29 +47,38 @@ import forumHelperImg from '../../assets/icon.png';
 const DEFAULT_GRADIENT = 'linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #334155 100%)';
 const DEFAULT_COLOR    = '#334155';
 
+// `icon` + `iconColor` são usados em contextos compactos onde a `image`
+// fica grande demais (ex: carrossel do sidebar). No painel principal a
+// `image` continua sendo o protagonista visual.
 export const ACTIVITY_BRANDS = [
-  // Discord/WhatsApp: cores oficiais de marca — únicas exceções ao padrão.
-  { match: 'discord',           icon: 'fa-brands fa-discord',  color: '#5865F2' },
-  { match: 'whats',             icon: 'fa-brands fa-whatsapp', color: '#25D366' },
+  { match: 'discord',           icon: 'fa-brands fa-discord',  iconColor: '#5865F2', color: '#5865F2' },
+  { match: 'whats',             icon: 'fa-brands fa-whatsapp', iconColor: '#25D366', color: '#25D366' },
 
-  // Latam: padrão + zoom da logo (que tem espaço em branco em volta).
-  { match: 'alura latam',       image: latamImg,               color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageZoom: 1.6 },
-  { match: 'latam',             image: latamImg,               color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageZoom: 1.6 },
+  // Latam.
+  { match: 'alura latam',       image: latamImg, icon: 'fa-solid fa-earth-americas', iconColor: '#10B981',
+    color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageZoom: 1.6 },
+  { match: 'latam',             image: latamImg, icon: 'fa-solid fa-earth-americas', iconColor: '#10B981',
+    color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageZoom: 1.6 },
 
-  // Fórum Helper: ANTES de "fórum" porque o match é por inclusão e
-  // "fórum helper" contém "fórum". Logo padrão do app (icon.png) sem
-  // branqueamento — mantém identidade visual original do nosso ícone.
-  { match: 'fórum helper',      image: forumHelperImg,         color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT },
-  { match: 'forum helper',      image: forumHelperImg,         color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT },
+  // Fórum Helper: ANTES de "fórum" — o match é por inclusão.
+  { match: 'fórum helper',      image: forumHelperImg, icon: 'fa-solid fa-screwdriver-wrench', iconColor: '#7C3AED',
+    color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT },
+  { match: 'forum helper',      image: forumHelperImg, icon: 'fa-solid fa-screwdriver-wrench', iconColor: '#7C3AED',
+    color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT },
 
-  // Demais brands com logos monocromáticas — imageWhite vira branco
-  // contra o fundo escuro padrão.
-  { match: 'revisão de artigo', image: articleImg,             color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageWhite: true },
-  { match: 'artigo',            image: articleImg,             color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageWhite: true },
-  { match: 'imersão',           image: moderadorImg,           color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageWhite: true },
-  { match: 'fórum',             image: forumImg,               color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageWhite: true },
-  { match: 'forum',             image: forumImg,               color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageWhite: true },
-  { match: 'sugest',            image: suggestionsImg,         color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageWhite: true },
+  // Demais.
+  { match: 'revisão de artigo', image: articleImg, icon: 'fa-solid fa-pen-nib', iconColor: '#F59E0B',
+    color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageWhite: true },
+  { match: 'artigo',            image: articleImg, icon: 'fa-solid fa-pen-nib', iconColor: '#F59E0B',
+    color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageWhite: true },
+  { match: 'imersão',           image: moderadorImg, icon: 'fa-solid fa-shield-halved', iconColor: '#A855F7',
+    color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageWhite: true },
+  { match: 'fórum',             image: forumImg, icon: 'fa-solid fa-comments', iconColor: '#3B82F6',
+    color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageWhite: true },
+  { match: 'forum',             image: forumImg, icon: 'fa-solid fa-comments', iconColor: '#3B82F6',
+    color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageWhite: true },
+  { match: 'sugest',            image: suggestionsImg, icon: 'fa-solid fa-lightbulb', iconColor: '#EC4899',
+    color: DEFAULT_COLOR, gradient: DEFAULT_GRADIENT, imageWhite: true },
 ];
 
 const DEFAULT_BRAND = {

@@ -45,7 +45,8 @@
       "Bash(sed -i '2231,2306d' allocation.css)",
       "Bash(sed -i '2244,2248d' allocation.css)",
       "Bash(npx eslint *)",
-      "Bash(node --check src/features/allocation/useAllocation.js src/features/allocation/dateHelpers.js src/features/allocation/activityBrands.js)"
+      "Bash(node --check src/features/allocation/useAllocation.js src/features/allocation/dateHelpers.js src/features/allocation/activityBrands.js)",
+      "Bash(git restore *)"
     ],
     "additionalDirectories": [
       "c:\\c\\Users\\Victor Costa\\Desktop\\forum_helper\\frontend-react\\src\\styles",
