@@ -26,6 +26,9 @@ function ActivityRow({
   highlightedUser = null,
   loadByUser = null,
   stationsByUser = null,
+  selectable = false,      // modo bulk: mostra checkbox e card vira clicável
+  selected = false,
+  onToggleSelect,
   onEditStation,
   onExtendStation,
   onTogglePerson,
@@ -48,10 +51,16 @@ function ActivityRow({
   const canManageNext    = Boolean(currentUsername);
 
   const handleEdit = () => onEditStation?.(station);
+  const handleSelect = (e) => {
+    e.stopPropagation();
+    onToggleSelect?.();
+  };
 
   return (
     <article
       className={`alloc-station ${dimmed ? 'is-dimmed' : ''} ${
+        selectable ? 'is-selectable' : ''
+      } ${selected ? 'is-selected' : ''} ${
         currentShift
           && (currentShift.responsaveis || []).length > 0
           && (currentShift.responsaveis || []).every(isPlaceholder)
@@ -60,9 +69,18 @@ function ActivityRow({
       }`}
       data-station-name={name}
       data-pending={Boolean(reference?._optimistic)}
+      onClick={selectable ? handleSelect : undefined}
     >
       {/* 1. IDENTIDADE */}
       <div className="alloc-station__identity">
+        {selectable ? (
+          <span
+            className={`alloc-station__select ${selected ? 'is-checked' : ''}`}
+            aria-hidden="true"
+          >
+            {selected ? <i className="fa-solid fa-check"></i> : null}
+          </span>
+        ) : null}
         <div
           className="alloc-station__icon"
           style={brandContainerStyle(brand)}
@@ -83,8 +101,11 @@ function ActivityRow({
           <button
             type="button"
             className="alloc-station__title"
-            onClick={handleEdit}
-            title="Editar atividade"
+            onClick={(e) => {
+              if (selectable) { e.stopPropagation(); handleSelect(e); return; }
+              handleEdit();
+            }}
+            title={selectable ? 'Selecionar/desmarcar' : 'Editar atividade'}
           >
             {name}
           </button>

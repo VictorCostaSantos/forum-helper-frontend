@@ -22,10 +22,10 @@ import { getDisplayName, isAdmin, isPlaceholder } from './team';
 
   Famílias:
     1. Atividade sem ninguém / pessoa em sobrecarga (estáticos)
-    2. Você foi alocado / saiu (diff de snapshot)
+    2. Você foi alocado / saiu (diff de snapshot por usuário)
     3. Lembretes pessoais (começa amanhã / termina hoje)
     4. Radar admin (ciclo não criado, próxima sem alocação)
-    5. Mudança de peso / atividade nova
+    5. Snapshot por id: peso, nova, removida, renomeada, data alterada
 */
 
 function readSnapshot(key) {
@@ -293,31 +293,131 @@ function AllocationAlertsBridge() {
     }
   }, [items, announce]);
 
-  /* === Mudança de peso + atividade nova === */
+  /* === Snapshot por id: peso, nova, removida, renomeada, data alterada ===
+     Único effect com snapshot por id pra evitar ruído cruzado. Exemplo: se
+     "Fórum" vira "Fórum Helper" via editStation, snapshots separados de
+     stations + per-id disparariam 3 alertas (nova + removida + renomeada).
+     Aqui detectamos rename PRIMEIRO e suprimimos os falsos new/deleted. */
   useEffect(() => {
     const username = (localStorage.getItem('forumHelperUsername') || '').trim();
     if (!username) return;
     if (!Array.isArray(items) || items.length === 0) return;
 
-    const PESO_KEY = `fhAllocPesoSnap:${username}`;
-    const PESO_SEED = `${PESO_KEY}:seeded`;
-    const currentPeso = {};
+    const KEY  = `fhAllocItemsByIdSnap:${username}`;
+    const SEED = `${KEY}:seeded`;
+
+    const currentById = {};
     for (const a of items) {
       if (!a?.id) continue;
-      const list = Array.isArray(a.responsaveis) ? a.responsaveis : [];
-      if (!list.includes(username)) continue;
-      currentPeso[a.id] = { peso: Number(a.peso) || 0, nome: a.nome || 'atividade' };
+      currentById[a.id] = {
+        nome: a.nome || 'atividade',
+        peso: Number(a.peso) || 0,
+        di:   String(a?.data_inicio || '').slice(0, 10),
+        df:   String(a?.data_fim    || '').slice(0, 10),
+        responsaveis: Array.isArray(a.responsaveis) ? a.responsaveis : [],
+      };
     }
-    const pesoSeeded = localStorage.getItem(PESO_SEED) === '1';
-    const previousPeso = readSnapshot(PESO_KEY) || {};
-    if (pesoSeeded) {
-      for (const [id, info] of Object.entries(currentPeso)) {
-        const prev = previousPeso[id];
-        if (!prev || typeof prev.peso !== 'number') continue;
-        if (prev.peso === info.peso) continue;
+
+    const seeded = localStorage.getItem(SEED) === '1';
+    const previousById = readSnapshot(KEY) || {};
+
+    if (seeded) {
+      // 1) Renomes: id existia, mudou nome. Dedupe por par oldName→newName
+      //    pra editStation que renomeia N instâncias virar 1 alerta só.
+      const renames = new Map(); // oldKey -> { oldName, newName }
+      for (const [id, info] of Object.entries(currentById)) {
+        const prev = previousById[id];
+        if (!prev?.nome || prev.nome === info.nome) continue;
+        const oldKey = String(prev.nome).toLowerCase();
+        if (!renames.has(oldKey)) {
+          renames.set(oldKey, { oldName: prev.nome, newName: info.nome });
+        }
+      }
+      const renameOldKeys = new Set([...renames.keys()]);
+      const renameNewKeys = new Set([...renames.values()].map((r) => String(r.newName).toLowerCase()));
+
+      for (const { oldName, newName } of renames.values()) {
+        announce({
+          id: `alloc-renamed:${String(oldName).toLowerCase()}→${String(newName).toLowerCase()}`,
+          kind: 'alloc-renamed',
+          severity: 'info',
+          icon: 'fa-pen-to-square',
+          title: newName,
+          body: `Atividade renomeada de "${oldName}".`,
+          meta: [{ label: 'Confira no painel' }],
+          route: '/allocation',
+          timestamp: Date.now(),
+        });
+      }
+
+      // 2) Conjuntos de chaves de nome pra detectar new/deleted suprimindo renames
+      const prevNameKeys = new Set();
+      for (const info of Object.values(previousById)) {
+        if (info?.nome) prevNameKeys.add(String(info.nome).toLowerCase());
+      }
+      const currNameKeys = new Set();
+      for (const info of Object.values(currentById)) {
+        if (info?.nome) currNameKeys.add(String(info.nome).toLowerCase());
+      }
+
+      // 3) Novas estações
+      const announcedNewKeys = new Set();
+      for (const info of Object.values(currentById)) {
+        const key = String(info.nome).toLowerCase();
+        if (prevNameKeys.has(key)) continue;
+        if (renameNewKeys.has(key)) continue;
+        if (announcedNewKeys.has(key)) continue;
+        announcedNewKeys.add(key);
+        announce({
+          id: `alloc-new-station:${key}`,
+          kind: 'alloc-new-station',
+          severity: 'info',
+          icon: 'fa-circle-plus',
+          title: info.nome,
+          body: 'Nova atividade foi criada no painel.',
+          meta: [{ label: 'Confira no painel quem está alocado' }],
+          route: '/allocation',
+          timestamp: Date.now(),
+        });
+      }
+
+      // 4) Estações removidas (todas as instâncias sumiram, e não é rename)
+      const announcedDelKeys = new Set();
+      for (const info of Object.values(previousById)) {
+        if (!info?.nome) continue;
+        const key = String(info.nome).toLowerCase();
+        if (currNameKeys.has(key)) continue;
+        if (renameOldKeys.has(key)) continue;
+        if (announcedDelKeys.has(key)) continue;
+        announcedDelKeys.add(key);
+        announce({
+          id: `alloc-station-deleted:${key}`,
+          kind: 'alloc-station-deleted',
+          severity: 'info',
+          icon: 'fa-circle-minus',
+          title: info.nome,
+          body: 'Atividade foi removida do painel.',
+          meta: [{ label: 'Não aparece mais na lista' }],
+          route: '/allocation',
+          timestamp: Date.now(),
+        });
+      }
+
+      // 5) Mudança de peso (só pras atividades do usuário). Dedupe por
+      //    (nameKey, peso) — editStation propaga pra N instâncias.
+      const pesoSeen = new Set();
+      for (const [id, info] of Object.entries(currentById)) {
+        const prev = previousById[id];
+        if (!prev || typeof prev.peso !== 'number' || prev.peso === info.peso) continue;
+        const list = info.responsaveis || [];
+        if (!list.includes(username)) continue;
+        const nameKey = String(info.nome).toLowerCase();
+        const dedupeKey = `${nameKey}:${info.peso}`;
+        if (pesoSeen.has(dedupeKey)) continue;
+        pesoSeen.add(dedupeKey);
         const up = info.peso > prev.peso;
         announce({
-          id: `alloc-peso:${id}:${info.peso}`,
+          id: `alloc-peso:${nameKey}:${info.peso}`,
           kind: 'alloc-peso',
           severity: up ? 'warning' : 'info',
           icon: 'fa-scale-balanced',
@@ -328,38 +428,38 @@ function AllocationAlertsBridge() {
           timestamp: Date.now(),
         });
       }
-    }
-    writeSnapshot(PESO_KEY, currentPeso);
-    if (!pesoSeeded) localStorage.setItem(PESO_SEED, '1');
 
-    const STA_KEY = `fhAllocStationsSnap:${username}`;
-    const STA_SEED = `${STA_KEY}:seeded`;
-    const currentStations = {};
-    for (const a of items) {
-      if (!a?.nome) continue;
-      const key = String(a.nome).trim().toLowerCase();
-      if (!currentStations[key]) currentStations[key] = a.nome;
-    }
-    const staSeeded = localStorage.getItem(STA_SEED) === '1';
-    const previousStations = readSnapshot(STA_KEY) || {};
-    if (staSeeded) {
-      for (const [key, name] of Object.entries(currentStations)) {
-        if (previousStations[key]) continue;
+      // 6) Data alterada (só pras instâncias em que o usuário está agora).
+      //    Skip se também foi rename — o alerta de rename já cobre.
+      for (const [id, info] of Object.entries(currentById)) {
+        const prev = previousById[id];
+        if (!prev) continue;
+        if (prev.nome !== info.nome) continue;
+        if (prev.di === info.di && prev.df === info.df) continue;
+        const list = info.responsaveis || [];
+        if (!list.includes(username)) continue;
+        const fmt = (iso) => iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}` : '';
+        const oldRange = prev.di && prev.df ? `${fmt(prev.di)} → ${fmt(prev.df)}` : '';
+        const newRange = info.di && info.df ? `${fmt(info.di)} → ${fmt(info.df)}` : '';
         announce({
-          id: `alloc-new-station:${key}`,
-          kind: 'alloc-new-station',
+          id: `alloc-date-changed:${id}:${info.di}-${info.df}`,
+          kind: 'alloc-date-changed',
           severity: 'info',
-          icon: 'fa-circle-plus',
-          title: name,
-          body: 'Nova atividade foi criada no painel.',
-          meta: [{ label: 'Confira no painel quem está alocado' }],
+          icon: 'fa-calendar-day',
+          title: info.nome,
+          body: 'O período da sua alocação mudou.',
+          meta: [
+            oldRange ? { icon: 'fa-regular fa-calendar-minus', label: `Antes: ${oldRange}` } : null,
+            newRange ? { icon: 'fa-regular fa-calendar-check', label: `Agora: ${newRange}` } : null,
+          ].filter(Boolean),
           route: '/allocation',
           timestamp: Date.now(),
         });
       }
     }
-    writeSnapshot(STA_KEY, currentStations);
-    if (!staSeeded) localStorage.setItem(STA_SEED, '1');
+
+    writeSnapshot(KEY, currentById);
+    if (!seeded) localStorage.setItem(SEED, '1');
   }, [items, announce]);
 
   return null;

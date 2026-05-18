@@ -4,6 +4,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -22,6 +23,65 @@ import React, {
 
 const NotificationsContext = createContext(null);
 const STORAGE_KEY = 'fhNotifications';
+
+/*
+  Preferências de notificação — toggle por categoria.
+
+  Cada kind do bridge cai em uma das 6 categorias abaixo. Quando o usuário
+  desliga uma categoria, o `announce` ignora silenciosamente os kinds dela
+  (não chega a entrar em storage). Default: tudo ligado.
+
+  KIND_TO_CATEGORY mapeia 1-pra-1 kind→key. NOTIF_CATEGORIES é o que o UI
+  renderiza, na ordem que aparece no painel de prefs.
+*/
+export const NOTIF_CATEGORIES = [
+  { key: 'actsVago',     label: 'Atividades sem ninguém', icon: 'fa-solid fa-circle-exclamation', hint: 'Estação vaga ou próxima ocorrência sem alocação.' },
+  { key: 'selfDanger',   label: 'Sua carga alta',          icon: 'fa-solid fa-bolt',               hint: 'Quando sua carga semanal passa do saudável.' },
+  { key: 'selfAssign',   label: 'Você foi alocado/saiu',   icon: 'fa-solid fa-user-pen',           hint: 'Quando alguém te coloca ou tira de uma escala.' },
+  { key: 'selfPersonal', label: 'Lembretes pessoais',      icon: 'fa-solid fa-bell',               hint: 'Começa amanhã, termina hoje, peso/data mudaram.' },
+  { key: 'panelChanges', label: 'Mudanças no painel',      icon: 'fa-solid fa-circle-info',        hint: 'Atividade nova, renomeada, removida.' },
+  { key: 'adminRadar',   label: 'Radar admin',             icon: 'fa-solid fa-shield-halved',      hint: 'Ciclo acabando sem próxima ocorrência criada.' },
+];
+
+const KIND_TO_CATEGORY = {
+  'alloc-vago':            'actsVago',
+  'alloc-next-vago':       'actsVago',
+  'alloc-danger':          'selfDanger',
+  'alloc-assigned':        'selfAssign',
+  'alloc-unassigned':      'selfAssign',
+  'alloc-begins':          'selfPersonal',
+  'alloc-ends':            'selfPersonal',
+  'alloc-date-changed':    'selfPersonal',
+  'alloc-peso':            'selfPersonal',
+  'alloc-new-station':     'panelChanges',
+  'alloc-station-deleted': 'panelChanges',
+  'alloc-renamed':         'panelChanges',
+  'alloc-cycle-missing':   'adminRadar',
+};
+
+function prefsStorageKey() {
+  const username = (localStorage.getItem('forumHelperUsername') || '').trim();
+  return username ? `fhNotifPrefs:${username}` : 'fhNotifPrefs';
+}
+
+function loadPrefs() {
+  try {
+    const raw = localStorage.getItem(prefsStorageKey());
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function savePrefs(prefs) {
+  try {
+    localStorage.setItem(prefsStorageKey(), JSON.stringify(prefs));
+  } catch {
+    // ignora quota
+  }
+}
 
 function loadFromStorage() {
   try {
@@ -70,12 +130,25 @@ export function NotificationsProvider({ children }) {
   // o token não tá configurado, fica null e o painel some.
   const [clickupSummary, setClickupSummary] = useState(null);
 
+  // Prefs por categoria. Acesso via ref dentro de announce pra não recriar
+  // o callback a cada toggle (o bridge depende de announce nos seus effects).
+  const [notifPrefs, setNotifPrefs] = useState(loadPrefs);
+  const notifPrefsRef = useRef(notifPrefs);
+  useEffect(() => {
+    notifPrefsRef.current = notifPrefs;
+    savePrefs(notifPrefs);
+  }, [notifPrefs]);
+
   useEffect(() => {
     saveToStorage({ alerts, readIds, dismissedIds });
   }, [alerts, readIds, dismissedIds]);
 
   const announce = useCallback((alert) => {
     if (!alert?.id) return;
+    // Filtra silenciosamente por preferência de categoria. Default = ligado;
+    // só bloqueia se explicitamente false (`undefined` continua passando).
+    const cat = KIND_TO_CATEGORY[alert.kind];
+    if (cat && notifPrefsRef.current[cat] === false) return;
     setDismissedIds((prevDismissed) => {
       if (prevDismissed.has(alert.id)) return prevDismissed;
       setAlerts((prev) => {
@@ -84,6 +157,10 @@ export function NotificationsProvider({ children }) {
       });
       return prevDismissed;
     });
+  }, []);
+
+  const setNotifPref = useCallback((key, enabled) => {
+    setNotifPrefs((prev) => ({ ...prev, [key]: !!enabled }));
   }, []);
 
   const dismiss = useCallback((id) => {
@@ -142,6 +219,8 @@ export function NotificationsProvider({ children }) {
       setBellOpen,
       clickupSummary,
       setClickupSummary,
+      notifPrefs,
+      setNotifPref,
     }),
     [
       alerts,
@@ -156,6 +235,8 @@ export function NotificationsProvider({ children }) {
       clearAll,
       bellOpen,
       clickupSummary,
+      notifPrefs,
+      setNotifPref,
     ],
   );
 

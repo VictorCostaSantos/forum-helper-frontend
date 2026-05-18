@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useToast } from '../../shared/ui/ToastProvider';
-import { PLACEHOLDER_USER, TEAM, canEditActivity, getDisplayName } from './team';
+import { PLACEHOLDER_USER, TEAM, canEditActivity, getDisplayName, isPlaceholder } from './team';
 import { addDays, fromISODate, toISODate } from './dateHelpers';
 import { brandContainerStyle, brandFor, brandImageStyle } from './activityBrands';
 // Subtitle customizado foi removido — só fazia sentido se persistisse no
@@ -172,6 +172,59 @@ function ActivityDrawer({
     if (![1, 2, 3].includes(Number(form.peso))) return false;
     return true;
   }, [form]);
+
+  /*
+    Preview de impacto — só em edit. Compara form atual com a atividade
+    original e lista o que vai mudar. Quando applyToAll, deixa explícito
+    que nome+peso vão pra TODAS as N ocorrências (datas/responsáveis
+    de cada instância continuam intactos).
+
+    Existe pra reduzir surpresa: editStation propaga em massa e dava pra
+    bater 1→3 em 8 ocorrências por engano. Agora o user vê antes.
+  */
+  const impactPreview = useMemo(() => {
+    if (!isEdit || !activity) return null;
+    const changes = [];
+    const oldNome = String(activity.nome || '').trim();
+    const newNome = form.nome.trim();
+    if (newNome !== oldNome) {
+      changes.push({ type: 'pair', label: 'Nome', from: oldNome || '—', to: newNome });
+    }
+    const oldPeso = Number(activity.peso) || 0;
+    const newPeso = Number(form.peso) || 0;
+    if (newPeso !== oldPeso) {
+      const label = (n) => PESO_OPTIONS.find((p) => p.value === n)?.label || String(n);
+      changes.push({ type: 'pair', label: 'Peso', from: label(oldPeso), to: label(newPeso) });
+    }
+    // Datas e responsáveis SÓ entram no preview quando applyToAll=false —
+    // o "aplicar a todas" preserva ambos por design.
+    if (!applyToAll) {
+      const oldDi = String(activity.data_inicio || '').slice(0, 10);
+      const oldDf = String(activity.data_fim || '').slice(0, 10);
+      if (form.data_inicio !== oldDi || form.data_fim !== oldDf) {
+        const fmt = (iso) => (iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}` : '—');
+        changes.push({
+          type: 'pair',
+          label: 'Período',
+          from: `${fmt(oldDi)} → ${fmt(oldDf)}`,
+          to:   `${fmt(form.data_inicio)} → ${fmt(form.data_fim)}`,
+        });
+      }
+      const oldResp = new Set((Array.isArray(activity.responsaveis) ? activity.responsaveis : []).filter((u) => !isPlaceholder(u)));
+      const newResp = new Set(form.responsaveis.filter((u) => !isPlaceholder(u)));
+      const added   = [...newResp].filter((u) => !oldResp.has(u));
+      const removed = [...oldResp].filter((u) => !newResp.has(u));
+      if (added.length || removed.length) {
+        changes.push({ type: 'diff', label: 'Responsáveis', added, removed });
+      }
+    }
+    if (changes.length === 0) return null;
+    return {
+      changes,
+      applyToAll,
+      scope: applyToAll && sameNameCount > 1 ? sameNameCount : 1,
+    };
+  }, [isEdit, activity, form, applyToAll, sameNameCount]);
 
   // Quando o usuário muda data_inicio, se data_fim estiver vazia ou antes
   // do novo início, alinha automaticamente. Evita inválido por descuido.
@@ -518,6 +571,55 @@ function ActivityDrawer({
               </p>
             ) : null}
           </div>
+
+          {impactPreview ? (
+            <div
+              className={`alloc-impact ${impactPreview.applyToAll ? 'alloc-impact--mass' : ''}`}
+              role="region"
+              aria-label="Resumo das mudanças"
+            >
+              <header className="alloc-impact__head">
+                <i className="fa-solid fa-square-poll-vertical"></i>
+                <span>O que vai mudar</span>
+                <span className="alloc-impact__scope">
+                  {impactPreview.applyToAll && impactPreview.scope > 1 ? (
+                    <>em <b>{impactPreview.scope}</b> ocorrências</>
+                  ) : (
+                    'nesta ocorrência'
+                  )}
+                </span>
+              </header>
+              <ul className="alloc-impact__list">
+                {impactPreview.changes.map((c, idx) => (
+                  <li key={idx} className="alloc-impact__item">
+                    <span className="alloc-impact__field">{c.label}</span>
+                    {c.type === 'pair' ? (
+                      <span className="alloc-impact__value">
+                        <span className="alloc-impact__from">{c.from}</span>
+                        <i className="fa-solid fa-arrow-right alloc-impact__arrow" aria-hidden="true"></i>
+                        <span className="alloc-impact__to">{c.to}</span>
+                      </span>
+                    ) : (
+                      <span className="alloc-impact__value alloc-impact__value--diff">
+                        {c.added.length > 0 ? (
+                          <span className="alloc-impact__diff-add">
+                            <i className="fa-solid fa-plus" aria-hidden="true"></i>
+                            {c.added.map(getDisplayName).join(', ')}
+                          </span>
+                        ) : null}
+                        {c.removed.length > 0 ? (
+                          <span className="alloc-impact__diff-remove">
+                            <i className="fa-solid fa-minus" aria-hidden="true"></i>
+                            {c.removed.map(getDisplayName).join(', ')}
+                          </span>
+                        ) : null}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
 
         {/* Footer só aparece quando edita; em view, só fecha. */}

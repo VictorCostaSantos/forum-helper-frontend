@@ -824,6 +824,51 @@ body.dark-mode .alloc-central__row {
     border-radius: 0 6px 6px 0 !important;
 }
 
+/* Chip indicando "Semana passada" / "Próxima semana" / "N sem atrás" — só
+   aparece quando o usuário navegou pra longe da semana atual. Clicável:
+   volta pra hoje. Sobe specificity pra vencer o `.alloc-period span` acima. */
+.alloc-period .alloc-period__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: filter 0.12s ease, transform 0.12s ease;
+    margin: 0 2px;
+}
+
+.alloc-period .alloc-period__chip:hover {
+    filter: brightness(1.07);
+    transform: translateY(-1px);
+}
+
+.alloc-period .alloc-period__chip i {
+    font-size: 0.65rem;
+    opacity: 0.85;
+}
+
+.alloc-period .alloc-period__chip--past {
+    background: color-mix(in srgb, var(--light-text-color) 14%, transparent);
+    color: var(--light-text-color);
+    border: 1px solid color-mix(in srgb, var(--light-text-color) 22%, transparent);
+}
+
+.alloc-period .alloc-period__chip--future {
+    background: color-mix(in srgb, var(--accent-color, #6366f1) 14%, transparent);
+    color: var(--accent-color, #6366f1);
+    border: 1px solid color-mix(in srgb, var(--accent-color, #6366f1) 30%, transparent);
+}
+
+body.dark-mode .alloc-period .alloc-period__chip--past {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
 /* GRID PRINCIPAL: lista de estações + termômetro lateral */
 .alloc-shell__grid {
     display: grid;
@@ -842,6 +887,335 @@ body.dark-mode .alloc-central__row {
     gap: 8px;
 }
 
+/* ============================================================
+   TOOLBAR — busca + chips de peso + reset (no topo da lista)
+   ============================================================ */
+.alloc-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    flex-wrap: wrap;
+}
+
+body.dark-mode .alloc-toolbar {
+    border-color: rgba(255, 255, 255, 0.07);
+}
+
+.alloc-toolbar__search {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex: 1 1 240px;
+    min-width: 200px;
+}
+
+.alloc-toolbar__search > i {
+    position: absolute;
+    left: 10px;
+    color: var(--light-text-color);
+    font-size: 0.78rem;
+    pointer-events: none;
+}
+
+.alloc-toolbar__search input {
+    width: 100%;
+    padding: 7px 30px 7px 30px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-family: inherit;
+    font-size: 0.85rem;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.alloc-toolbar__search input:focus {
+    outline: none;
+    border-color: var(--accent-color, #6366f1);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color, #6366f1) 18%, transparent);
+}
+
+body.dark-mode .alloc-toolbar__search input {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.alloc-toolbar__clear-search {
+    position: absolute;
+    right: 6px;
+    background: transparent;
+    border: none;
+    color: var(--light-text-color);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    transition: background 0.12s ease, color 0.12s ease;
+}
+
+.alloc-toolbar__clear-search:hover {
+    background: var(--icon-hover-bg);
+    color: var(--text-color);
+}
+
+.alloc-toolbar__chips {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.alloc-toolbar__chip {
+    --chip-color: var(--light-text-color);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+    background: transparent;
+    color: var(--light-text-color);
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.12s ease;
+}
+
+.alloc-toolbar__chip--p1 { --chip-color: var(--cor-facil); }
+.alloc-toolbar__chip--p2 { --chip-color: var(--cor-sla); }
+.alloc-toolbar__chip--p3 { --chip-color: var(--cor-complexo); }
+
+.alloc-toolbar__chip:hover {
+    border-color: color-mix(in srgb, var(--chip-color) 50%, transparent);
+    color: var(--text-color);
+}
+
+.alloc-toolbar__chip.is-active {
+    border-color: var(--chip-color);
+    background: color-mix(in srgb, var(--chip-color) 12%, transparent);
+    color: var(--text-color);
+}
+
+.alloc-toolbar__chip-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--chip-color);
+    flex-shrink: 0;
+}
+
+.alloc-toolbar__reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--light-text-color);
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.12s ease;
+}
+
+.alloc-toolbar__reset:hover {
+    background: var(--icon-hover-bg);
+    color: var(--text-color);
+}
+
+.alloc-toolbar__reset i {
+    font-size: 0.72rem;
+    opacity: 0.7;
+}
+
+.alloc-toolbar__select {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+    background: transparent;
+    color: var(--light-text-color);
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.12s ease;
+}
+
+.alloc-toolbar__select:hover {
+    color: var(--text-color);
+    border-color: color-mix(in srgb, var(--accent-color, #6366f1) 40%, var(--border-color));
+}
+
+.alloc-toolbar__select.is-active {
+    background: var(--accent-color, #6366f1);
+    border-color: var(--accent-color, #6366f1);
+    color: #fff;
+}
+
+.alloc-toolbar__select i {
+    font-size: 0.72rem;
+}
+
+/* ============================================================
+   SELECTION MODE — checkbox no card + visual de seleção
+   ============================================================ */
+.alloc-station__select {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--border-color);
+    background: var(--bg-color);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    font-size: 0.72rem;
+    flex-shrink: 0;
+    transition: all 0.12s ease;
+    margin-right: 8px;
+}
+
+body.dark-mode .alloc-station__select {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.alloc-station__select.is-checked {
+    background: var(--accent-color, #6366f1);
+    border-color: var(--accent-color, #6366f1);
+    color: #fff;
+}
+
+.alloc-station.is-selectable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.alloc-station.is-selectable:hover {
+    border-color: color-mix(in srgb, var(--accent-color, #6366f1) 50%, var(--border-color));
+}
+
+.alloc-station.is-selected {
+    border-color: var(--accent-color, #6366f1) !important;
+    box-shadow: 0 0 0 1px var(--accent-color, #6366f1) inset;
+    background: color-mix(in srgb, var(--accent-color, #6366f1) 6%, var(--card-bg-color));
+}
+
+body.dark-mode .alloc-station.is-selected {
+    background: color-mix(in srgb, var(--accent-color, #818cf8) 10%, var(--card-bg-color));
+}
+
+/* ============================================================
+   BULK ACTIONS BAR — flutuante no rodapé quando ≥1 selecionada
+   ============================================================ */
+.alloc-bulk-bar {
+    position: sticky;
+    bottom: 16px;
+    margin-top: 16px;
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 10px 14px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    z-index: 60;
+    animation: alloc-bulk-in 0.18s ease-out;
+}
+
+body.dark-mode .alloc-bulk-bar {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
+
+@keyframes alloc-bulk-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.alloc-bulk-bar__count {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.alloc-bulk-bar__count i {
+    color: var(--accent-color, #6366f1);
+    font-size: 0.85rem;
+}
+
+.alloc-bulk-bar__actions {
+    display: inline-flex;
+    gap: 6px;
+}
+
+.alloc-bulk-bar__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.12s ease;
+}
+
+.alloc-bulk-bar__btn:hover:not(:disabled) {
+    background: var(--icon-hover-bg);
+    border-color: color-mix(in srgb, var(--accent-color, #6366f1) 40%, var(--border-color));
+}
+
+.alloc-bulk-bar__btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.alloc-bulk-bar__btn--danger {
+    color: var(--cor-complexo, #ef4444);
+}
+
+.alloc-bulk-bar__btn--danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--cor-complexo, #ef4444) 10%, transparent);
+    border-color: color-mix(in srgb, var(--cor-complexo, #ef4444) 40%, var(--border-color));
+}
+
+.alloc-bulk-bar__cancel {
+    background: transparent;
+    border: none;
+    color: var(--light-text-color);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 7px 10px;
+    border-radius: 7px;
+    transition: color 0.12s ease, background 0.12s ease;
+    font-family: inherit;
+}
+
+.alloc-bulk-bar__cancel:hover:not(:disabled) {
+    color: var(--text-color);
+    background: var(--icon-hover-bg);
+}
+
 .alloc-stations__empty {
     background: var(--card-bg-color);
     border: 1px dashed var(--border-color);
@@ -853,6 +1227,10 @@ body.dark-mode .alloc-central__row {
     flex-direction: column;
     align-items: center;
     gap: 12px;
+}
+
+.alloc-stations__empty--filtered {
+    padding: 32px 24px;
 }
 
 .alloc-stations__empty i {
@@ -2011,6 +2389,161 @@ body.dark-mode .alloc-field__input {
     font-weight: 500;
 }
 
+/* ============================================================
+   PREVIEW DE IMPACTO — resumo do que muda ao salvar (drawer)
+   ============================================================ */
+.alloc-impact {
+    margin-top: 18px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 14px;
+    animation: alloc-impact-in 0.18s ease-out;
+}
+
+body.dark-mode .alloc-impact {
+    background: rgba(255, 255, 255, 0.025);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.alloc-impact--mass {
+    border-color: color-mix(in srgb, var(--cor-complexo, #ef4444) 50%, var(--border-color));
+    background: color-mix(in srgb, var(--cor-complexo, #ef4444) 5%, var(--bg-color));
+}
+
+body.dark-mode .alloc-impact--mass {
+    background: color-mix(in srgb, var(--cor-complexo, #ef4444) 10%, rgba(255, 255, 255, 0.02));
+}
+
+@keyframes alloc-impact-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.alloc-impact__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-color);
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--border-color);
+    margin-bottom: 8px;
+}
+
+body.dark-mode .alloc-impact__head {
+    border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+
+.alloc-impact__head i {
+    color: var(--light-text-color);
+    font-size: 0.78rem;
+}
+
+.alloc-impact__scope {
+    margin-left: auto;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--light-text-color);
+}
+
+.alloc-impact__scope b {
+    color: var(--cor-complexo, #ef4444);
+    font-weight: 700;
+}
+
+.alloc-impact__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.alloc-impact__item {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+}
+
+.alloc-impact__field {
+    font-weight: 600;
+    color: var(--light-text-color);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.alloc-impact__value {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-color);
+    flex-wrap: wrap;
+}
+
+.alloc-impact__from {
+    color: var(--light-text-color);
+    text-decoration: line-through;
+    text-decoration-color: color-mix(in srgb, var(--light-text-color) 60%, transparent);
+}
+
+.alloc-impact__arrow {
+    color: var(--light-text-color);
+    font-size: 0.68rem;
+    opacity: 0.7;
+}
+
+.alloc-impact__to {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.alloc-impact__value--diff {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.alloc-impact__diff-add,
+.alloc-impact__diff-remove {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+}
+
+.alloc-impact__diff-add {
+    color: var(--cor-facil, #10b981);
+    font-weight: 500;
+}
+
+.alloc-impact__diff-add i {
+    background: color-mix(in srgb, var(--cor-facil, #10b981) 20%, transparent);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.62rem;
+}
+
+.alloc-impact__diff-remove {
+    color: var(--cor-complexo, #ef4444);
+    font-weight: 500;
+    text-decoration: line-through;
+    text-decoration-color: color-mix(in srgb, var(--cor-complexo, #ef4444) 50%, transparent);
+}
+
+.alloc-impact__diff-remove i {
+    background: color-mix(in srgb, var(--cor-complexo, #ef4444) 20%, transparent);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.62rem;
+    text-decoration: none;
+}
+
 /* Repetição (segmented) + contador de ocorrências */
 .alloc-repeat {
     display: grid;
@@ -2286,6 +2819,57 @@ body.dark-mode .alloc-resp {
     .alloc-resp-list { grid-template-columns: 1fr; }
     .alloc-daterange { grid-template-columns: 1fr; gap: 6px; }
     .alloc-daterange__sep { display: none; }
+
+    /* Toolbar quebra em 2 linhas: busca em cima, chips/select embaixo. */
+    .alloc-toolbar { gap: 8px; padding: 8px 10px; }
+    .alloc-toolbar__search { flex: 1 1 100%; min-width: 0; }
+    .alloc-toolbar__chips { flex-wrap: wrap; }
+
+    /* Período: chip de offset some em telas muito apertadas pra evitar
+       que o range principal "Hoje" rebente. */
+    .alloc-period .alloc-period__chip {
+        display: none;
+    }
+
+    /* Bulk bar empilha vertical pra caber as 3 ações sem overflow. */
+    .alloc-bulk-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 10px 12px;
+        bottom: 8px;
+    }
+    .alloc-bulk-bar__actions {
+        flex-wrap: wrap;
+        justify-content: stretch;
+    }
+    .alloc-bulk-bar__btn { flex: 1 1 130px; justify-content: center; }
+    .alloc-bulk-bar__cancel { flex: 0 0 auto; }
+
+    /* Avisos: lista ocupa 100% e items em coluna pra texto não cortar. */
+    .alloc-warnings { padding: 14px 14px 10px; }
+    .alloc-warnings__head { flex-wrap: wrap; gap: 8px; }
+    .alloc-warnings__item { flex-wrap: wrap; }
+
+    /* Impacto preview: campos viram linha, value abaixo */
+    .alloc-impact__item {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+}
+
+/* Mobile mais apertado (< 480px): banner do bell vai a fullscreen lógico,
+   e o card de "estender próxima" precisa de mais largura. */
+@media (max-width: 480px) {
+    .alloc-shell { padding: 12px; }
+    .alloc-shell__cta span { display: inline; }
+    .alloc-toolbar__select span,
+    .alloc-toolbar__reset span {
+        display: none;
+    }
+    .alloc-station { padding: 12px; }
+    .alloc-station__icon { width: 40px; height: 40px; }
+    .alloc-station__title { font-size: 0.92rem; }
 }
 
 /* ============================================================

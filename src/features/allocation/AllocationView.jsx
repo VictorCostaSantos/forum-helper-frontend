@@ -8,7 +8,7 @@ import { brandFor, brandImageStyle } from './activityBrands';
 import { useAllocation } from './useAllocation';
 import { useTeamAvatars } from './useTeamAvatars';
 import { addDays, formatWeekRange, mondayOf } from './dateHelpers';
-import { avatarFallbackUrl, isAdmin, isPlaceholder, TEAM } from './team';
+import { avatarFallbackUrl, getDisplayName, isAdmin, isPlaceholder, TEAM } from './team';
 
 /*
   Painel de Alocação — Flight Board.
@@ -23,6 +23,14 @@ function AllocationView() {
   // Filtro por pessoa: quando setado, esmaece estações onde a pessoa NÃO
   // está. Toggle: click no row do termômetro liga/desliga.
   const [focusUser, setFocusUser] = useState(null);
+  // Toolbar: busca textual (atividade ou pessoa) + chips de peso (1/2/3).
+  // Filtros são "AND" entre busca e peso, "OR" dentro do array de pesos.
+  const [filters, setFilters] = useState({ search: '', pesos: [] });
+  // Bulk selection (só admin): liga checkboxes nas estações + barra flutuante
+  // com ações em massa. Sai do modo automaticamente após executar.
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds]   = useState(() => new Set());
+  const [bulkBusy, setBulkBusy]         = useState(false);
   // Banner dismissal — fica fechado até o conteúdo MUDAR (key derivada da
   // contagem + chips ativos). Quando algo novo cai, reabre automaticamente.
   const [bannerDismissedAt, setBannerDismissedAt] = useState(null);
@@ -63,6 +71,26 @@ function AllocationView() {
   const weekLabel = useMemo(() => formatWeekRange(monday), [monday]);
 
   /*
+    Offset em semanas em relação à segunda atual. 0 = semana de hoje.
+    Negativo = passado, positivo = futuro. Vira um chip discreto ao lado
+    do range pra deixar claro quando você "navegou pra trás/frente".
+    Já dava pra inferir pelas datas, mas o label textual evita confusão
+    (especialmente quando alguém vai editar/criar achando que está "hoje").
+  */
+  const weekOffset = useMemo(() => {
+    const todayMonday = mondayOf(new Date()).getTime();
+    return Math.round((monday.getTime() - todayMonday) / (7 * 24 * 60 * 60 * 1000));
+  }, [monday]);
+
+  const weekOffsetChip = useMemo(() => {
+    if (weekOffset === 0) return null;
+    if (weekOffset === -1) return { text: 'Semana passada', tone: 'past' };
+    if (weekOffset === 1)  return { text: 'Próxima semana', tone: 'future' };
+    if (weekOffset < 0)    return { text: `${Math.abs(weekOffset)} sem atrás`, tone: 'past' };
+    return { text: `Em ${weekOffset} sem`, tone: 'future' };
+  }, [weekOffset]);
+
+  /*
     Sumário LOCAL (mesma fonte do termômetro): garante que o banner conte
     o mesmo número de vagos/sobrecarregados que o sidebar mostra. Antes
     usávamos useAllocationSummary (cache global compartilhado c/ header),
@@ -95,6 +123,47 @@ function AllocationView() {
       tone: vagoStations.length > 0 ? 'danger' : (dangerUsers.length > 0 ? 'warn' : 'ok'),
     };
   }, [stations, loadByUser]);
+
+  /*
+    Aplica busca + chips de peso. Busca casa contra nome da estação OU
+    username/displayName de qualquer pessoa em currentShift/nextShift.
+    Quando filtro está ativo e não casa nada, mostramos empty state separado.
+  */
+  const filteredStations = useMemo(() => {
+    const q = filters.search.trim().toLowerCase();
+    const pesoSet = new Set(filters.pesos);
+    if (!q && pesoSet.size === 0) return stations;
+
+    return stations.filter((st) => {
+      const ref = st.reference || st.currentShift || st.nextShift;
+      if (pesoSet.size > 0) {
+        const p = Number(ref?.peso) || 0;
+        if (!pesoSet.has(p)) return false;
+      }
+      if (q) {
+        if (String(st.name).toLowerCase().includes(q)) return true;
+        const insts = [st.currentShift, st.nextShift].filter(Boolean);
+        for (const inst of insts) {
+          for (const u of inst.responsaveis || []) {
+            if (isPlaceholder(u)) continue;
+            if (String(u).toLowerCase().includes(q)) return true;
+            if (getDisplayName(u).toLowerCase().includes(q)) return true;
+          }
+        }
+        return false;
+      }
+      return true;
+    });
+  }, [stations, filters]);
+
+  const hasActiveFilters = filters.search.trim().length > 0 || filters.pesos.length > 0;
+
+  const togglePesoFilter = (peso) => {
+    setFilters((f) => ({
+      ...f,
+      pesos: f.pesos.includes(peso) ? f.pesos.filter((v) => v !== peso) : [...f.pesos, peso],
+    }));
+  };
 
   const goToWeek  = (delta) => setAnchor((curr) => addDays(curr, delta));
   const goToToday = () => setAnchor(mondayOf(new Date()));
@@ -130,6 +199,81 @@ function AllocationView() {
     }
   };
 
+  // === Bulk actions (admin) ============================================
+  const toggleSelectStation = (stationId) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(stationId)) next.delete(stationId);
+      else next.add(stationId);
+      return next;
+    });
+  };
+
+  const exitSelection = () => {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  };
+
+  /* Estende próxima ocorrência em todas as estações selecionadas (cíclicas).
+     Pula estações sem ciclo detectado — extendStation tem fallback biweekly
+     mas não faz sentido aplicar em estação Fixa. */
+  const bulkExtend = async () => {
+    if (selectedIds.size === 0 || bulkBusy) return;
+    setBulkBusy(true);
+    let success = 0;
+    let failed  = 0;
+    for (const id of selectedIds) {
+      const st = stations.find((s) => s.id === id);
+      if (!st) continue;
+      try {
+        await extendStation(st.name, currentUsername);
+        success++;
+      } catch {
+        failed++;
+      }
+    }
+    setBulkBusy(false);
+    exitSelection();
+    if (failed === 0) {
+      window.__showToast?.(`${success} ocorrência(s) criada(s).`, 'success');
+    } else {
+      window.__showToast?.(`${success} criada(s), ${failed} falhou(ram).`, 'warning');
+    }
+  };
+
+  /* Apaga ocorrências futuras (data_inicio > hoje) de todas selecionadas.
+     Mantém histórico. Confirma com window.confirm — destrutivo. */
+  const bulkDeleteFuture = async () => {
+    if (selectedIds.size === 0 || bulkBusy) return;
+    const ok = window.confirm(
+      `Apagar as ocorrências futuras de ${selectedIds.size} atividade(s)?\n\nO histórico (passado + semana atual) fica preservado.`,
+    );
+    if (!ok) return;
+    setBulkBusy(true);
+    let success = 0;
+    let failed  = 0;
+    let totalRemoved = 0;
+    for (const id of selectedIds) {
+      const st = stations.find((s) => s.id === id);
+      if (!st) continue;
+      try {
+        const n = await deleteStationFuture(st.name);
+        totalRemoved += Number(n) || 0;
+        success++;
+      } catch {
+        failed++;
+      }
+    }
+    setBulkBusy(false);
+    exitSelection();
+    window.__showToast?.(
+      failed === 0
+        ? `Futuras removidas (${totalRemoved} ocorrência(s) em ${success} atividade(s)).`
+        : `${success} OK, ${failed} falhou(ram).`,
+      failed === 0 ? 'success' : 'warning',
+    );
+  };
+
 
   return (
     <main className="allocation-view">
@@ -154,6 +298,24 @@ function AllocationView() {
                 <i className="fa-solid fa-chevron-left"></i>
               </button>
               <span>{weekLabel}</span>
+              {weekOffsetChip ? (
+                <span
+                  className={`alloc-period__chip alloc-period__chip--${weekOffsetChip.tone}`}
+                  title="Voltar pra semana atual"
+                  onClick={goToToday}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      goToToday();
+                    }
+                  }}
+                >
+                  <i className={`fa-solid ${weekOffsetChip.tone === 'past' ? 'fa-clock-rotate-left' : 'fa-forward'}`}></i>
+                  {weekOffsetChip.text}
+                </span>
+              ) : null}
               <button
                 type="button"
                 onClick={() => goToWeek(7)}
@@ -315,6 +477,76 @@ function AllocationView() {
 
         <div className={`alloc-shell__grid ${loading ? 'is-loading' : ''}`}>
           <section className="alloc-stations" aria-label="Estações de alocação">
+            {stations.length > 0 ? (
+              <div className="alloc-toolbar" role="search">
+                <div className="alloc-toolbar__search">
+                  <i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                  <input
+                    type="text"
+                    placeholder="Buscar atividade ou pessoa…"
+                    value={filters.search}
+                    onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
+                    aria-label="Buscar atividade ou pessoa"
+                  />
+                  {filters.search ? (
+                    <button
+                      type="button"
+                      className="alloc-toolbar__clear-search"
+                      onClick={() => setFilters((f) => ({ ...f, search: '' }))}
+                      title="Limpar busca"
+                      aria-label="Limpar busca"
+                    >
+                      <i className="fa-solid fa-xmark"></i>
+                    </button>
+                  ) : null}
+                </div>
+                <div className="alloc-toolbar__chips" role="group" aria-label="Filtrar por peso">
+                  {[
+                    { value: 1, label: 'Baixa', tone: 'p1' },
+                    { value: 2, label: 'Média', tone: 'p2' },
+                    { value: 3, label: 'Alta',  tone: 'p3' },
+                  ].map((opt) => {
+                    const active = filters.pesos.includes(opt.value);
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className={`alloc-toolbar__chip alloc-toolbar__chip--${opt.tone} ${active ? 'is-active' : ''}`}
+                        onClick={() => togglePesoFilter(opt.value)}
+                        aria-pressed={active}
+                        title={`Filtrar por peso ${opt.label.toLowerCase()}`}
+                      >
+                        <span className="alloc-toolbar__chip-dot" aria-hidden="true"></span>
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {hasActiveFilters ? (
+                  <button
+                    type="button"
+                    className="alloc-toolbar__reset"
+                    onClick={() => setFilters({ search: '', pesos: [] })}
+                    title="Limpar filtros"
+                  >
+                    <i className="fa-solid fa-rotate-left"></i>
+                    <span>Limpar</span>
+                  </button>
+                ) : null}
+                {userIsAdmin ? (
+                  <button
+                    type="button"
+                    className={`alloc-toolbar__select ${selectionMode ? 'is-active' : ''}`}
+                    onClick={() => (selectionMode ? exitSelection() : setSelectionMode(true))}
+                    title={selectionMode ? 'Sair do modo de seleção' : 'Selecionar várias atividades'}
+                  >
+                    <i className={`fa-solid ${selectionMode ? 'fa-xmark' : 'fa-list-check'}`}></i>
+                    <span>{selectionMode ? 'Cancelar' : 'Selecionar'}</span>
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+
             {stations.length === 0 && !loading ? (
               <div className="alloc-stations__empty">
                 <i className="fa-regular fa-folder-open"></i>
@@ -326,7 +558,22 @@ function AllocationView() {
               </div>
             ) : null}
 
-            {stations.map((st) => {
+            {stations.length > 0 && filteredStations.length === 0 ? (
+              <div className="alloc-stations__empty alloc-stations__empty--filtered">
+                <i className="fa-solid fa-filter-circle-xmark"></i>
+                <p>Nenhuma atividade casa com os filtros.</p>
+                <button
+                  type="button"
+                  className="alloc-shell__cta alloc-shell__cta--ghost"
+                  onClick={() => setFilters({ search: '', pesos: [] })}
+                >
+                  <i className="fa-solid fa-rotate-left"></i>
+                  Limpar filtros
+                </button>
+              </div>
+            ) : null}
+
+            {filteredStations.map((st) => {
               const involvesFocusUser = focusUser
                 ? [st.currentShift, st.nextShift]
                     .filter(Boolean)
@@ -343,6 +590,9 @@ function AllocationView() {
                   highlightedUser={focusUser}
                   loadByUser={loadByUser}
                   stationsByUser={stationsByUser}
+                  selectable={selectionMode}
+                  selected={selectedIds.has(st.id)}
+                  onToggleSelect={() => toggleSelectStation(st.id)}
                   onEditStation={openEditStation}
                   onExtendStation={handleExtend}
                   onTogglePerson={togglePerson}
@@ -358,6 +608,45 @@ function AllocationView() {
             onFocusUser={setFocusUser}
           />
         </div>
+
+        {selectionMode && selectedIds.size > 0 ? (
+          <div className="alloc-bulk-bar" role="toolbar" aria-label="Ações em massa">
+            <span className="alloc-bulk-bar__count">
+              <i className="fa-solid fa-list-check" aria-hidden="true"></i>
+              {selectedIds.size} selecionada{selectedIds.size === 1 ? '' : 's'}
+            </span>
+            <div className="alloc-bulk-bar__actions">
+              <button
+                type="button"
+                className="alloc-bulk-bar__btn"
+                onClick={bulkExtend}
+                disabled={bulkBusy}
+                title="Criar próxima ocorrência em cada estação selecionada"
+              >
+                {bulkBusy ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-rotate-right"></i>}
+                Estender próxima
+              </button>
+              <button
+                type="button"
+                className="alloc-bulk-bar__btn alloc-bulk-bar__btn--danger"
+                onClick={bulkDeleteFuture}
+                disabled={bulkBusy}
+                title="Excluir ocorrências futuras (mantém histórico)"
+              >
+                <i className="fa-solid fa-trash"></i>
+                Excluir futuras
+              </button>
+              <button
+                type="button"
+                className="alloc-bulk-bar__cancel"
+                onClick={exitSelection}
+                disabled={bulkBusy}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        ) : null}
 
         <AllocationCentral
           open={centralOpen}

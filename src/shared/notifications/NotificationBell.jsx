@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useNotifications } from './NotificationsContext';
+import { useNotifications, NOTIF_CATEGORIES } from './NotificationsContext';
 import { scrollToTopicCard, scrollToTopicCardEventually } from './scrollToTopic';
 import ClickupIcon from './ClickupIcon';
 import UserAvatar from '../components/UserAvatar';
@@ -220,9 +220,12 @@ export default function NotificationBell() {
     markAllRead,
     clearAll,
     setBellOpen,
+    notifPrefs,
+    setNotifPref,
   } = useNotifications();
 
   const [open, setOpen] = useState(false);
+  const [prefsOpen, setPrefsOpen] = useState(false);
   const wrapRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -335,6 +338,15 @@ export default function NotificationBell() {
               ) : null}
               <button
                 type="button"
+                title="Preferências"
+                aria-pressed={prefsOpen}
+                className={prefsOpen ? 'is-active' : ''}
+                onClick={() => setPrefsOpen((v) => !v)}
+              >
+                <i className="fa-solid fa-gear"></i>
+              </button>
+              <button
+                type="button"
                 title="Galeria de notificações"
                 onClick={() => {
                   setOpen(false);
@@ -350,6 +362,42 @@ export default function NotificationBell() {
               ) : null}
             </div>
           </div>
+
+          {prefsOpen ? (
+            <section className="notification-prefs" aria-label="Preferências de notificação">
+              <header className="notification-prefs__head">
+                <i className="fa-solid fa-sliders"></i>
+                <span>Avise-me sobre…</span>
+              </header>
+              <ul className="notification-prefs__list">
+                {NOTIF_CATEGORIES.map((cat) => {
+                  const enabled = notifPrefs[cat.key] !== false;
+                  return (
+                    <li key={cat.key} className="notification-prefs__row">
+                      <label className="notification-prefs__label">
+                        <span className="notification-prefs__icon" aria-hidden="true">
+                          <i className={cat.icon}></i>
+                        </span>
+                        <span className="notification-prefs__text">
+                          <span className="notification-prefs__name">{cat.label}</span>
+                          <span className="notification-prefs__hint">{cat.hint}</span>
+                        </span>
+                        <span className={`notification-prefs__switch ${enabled ? 'is-on' : ''}`}>
+                          <input
+                            type="checkbox"
+                            checked={enabled}
+                            onChange={(e) => setNotifPref(cat.key, e.target.checked)}
+                            aria-label={cat.label}
+                          />
+                          <span className="notification-prefs__switch-track" aria-hidden="true" />
+                        </span>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ) : null}
 
           <div className="notification-tabs" role="tablist">
             <button
