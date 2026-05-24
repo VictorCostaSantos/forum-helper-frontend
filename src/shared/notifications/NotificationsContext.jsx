@@ -41,6 +41,7 @@ export const NOTIF_CATEGORIES = [
   { key: 'selfPersonal', label: 'Lembretes pessoais',      icon: 'fa-solid fa-bell',               hint: 'Começa amanhã, termina hoje, peso/data mudaram.' },
   { key: 'panelChanges', label: 'Mudanças no painel',      icon: 'fa-solid fa-circle-info',        hint: 'Atividade nova, renomeada, removida.' },
   { key: 'adminRadar',   label: 'Radar admin',             icon: 'fa-solid fa-shield-halved',      hint: 'Ciclo acabando sem próxima ocorrência criada.' },
+  { key: 'pdi',          label: 'PDI · estudos',           icon: 'fa-solid fa-graduation-cap',     hint: 'Hábitos e lembrete diário do seu PDI.' },
 ];
 
 const KIND_TO_CATEGORY = {
@@ -57,6 +58,8 @@ const KIND_TO_CATEGORY = {
   'alloc-station-deleted': 'panelChanges',
   'alloc-renamed':         'panelChanges',
   'alloc-cycle-missing':   'adminRadar',
+  'pdi-habit':             'pdi',
+  'pdi-daily':             'pdi',
 };
 
 function prefsStorageKey() {

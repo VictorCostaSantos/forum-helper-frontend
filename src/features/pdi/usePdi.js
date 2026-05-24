@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { INITIAL_PLAN } from './pdiData';
+import { buildInitialDoc } from './pdiData';
 import {
   BLOCK,
   createBlock,
@@ -14,17 +14,36 @@ const LEGACY_PLAN_KEY = 'pdiPlan-v1';
 const LEGACY_STATE_KEY = 'pdiState-v1';
 
 function buildSeed() {
-  // Roda a migração na própria SEED estática pra não duplicar a estrutura
-  // de dados em dois lugares. Assim o INITIAL_PLAN continua sendo a única
-  // fonte da verdade do "PDI exemplo".
-  return migrateLegacyToDoc(INITIAL_PLAN);
+  // Doc inicial "tour das possibilidades" — conteúdo genérico mostrando
+  // todos os tipos de bloco. Veja `buildInitialDoc` em pdiData.js.
+  // O INITIAL_PLAN (legado, groups+tasks) só é usado em migração agora.
+  return buildInitialDoc();
+}
+
+// Backfill de campos novos pra docs v2 antigos que ainda não os têm.
+// Mantém compatibilidade quando o schema do hero ganha campos (acento, focusTags, etc).
+function backfillDoc(doc) {
+  if (!doc) return doc;
+  const out = { ...doc };
+  if (out.accentId == null) out.accentId = 'is-data';
+  if (out.coverEnabled == null) out.coverEnabled = true;
+  if (out.avatarUrl == null) out.avatarUrl = '';
+  if (out.type == null) out.type = '';
+  if (!Array.isArray(out.focusTags)) {
+    const fromString = (out.focus || '')
+      .split(/\s*(?:&|·|,|;)\s*/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    out.focusTags = fromString;
+  }
+  return out;
 }
 
 function loadDoc() {
   try {
-    // 1. Já tem doc na v2? usa.
+    // 1. Já tem doc na v2? usa (com backfill pra campos novos).
     const raw = localStorage.getItem(STORAGE_KEY_DOC);
-    if (raw) return JSON.parse(raw);
+    if (raw) return backfillDoc(JSON.parse(raw));
 
     // 2. Senão, tenta migrar v1 (plano + estado).
     const legacyPlanRaw = localStorage.getItem(LEGACY_PLAN_KEY);
@@ -129,6 +148,14 @@ export function usePdi() {
     });
   }, []);
 
+  // Substitui o doc inteiro de uma vez (usado pelos templates do Welcome:
+  // "começar meu PDI" / "ver exemplo" / "em branco"). Mantém localStorage save
+  // via useEffect.
+  const replaceDoc = useCallback((newDoc) => {
+    if (!newDoc) return;
+    setDoc(newDoc);
+  }, []);
+
   // ---------- RESET / WIPE ----------
   const resetToSeed = useCallback(() => {
     setDoc(buildSeed());
@@ -137,10 +164,15 @@ export function usePdi() {
   const wipeToBlank = useCallback(() => {
     setDoc({
       title: 'Meu PDI',
+      type: '',
       role: '',
       department: '',
       focus: '',
+      focusTags: [],
       emoji: '📄',
+      avatarUrl: '',
+      accentId: 'is-data',
+      coverEnabled: true,
       cover: '',
       startDate: new Date().toISOString().slice(0, 10),
       endDate: new Date(Date.now() + 180 * 86_400_000).toISOString().slice(0, 10),
@@ -158,6 +190,7 @@ export function usePdi() {
     removeBlock,
     duplicateBlock,
     reorderBlocks,
+    replaceDoc,
     resetToSeed,
     wipeToBlank,
   };

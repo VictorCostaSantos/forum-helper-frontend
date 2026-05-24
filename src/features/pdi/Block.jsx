@@ -10,6 +10,7 @@ import PercentControl from './PercentControl';
 import CourseLinker from './CourseLinker';
 import MarkdownNote from './MarkdownNote';
 import ActionMenu from './ActionMenu';
+import BlockSchedulePopover, { formatScheduleShort } from './BlockSchedulePopover';
 
 // Bloco do editor estilo Notion. O componente renderiza por tipo:
 // - paragraph, heading-2, heading-3, bullet, quote → input/textarea editável
@@ -108,6 +109,7 @@ const Block = forwardRef(function Block({
 }, ref) {
   const leafRef = useRef(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [schedulePopoverOpen, setSchedulePopoverOpen] = useState(false);
 
   useImperativeHandle(ref, () => ({
     focus: (pos) => leafRef.current?.focus(pos),
@@ -321,7 +323,7 @@ const Block = forwardRef(function Block({
     );
   }
 
-  // Badges pequenos (cursos, link, frequência)
+  // Badges pequenos (cursos, link, frequência, horário)
   const badges = [];
   if (block.type === BLOCK.RECURRING) {
     const freq = RECURRING_FREQUENCIES.find((f) => f.id === (block.recurring?.frequency || 'weekly'))?.label;
@@ -329,6 +331,19 @@ const Block = forwardRef(function Block({
     badges.push(
       <span key="freq" className="block__badge"><i className="fa-solid fa-arrows-rotate"></i>{freq}</span>,
     );
+    if (block.schedule) {
+      badges.push(
+        <button
+          key="schedule"
+          type="button"
+          className="block__badge block__badge--schedule"
+          onClick={() => setSchedulePopoverOpen(true)}
+          title="Editar horário/lembrete"
+        >
+          <i className="fa-solid fa-bell"></i>{formatScheduleShort(block.schedule)}
+        </button>,
+      );
+    }
     if (streak > 0) badges.push(<span key="streak" className="block__badge block__badge--streak">🔥 {streak}</span>);
   }
   if ((block.linkedCourses || []).length > 0) {
@@ -356,9 +371,16 @@ const Block = forwardRef(function Block({
 
   // Itens extras do menu pra blocos que suportam (recurring tem submenu de freq).
   if (block.type === BLOCK.RECURRING) {
-    menuItems.splice(2, 0, { divider: true });
-    RECURRING_FREQUENCIES.forEach((f) => {
-      menuItems.splice(3, 0, {
+    // 1) Horário (lembrete) — opção mais usada vai logo no topo do menu
+    menuItems.splice(2, 0, {
+      label: block.schedule ? 'Editar horário/lembrete' : 'Definir horário/lembrete',
+      icon: block.schedule ? 'fa-bell' : 'fa-bell',
+      onClick: () => setSchedulePopoverOpen(true),
+    });
+    // 2) Submenu de frequência
+    menuItems.splice(3, 0, { divider: true });
+    RECURRING_FREQUENCIES.forEach((f, fi) => {
+      menuItems.splice(4 + fi, 0, {
         label: `Frequência: ${f.label}`,
         icon: (block.recurring?.frequency || 'weekly') === f.id ? 'fa-circle-dot' : 'fa-circle',
         onClick: () => onChange({
@@ -433,6 +455,14 @@ const Block = forwardRef(function Block({
             />
           </div>
         </div>
+      ) : null}
+
+      {schedulePopoverOpen ? (
+        <BlockSchedulePopover
+          schedule={block.schedule || null}
+          onChange={(next) => onChange({ schedule: next })}
+          onClose={() => setSchedulePopoverOpen(false)}
+        />
       ) : null}
     </div>
   );

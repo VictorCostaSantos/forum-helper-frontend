@@ -149,12 +149,26 @@ export function migrateLegacyToDoc(legacyPlan, legacyState = {}) {
     blocks.push(createBlock(BLOCK.PARAGRAPH));
   }
 
+  // Converte string única "A & B · C" em lista de tags, preservando a ordem.
+  // Aceita ` & `, ` · `, `,` e `;` como separadores comuns.
+  const focusFromLegacy = (legacyPlan.focus || '')
+    .split(/\s*(?:&|·|,|;)\s*/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   return {
     title: legacyPlan.title || 'Meu PDI',
+    type: legacyPlan.type || '',
     role: legacyPlan.role || '',
     department: legacyPlan.department || '',
     focus: legacyPlan.focus || '',
+    focusTags: Array.isArray(legacyPlan.focusTags) && legacyPlan.focusTags.length > 0
+      ? legacyPlan.focusTags
+      : focusFromLegacy,
     emoji: legacyPlan.emoji || '👨‍💻',
+    avatarUrl: legacyPlan.avatarUrl || '',
+    accentId: legacyPlan.accentId || 'is-data',
+    coverEnabled: legacyPlan.coverEnabled !== false,
     cover: legacyPlan.cover || '',
     startDate: legacyPlan.startDate || new Date().toISOString().slice(0, 10),
     endDate: legacyPlan.endDate || new Date(Date.now() + 180 * 86_400_000).toISOString().slice(0, 10),
