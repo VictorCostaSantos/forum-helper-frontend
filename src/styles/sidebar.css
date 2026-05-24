@@ -1137,82 +1137,109 @@ body.dark-mode .alloc-mini-avatar {
    sutil. Sem pílula arredondada exagerada. */
 /* Segmented control quadrado e elegante — bordas retas, contraste forte
    no ativo, sem hover dramático. */
+/* ============================================
+   Segmented unificado — meus / equipe / fixas lado a lado SEM caixas
+   individuais. Um indicador absoluto desliza atrás da ativa, dando o
+   "efeito passa pra próxima" pedido pelo Victor. Resolve também o
+   problema de "ficou bruto reiniciando" porque o indicador anima
+   continuamente em vez de saltar.
+   ============================================ */
 .alloc-segmented {
+    position: relative;
     display: flex;
-    gap: 4px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    /* underline sutil pra ancorar visualmente o indicador */
+    border-bottom: 1px solid var(--border-color);
+}
+
+body.dark-mode .alloc-segmented {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Indicador deslizante (variante 'unified'). Largura = 1/N e position
+   controlada por var --alloc-seg-active-idx setada inline. */
+.alloc-segmented--unified .alloc-segmented__indicator {
+    position: absolute;
+    bottom: -1px; /* cobre a underline */
+    left: 0;
+    height: 2px;
+    width: calc(100% / var(--alloc-seg-count, 3));
+    background: var(--cor-ia);
+    border-radius: 2px 2px 0 0;
+    transform: translateX(calc(var(--alloc-seg-active-idx, 0) * 100%));
+    transition: transform 0.32s cubic-bezier(0.34, 1.2, 0.4, 1);
+    pointer-events: none;
+}
+
+/* Glow sutil pra dar peso ao indicador sem ficar pesado */
+.alloc-segmented--unified .alloc-segmented__indicator::after {
+    content: '';
+    position: absolute;
+    inset: -10px 12% 0;
+    background: radial-gradient(60% 100% at 50% 100%,
+                color-mix(in srgb, var(--cor-ia) 28%, transparent),
+                transparent 70%);
+    pointer-events: none;
 }
 
 .alloc-segmented__btn {
-    flex: 1 1 auto;
+    position: relative;
+    z-index: 1;
+    flex: 1 1 0;
     min-width: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    padding: 7px 6px;
-    border-radius: 5px;
-    border: 1px solid var(--border-color);
+    gap: 6px;
+    padding: 9px 6px 10px;
+    border: 0;
     background: transparent;
     color: var(--light-text-color);
     cursor: pointer;
-    font-size: 0.72rem;
+    font-size: 0.76rem;
     font-weight: 600;
     letter-spacing: -0.005em;
     font-family: inherit;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-}
-
-body.dark-mode .alloc-segmented__btn {
-    border-color: rgba(255, 255, 255, 0.08);
+    transition: color 0.18s ease, transform 0.18s ease;
 }
 
 .alloc-segmented__btn:hover:not(:disabled):not(.is-active) {
     color: var(--text-color);
-    border-color: var(--light-text-color);
 }
 
 .alloc-segmented__btn:disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     cursor: not-allowed;
 }
 
 .alloc-segmented__btn.is-active {
-    background: var(--text-color);
-    color: var(--card-bg-color);
-    border-color: var(--text-color);
-}
-
-body.dark-mode .alloc-segmented__btn.is-active {
-    background: #fff;
-    color: #0B0D11;
-    border-color: #fff;
+    color: var(--cor-ia);
 }
 
 .alloc-segmented__btn i {
-    font-size: 0.72rem;
+    font-size: 0.74rem;
     opacity: 0.9;
 }
 
+.alloc-segmented__btn-lbl { letter-spacing: -0.005em; }
+
 .alloc-segmented__count {
-    background: rgba(127, 127, 127, 0.18);
+    background: rgba(127, 127, 127, 0.16);
     color: inherit;
     font-size: 0.6rem;
     font-weight: 700;
     padding: 1px 6px;
-    border-radius: 4px;
+    border-radius: 999px;
     line-height: 1.4;
     font-variant-numeric: tabular-nums;
     min-width: 16px;
     text-align: center;
+    transition: background 0.18s ease, color 0.18s ease;
 }
 
 .alloc-segmented__btn.is-active .alloc-segmented__count {
-    background: rgba(0, 0, 0, 0.18);
-}
-
-body.dark-mode .alloc-segmented__btn.is-active .alloc-segmented__count {
-    background: rgba(0, 0, 0, 0.14);
+    background: color-mix(in srgb, var(--cor-ia) 18%, transparent);
+    color: var(--cor-ia);
 }
 
 /* ============================================
@@ -1375,15 +1402,27 @@ body.dark-mode .alloc-carousel__viewport {
     color: var(--cor-ia);
 }
 
-.sidebar-panel-header__link-icon {
-    font-size: 0.62rem;
-    opacity: 0.55;
-    margin-left: 2px;
-    transition: opacity 0.15s ease, transform 0.15s ease;
+/* Variante --alloc: texto maior, sem o caps-lock + sem o ícone de seta.
+   Hover muda só a cor (sinaliza que é clicável pra abrir o painel). */
+.sidebar-panel-header__title--alloc {
+    font-size: 0.92rem !important;
+    text-transform: none !important;
+    letter-spacing: -0.01em !important;
+    color: var(--text-color) !important;
 }
 
-.sidebar-panel-header__link:hover .sidebar-panel-header__link-icon {
-    opacity: 1;
-    transform: translateX(1px) translateY(-1px);
+.sidebar-panel-header__title--alloc i {
+    font-size: 0.92rem !important;
+    opacity: 0.85;
 }
+
+.sidebar-panel-header__link--alloc {
+    color: var(--text-color);
+    font-weight: 700;
+    gap: 10px;
+}
+
+.sidebar-panel-header__link--alloc:hover { color: var(--cor-ia); }
+.sidebar-panel-header__link--alloc:hover i { color: var(--cor-ia); }
+
 .alocacao:hover { color: var(--cor-frontend); }

@@ -253,15 +253,37 @@ const AUTO_ROTATE_MS = 3500;
 function AllocationCarousel({ stations, onNavigate, peerFilter, emptyLabel }) {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  // Direção (+1 ou -1) do ping-pong. Em vez de loop 0→1→2→0 (que rebobina
+  // de forma "brutal" quando volta pro início), vai e volta: 0→1→2→1→0→1→...
+  // Quando só há 2 cards, vira 0→1→0→1 — ainda fluido, sem rebobinamento.
+  const directionRef = useRef(1);
+  // Reset da direção quando a lista muda (mudou segment, p.ex.)
+  useEffect(() => { directionRef.current = 1; }, [stations.length]);
 
   useEffect(() => {
     if (active >= stations.length && stations.length > 0) setActive(0);
   }, [stations.length, active]);
 
+  // Avança 1 passo na direção atual; inverte direction nos extremos.
+  const stepPingPong = (i, length) => {
+    if (length <= 1) return 0;
+    let dir = directionRef.current;
+    let next = i + dir;
+    if (next >= length) {
+      dir = -1;
+      next = length - 2;
+    } else if (next < 0) {
+      dir = 1;
+      next = 1;
+    }
+    directionRef.current = dir;
+    return next;
+  };
+
   useEffect(() => {
     if (stations.length <= 1 || paused) return undefined;
     const id = setInterval(() => {
-      setActive((i) => (i + 1) % stations.length);
+      setActive((i) => stepPingPong(i, stations.length));
     }, AUTO_ROTATE_MS);
     return () => clearInterval(id);
   }, [stations.length, paused, active]);
@@ -271,7 +293,7 @@ function AllocationCarousel({ stations, onNavigate, peerFilter, emptyLabel }) {
   }
 
   const advance = () => {
-    setActive((i) => (i + 1) % stations.length);
+    setActive((i) => stepPingPong(i, stations.length));
   };
 
   return (
@@ -402,23 +424,36 @@ function AllocationsPanel({ username, items, onNavigate }) {
   const active = segmentData[segment];
   const segmentMeta = ALLOC_SEGMENTS.find((s) => s.id === segment);
 
+  const activeIdx = ALLOC_SEGMENTS.findIndex((s) => s.id === segment);
+
   return (
     <details className="sidebar-panel collapsible-panel" open>
-      <summary className="sidebar-panel-header">
-        <h3>
+      <summary className="sidebar-panel-header sidebar-panel-header--alloc">
+        <h3 className="sidebar-panel-header__title sidebar-panel-header__title--alloc">
           <button
             type="button"
-            className="sidebar-panel-header__link"
+            className="sidebar-panel-header__link sidebar-panel-header__link--alloc"
             onClick={(e) => { e.stopPropagation(); e.preventDefault(); onNavigate('/allocation'); }}
-            title="Abrir painel completo"
+            title="Abrir painel completo de alocações"
           >
-            <i className="fa-solid fa-people-group"></i> Alocações
-            <i className="fa-solid fa-up-right-from-square sidebar-panel-header__link-icon"></i>
+            <i className="fa-solid fa-people-group"></i>
+            <span>Alocações</span>
           </button>
         </h3>
       </summary>
       <div className="sidebar-panel-content">
-        <div className="alloc-segmented" role="tablist" aria-label="Filtro de alocações">
+        {/*
+          Segmented unificado: sem caixas separadas — labels lado a lado e
+          um indicador deslizante atrás da ativa. Indicador é absoluto e
+          se move via transform, dando o "efeito passa pra próxima".
+        */}
+        <div
+          className="alloc-segmented alloc-segmented--unified"
+          role="tablist"
+          aria-label="Filtro de alocações"
+          style={{ '--alloc-seg-active-idx': activeIdx, '--alloc-seg-count': ALLOC_SEGMENTS.length }}
+        >
+          <span className="alloc-segmented__indicator" aria-hidden="true" />
           {ALLOC_SEGMENTS.map((seg) => {
             const count = segmentData[seg.id].stations.length;
             const disabled = seg.id === 'meus' && !username;
@@ -433,7 +468,7 @@ function AllocationsPanel({ username, items, onNavigate }) {
                 aria-selected={segment === seg.id}
               >
                 <i className={seg.icon}></i>
-                <span>{seg.label}</span>
+                <span className="alloc-segmented__btn-lbl">{seg.label}</span>
                 {count > 0 ? <span className="alloc-segmented__count">{count}</span> : null}
               </button>
             );

@@ -26,7 +26,9 @@ const NAV_ITEMS = [
   { path: '/mural', icon: 'fa-table-columns', label: 'Mural', accentClass: 'is-mural' },
   { path: '/dashboard', icon: 'fa-chart-line', label: 'Dashboard', accentClass: 'is-dashboard' },
   { path: '/allocation', icon: 'fa-people-group', label: 'Alocação', accentClass: 'is-allocation' },
-  { path: '/pdi', icon: 'fa-graduation-cap', label: 'PDI', accentClass: 'is-pdi' },
+  // PDI temporariamente oculto da navegação enquanto está em desenvolvimento.
+  // A rota /pdi continua existindo no App.jsx (acessível por URL direta),
+  // só não aparece como entrada do menu pra não expor feature incompleta.
 ];
 
 /* Menu único pra atalhos do dia a dia. Substitui os 3 ícones soltos. */
