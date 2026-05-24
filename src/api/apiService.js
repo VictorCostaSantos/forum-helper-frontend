@@ -2,9 +2,10 @@ import axios from 'axios';
 
 // Base do backend. Em dev, crie `.env.local` na raiz do frontend com:
 //   VITE_API_BASE_URL=http://localhost:8080/api
-// Sem essa env var, cai no backend de produção (DigitalOcean).
+// Sem essa env var, cai no backend de produção (DigitalOcean) — o que faz
+// o build da Vercel funcionar de fora da caixa.
 export const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+    import.meta.env.VITE_API_BASE_URL || 'https://forum-helper-zmqxu.ondigitalocean.app/api';
 
 export const LATAM_USER_MAPPING = {
     'victos-costa': 'victor-costa',
