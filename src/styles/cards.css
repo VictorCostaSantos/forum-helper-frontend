@@ -136,104 +136,104 @@ body.dark-mode .topic-card.is-sla {
 }
 
 .topic-card.programacao {
-    border-left-color: var(--cor-programacao);
+    border-left-color: var(--cor-listagem-backend);
 }
 
 .topic-card.frontend {
-    border-left-color: var(--cor-frontend);
+    border-left-color: var(--cor-listagem-frontend);
 }
 
 .topic-card.data-science {
-    border-left-color: var(--cor-data-science);
+    border-left-color: var(--cor-listagem-data-science);
 }
 
 .topic-card.devops {
-    border-left-color: var(--cor-devops);
+    border-left-color: var(--cor-listagem-devops);
 }
 
 .topic-card.ux-design {
-    border-left-color: var(--cor-ux-design);
+    border-left-color: var(--cor-listagem-ux-design);
 }
 
 .topic-card.mobile {
-    border-left-color: var(--cor-mobile);
+    border-left-color: var(--cor-listagem-mobile);
 }
 
 .topic-card.inovacao-gestao {
-    border-left-color: var(--cor-inovacao-gestao);
+    border-left-color: var(--cor-listagem-inovacao-gestao);
 }
 
 .topic-card.ia {
-    border-left-color: var(--cor-ia);
+    border-left-color: var(--cor-listagem-ia);
 }
 
 .topic-card.programacao .category-tag {
-    background-color: var(--cor-programacao);
+    background-color: var(--cor-listagem-backend);
 }
 
 .topic-card.frontend .category-tag {
-    background-color: var(--cor-frontend);
+    background-color: var(--cor-listagem-frontend);
     color: var(--text-color);
 }
 
 .topic-card.data-science .category-tag {
-    background-color: var(--cor-data-science);
+    background-color: var(--cor-listagem-data-science);
     color: var(--text-color);
 }
 
 .topic-card.devops .category-tag {
-    background-color: var(--cor-devops);
+    background-color: var(--cor-listagem-devops);
 }
 
 .topic-card.ux-design .category-tag {
-    background-color: var(--cor-ux-design);
+    background-color: var(--cor-listagem-ux-design);
 }
 
 .topic-card.mobile .category-tag {
-    background-color: var(--cor-mobile);
+    background-color: var(--cor-listagem-mobile);
     color: var(--text-color);
 }
 
 .topic-card.inovacao-gestao .category-tag {
-    background-color: var(--cor-inovacao-gestao);
+    background-color: var(--cor-listagem-inovacao-gestao);
 }
 
 .topic-card.ia .category-tag {
-    background-color: var(--cor-ia);
+    background-color: var(--cor-listagem-ia);
 }
 
 .category-tag.programacao {
-    background-color: var(--cor-programacao);
+    background-color: var(--cor-listagem-backend);
 }
 
 .category-tag.devops {
-    background-color: var(--cor-devops);
+    background-color: var(--cor-listagem-devops);
 }
 
 .category-tag.ux-design {
-    background-color: var(--cor-ux-design);
+    background-color: var(--cor-listagem-ux-design);
 }
 
 .category-tag.inovacao-gestao {
-    background-color: var(--cor-inovacao-gestao);
+    background-color: var(--cor-listagem-inovacao-gestao);
 }
 
 .category-tag.ia {
-    background-color: var(--cor-ia);
+    background-color: var(--cor-listagem-ia);
 }
 
 .category-tag.frontend {
-    background-color: var(--cor-frontend);
+    background-color: var(--cor-listagem-frontend);
     color: var(--text-color);
 }
 
 .category-tag.data-science {
-    background-color: var(--cor-data-science);
+    background-color: var(--cor-listagem-data-science);
     color: var(--text-color);
 }
 
 .category-tag.mobile {
-    background-color: var(--cor-mobile);
+    background-color: var(--cor-listagem-mobile);
     color: var(--text-color);
 }
 

@@ -331,14 +331,14 @@ input:checked+.slider:before {
 .filter-chip.priority.feedback.active { background: var(--cor-feedback); }
 
 .filter-chip.category[data-category="Todas"].active { background: #4b5563; }
-.filter-chip.category.frontend.active { background: var(--cor-frontend); }
-.filter-chip.category.backend.active { background: var(--cor-programacao); }
-.filter-chip.category.data.active { background: var(--cor-data-science); }
-.filter-chip.category.devops.active { background: var(--cor-devops); }
-.filter-chip.category.design.active { background: var(--cor-ux-design); }
-.filter-chip.category.mobile.active { background: var(--cor-mobile); }
-.filter-chip.category.inova.active { background: var(--cor-inovacao-gestao); }
-.filter-chip.category.ia.active { background: var(--cor-ia); }
+.filter-chip.category.frontend.active { background: var(--cor-listagem-frontend); }
+.filter-chip.category.backend.active { background: var(--cor-listagem-backend); }
+.filter-chip.category.data.active { background: var(--cor-listagem-data-science); }
+.filter-chip.category.devops.active { background: var(--cor-listagem-devops); }
+.filter-chip.category.design.active { background: var(--cor-listagem-ux-design); }
+.filter-chip.category.mobile.active { background: var(--cor-listagem-mobile); }
+.filter-chip.category.inova.active { background: var(--cor-listagem-inovacao-gestao); }
+.filter-chip.category.ia.active { background: var(--cor-listagem-ia); }
 
 /* ==========================================================================
    BADGE DE CONTAGEM (NORMAL & ALERTA)
