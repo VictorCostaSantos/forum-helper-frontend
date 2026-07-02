@@ -21,7 +21,10 @@ function FocusBanner({ focus, onApply, onDismiss }) {
     <div className={`focus-banner focus-banner--${focus.kind}`} role="status">
       {categoryImg ? (
         <div className={`focus-banner__category ${categoryClass}`} aria-hidden="true">
-          <img src={categoryImg} alt="" />
+          <span
+            className="focus-banner__category-img"
+            style={{ WebkitMaskImage: `url(${categoryImg})`, maskImage: `url(${categoryImg})` }}
+          />
         </div>
       ) : null}
 
