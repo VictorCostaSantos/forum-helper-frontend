@@ -4,7 +4,7 @@
 export const CATEGORY_BUTTONS = [
   { category: 'Todas', label: 'Todas', cssClass: '', file: '' },
   { category: 'Front-end', label: 'Front-end', cssClass: 'frontend', file: 'front-end' },
-  { category: 'Programação', label: 'Programação', cssClass: 'backend', file: 'programacao' },
+  { category: 'Programação', label: 'Back-End', cssClass: 'backend', file: 'programacao' },
   { category: 'Data Science', label: 'Data Science', cssClass: 'data', file: 'data-science' },
   { category: 'DevOps', label: 'DevOps', cssClass: 'devops', file: 'devops' },
   { category: 'UX & Design', label: 'UX Design', cssClass: 'design', file: 'design-ux' },
@@ -77,7 +77,9 @@ export function normalizeCategory(category) {
     normalized.includes('program') ||
     normalized.includes('codigo') ||
     normalized.includes('programacao') ||
-    normalized.includes('programacion')
+    normalized.includes('programacion') ||
+    normalized.includes('back end') ||
+    normalized.includes('backend')
   ) {
     return 'Programação';
   }
