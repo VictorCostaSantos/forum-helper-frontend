@@ -320,7 +320,7 @@ input:checked+.slider:before {
 }
 
 /* TEXTO EXPANSÍVEL */
-.filter-chip.category span {
+.filter-chip.category .category-label {
     max-width: 0;
     opacity: 0;
     overflow: hidden;
@@ -332,7 +332,7 @@ input:checked+.slider:before {
 }
 
 
-.filter-chip.category.active span {
+.filter-chip.category.active .category-label {
     max-width: 200px;
     opacity: 1;
     margin-left: 10px;

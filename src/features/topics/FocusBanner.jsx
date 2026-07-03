@@ -13,9 +13,7 @@ function FocusBanner({ focus, onApply, onDismiss }) {
 
   const button = getCategoryButton(focus.targetCategory);
   const categoryClass = button?.cssClass || '';
-  const categoryImg = button?.file
-    ? `https://raw.githubusercontent.com/caelum/gnarus-api-assets/master/alura/assets/api/categorias/128/${button.file}.png`
-    : null;
+  const categoryImg = button?.file ? `/assets/categorias/${button.file}.png` : null;
 
   return (
     <div className={`focus-banner focus-banner--${focus.kind}`} role="status">

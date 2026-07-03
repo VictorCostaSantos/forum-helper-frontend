@@ -565,12 +565,12 @@ function TopicsView({ username: initialUsername }) {
                               aria-label={button.label}
                               className="category-img"
                               style={{
-                                WebkitMaskImage: `url(https://raw.githubusercontent.com/caelum/gnarus-api-assets/master/alura/assets/api/categorias/128/${button.file}.png)`,
-                                maskImage: `url(https://raw.githubusercontent.com/caelum/gnarus-api-assets/master/alura/assets/api/categorias/128/${button.file}.png)`,
+                                WebkitMaskImage: `url(/assets/categorias/${button.file}.png)`,
+                                maskImage: `url(/assets/categorias/${button.file}.png)`,
                               }}
                             />
                           )}
-                          <span>{button.label}</span>
+                          <span className="category-label">{button.label}</span>
                           {!isAll ? (
                             (() => {
                               const count = categoryCounts[button.category] || 0;
