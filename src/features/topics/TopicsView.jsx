@@ -19,6 +19,7 @@ import {
   CATEGORY_BUTTONS,
   PRIORITY_FILTERS,
   categoryClassMap,
+  categoryLabelMap,
   priorityClassMap,
   normalizeCategory,
   parseAgeToDays,
@@ -63,7 +64,7 @@ const TopicCard = memo(function TopicCard({
       style={{ animationDelay: `${Math.min(index, 12) * 50}ms` }}
     >
       <div className="card-header">
-        <span className="category-tag">{topic.category}</span>
+        <span className="category-tag">{categoryLabelMap[topic.category] || topic.category}</span>
         <div className="card-tags-right">
           {isBb ? <span className="bb-tag">BB</span> : null}
           <span className="priority-tag">{topic.priority}</span>

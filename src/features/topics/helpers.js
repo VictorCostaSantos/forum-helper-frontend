@@ -32,6 +32,12 @@ export const categoryClassMap = {
   'Inteligência Artificial': 'ia',
 };
 
+// Rótulo exibido pro usuário — separado da chave interna (usada em CSS/cor)
+// porque o fórum renomeou "Programação" pra "Back-End".
+export const categoryLabelMap = {
+  'Programação': 'Back-End',
+};
+
 export const priorityClassMap = {
   'Fácil': 'easy',
   'Médio': 'medium',
