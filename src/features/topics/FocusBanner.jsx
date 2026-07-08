@@ -13,16 +13,17 @@ function FocusBanner({ focus, onApply, onDismiss }) {
 
   const button = getCategoryButton(focus.targetCategory);
   const categoryClass = button?.cssClass || '';
-  const categoryImg = button?.file ? `/assets/categorias/${button.file}.png` : null;
+  const categoryIconHref = button?.file
+    ? `/assets/categorias/alura-categorias.svg#icon-categorias-${button.file}`
+    : null;
 
   return (
     <div className={`focus-banner focus-banner--${focus.kind}`} role="status">
-      {categoryImg ? (
+      {categoryIconHref ? (
         <div className={`focus-banner__category ${categoryClass}`} aria-hidden="true">
-          <span
-            className="focus-banner__category-img"
-            style={{ WebkitMaskImage: `url(${categoryImg})`, maskImage: `url(${categoryImg})` }}
-          />
+          <svg className="focus-banner__category-img">
+            <use xlinkHref={categoryIconHref} />
+          </svg>
         </div>
       ) : null}
 

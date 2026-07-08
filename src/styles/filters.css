@@ -277,23 +277,16 @@ input:checked+.slider:before {
 }
 
 /* IMAGENS & ÍCONES */
-/* .category-img é uma <span> mascarada pelo PNG (só a forma/alfa é usada) —
-   a cor vem do background-color, não do PNG, pra não depender da cor
-   antiga "cozida" na imagem do repositório da Alura. */
+/* .category-img é o <svg><use></use></svg> do sprite oficial da Alura —
+   sem fill próprio nos paths, então a cor vem 100% do CSS (fill aqui). */
 .category-img {
     width: 22px;
     height: 22px;
     display: block;
     flex-shrink: 0;
     margin: 0 auto;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    -webkit-mask-position: center;
-    mask-position: center;
-    background-color: var(--light-text-color);
-    transition: filter 0.2s ease;
+    fill: var(--light-text-color);
+    transition: fill 0.2s ease;
 }
 
 .category-icon-fallback {
@@ -302,17 +295,19 @@ input:checked+.slider:before {
     margin: 0 auto;
 }
 
-.filter-chip.category.frontend .category-img { background-color: var(--cor-listagem-frontend); }
-.filter-chip.category.backend .category-img { background-color: var(--cor-listagem-backend); }
-.filter-chip.category.data .category-img { background-color: var(--cor-listagem-data-science); }
-.filter-chip.category.devops .category-img { background-color: var(--cor-listagem-devops); }
-.filter-chip.category.design .category-img { background-color: var(--cor-listagem-ux-design); }
-.filter-chip.category.mobile .category-img { background-color: var(--cor-listagem-mobile); }
-.filter-chip.category.inova .category-img { background-color: var(--cor-listagem-inovacao-gestao); }
-.filter-chip.category.ia .category-img { background-color: var(--cor-listagem-ia); }
+.filter-chip.category.frontend .category-img { fill: var(--cor-listagem-frontend); }
+.filter-chip.category.backend .category-img { fill: var(--cor-listagem-backend); }
+.filter-chip.category.data .category-img { fill: var(--cor-listagem-data-science); }
+.filter-chip.category.devops .category-img { fill: var(--cor-listagem-devops); }
+.filter-chip.category.design .category-img { fill: var(--cor-listagem-ux-design); }
+.filter-chip.category.mobile .category-img { fill: var(--cor-listagem-mobile); }
+.filter-chip.category.inova .category-img { fill: var(--cor-listagem-inovacao-gestao); }
+.filter-chip.category.ia .category-img { fill: var(--cor-listagem-ia); }
+.filter-chip.category.cloud .category-img { fill: var(--cor-listagem-cloud); }
+.filter-chip.category.ciberseguranca .category-img { fill: var(--cor-listagem-ciberseguranca); }
 
 .filter-chip.active .category-img {
-    filter: brightness(0) invert(1) !important;
+    fill: #ffffff !important;
 }
 
 .filter-chip.active .category-icon-fallback {
@@ -357,6 +352,8 @@ input:checked+.slider:before {
 .filter-chip.category.mobile.active { background: var(--cor-listagem-mobile); }
 .filter-chip.category.inova.active { background: var(--cor-listagem-inovacao-gestao); }
 .filter-chip.category.ia.active { background: var(--cor-listagem-ia); }
+.filter-chip.category.cloud.active { background: var(--cor-listagem-cloud); }
+.filter-chip.category.ciberseguranca.active { background: var(--cor-listagem-ciberseguranca); }
 
 /* ==========================================================================
    BADGE DE CONTAGEM (NORMAL & ALERTA)

@@ -4,13 +4,15 @@
 export const CATEGORY_BUTTONS = [
   { category: 'Todas', label: 'Todas', cssClass: '', file: '' },
   { category: 'Front-end', label: 'Front-end', cssClass: 'frontend', file: 'front-end' },
-  { category: 'Programação', label: 'Back-End', cssClass: 'backend', file: 'programacao' },
-  { category: 'Data Science', label: 'Data Science', cssClass: 'data', file: 'data-science' },
+  { category: 'Programação', label: 'Back-End', cssClass: 'backend', file: 'back-end' },
+  { category: 'Data Science', label: 'Dados', cssClass: 'data', file: 'dados' },
   { category: 'DevOps', label: 'DevOps', cssClass: 'devops', file: 'devops' },
   { category: 'UX & Design', label: 'UX Design', cssClass: 'design', file: 'design-ux' },
   { category: 'Mobile', label: 'Mobile', cssClass: 'mobile', file: 'mobile' },
-  { category: 'Inovação & Gestão', label: 'Inovação', cssClass: 'inova', file: 'inovacao-gestao' },
+  { category: 'Inovação & Gestão', label: 'Gestão & Negócios', cssClass: 'inova', file: 'inovacao-gestao' },
   { category: 'Inteligência Artificial', label: 'I.A.', cssClass: 'ia', file: 'inteligencia-artificial' },
+  { category: 'Cloud', label: 'Cloud', cssClass: 'cloud', file: 'cloud' },
+  { category: 'Cibersegurança', label: 'Cibersegurança', cssClass: 'ciberseguranca', file: 'ciberseguranca' },
 ];
 
 export const PRIORITY_FILTERS = [
@@ -30,12 +32,16 @@ export const categoryClassMap = {
   Mobile: 'mobile',
   'Inovação & Gestão': 'inovacao-gestao',
   'Inteligência Artificial': 'ia',
+  Cloud: 'cloud',
+  'Cibersegurança': 'ciberseguranca',
 };
 
 // Rótulo exibido pro usuário — separado da chave interna (usada em CSS/cor)
-// porque o fórum renomeou "Programação" pra "Back-End".
+// porque o fórum renomeou algumas categorias.
 export const categoryLabelMap = {
   'Programação': 'Back-End',
+  'Data Science': 'Dados',
+  'Inovação & Gestão': 'Gestão & Negócios',
 };
 
 export const priorityClassMap = {
@@ -89,6 +95,10 @@ export function normalizeCategory(category) {
   ) {
     return 'Programação';
   }
+  if (normalized.includes('ciberseguranca') || normalized.includes('seguranca') || normalized.includes('cyber')) {
+    return 'Cibersegurança';
+  }
+  if (normalized.includes('cloud') || normalized.includes('nuvem')) return 'Cloud';
   return 'Outros';
 }
 

@@ -561,15 +561,9 @@ function TopicsView({ username: initialUsername }) {
                           {isAll ? (
                             <i className="fas fa-border-all category-icon-fallback"></i>
                           ) : (
-                            <span
-                              role="img"
-                              aria-label={button.label}
-                              className="category-img"
-                              style={{
-                                WebkitMaskImage: `url(/assets/categorias/${button.file}.png)`,
-                                maskImage: `url(/assets/categorias/${button.file}.png)`,
-                              }}
-                            />
+                            <svg className="category-img" role="img" aria-label={button.label}>
+                              <use xlinkHref={`/assets/categorias/alura-categorias.svg#icon-categorias-${button.file}`} />
+                            </svg>
                           )}
                           <span className="category-label">{button.label}</span>
                           {!isAll ? (

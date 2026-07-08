@@ -167,6 +167,14 @@ body.dark-mode .topic-card.is-sla {
     border-left-color: var(--cor-listagem-ia);
 }
 
+.topic-card.cloud {
+    border-left-color: var(--cor-listagem-cloud);
+}
+
+.topic-card.ciberseguranca {
+    border-left-color: var(--cor-listagem-ciberseguranca);
+}
+
 .topic-card.programacao .category-tag {
     background-color: var(--cor-listagem-backend);
 }
@@ -202,6 +210,15 @@ body.dark-mode .topic-card.is-sla {
     background-color: var(--cor-listagem-ia);
 }
 
+.topic-card.cloud .category-tag {
+    background-color: var(--cor-listagem-cloud);
+    color: var(--text-color);
+}
+
+.topic-card.ciberseguranca .category-tag {
+    background-color: var(--cor-listagem-ciberseguranca);
+}
+
 .category-tag.programacao {
     background-color: var(--cor-listagem-backend);
 }
@@ -235,6 +252,15 @@ body.dark-mode .topic-card.is-sla {
 .category-tag.mobile {
     background-color: var(--cor-listagem-mobile);
     color: var(--text-color);
+}
+
+.category-tag.cloud {
+    background-color: var(--cor-listagem-cloud);
+    color: var(--text-color);
+}
+
+.category-tag.ciberseguranca {
+    background-color: var(--cor-listagem-ciberseguranca);
 }
 
 .topic-card.easy .priority-tag {
