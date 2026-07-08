@@ -48,15 +48,24 @@ export const PRESETS = [
   { key: 'quarter', label: 'Este Trimestre' },
 ];
 
+// Chaves batem com o texto cru que a API de escolas manda (já reflete o
+// rebranding do fórum). Mantém os nomes antigos também, de forma
+// defensiva, caso algum dado antigo em cache ainda use a nomenclatura
+// anterior.
 export const SCHOOL_COLORS = {
-  'Programação': '#00C86F',
-  'Front-end': '#6BD1FF',
-  'Data Science': '#9CD33B',
-  DevOps: '#F16165',
-  'UX & Design': '#DC6EBE',
-  Mobile: '#FFBA05',
-  'Inovação & Gestão': '#FF8C2A',
-  'Inteligência Artificial': '#7B71FF',
+  'Back-end': '#8a63e6',
+  'Programação': '#8a63e6',
+  'Front-end': '#e07a3f',
+  'Dados': '#e14b5a',
+  'Data Science': '#e14b5a',
+  DevOps: '#d6d34a',
+  'UX & Design': '#4a90e2',
+  Mobile: '#209d92',
+  'Gestão & Negócios': '#819ec3',
+  'Inovação & Gestão': '#819ec3',
+  'Inteligência Artificial': '#4fb3d9',
+  Cloud: '#89f336',
+  'Cibersegurança': '#898989',
   Outros: '#495057',
 };
 

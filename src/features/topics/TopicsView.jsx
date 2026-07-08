@@ -545,7 +545,15 @@ function TopicsView({ username: initialUsername }) {
 
                   <div className="v-separator mobile-hide"></div>
 
-                  <div className="category-scroll-area" id="category-filters-box">
+                  <div
+                    className="category-scroll-area"
+                    id="category-filters-box"
+                    onWheel={(e) => {
+                      if (e.deltaY === 0) return;
+                      e.currentTarget.scrollLeft += e.deltaY;
+                      e.preventDefault();
+                    }}
+                  >
                     {CATEGORY_BUTTONS.map((button) => {
                       const isAll = button.category === 'Todas';
                       const isActive = isAll

@@ -39,8 +39,9 @@
 }
 
 .focus-banner__category-img {
-    width: 36px;
     height: 36px;
+    width: auto;
+    max-width: 46px;
     display: block;
     position: relative;
     z-index: 1;

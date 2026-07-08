@@ -221,11 +221,16 @@ input:checked+.slider:before {
     display: flex;
     gap: 10px;
     overflow-x: auto;
+    scroll-behavior: smooth;
     padding: 16px 12px 6px 12px;
     flex: 1;
     align-items: center;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    /* Fade nas bordas: sinaliza que dá pra rolar quando os chips não
+       cabem todos na largura visível (mais categorias = mais comum agora). */
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent 100%);
+    mask-image: linear-gradient(to right, black calc(100% - 28px), transparent 100%);
 }
 
 .category-scroll-area::-webkit-scrollbar {
@@ -279,9 +284,15 @@ input:checked+.slider:before {
 /* IMAGENS & ÍCONES */
 /* .category-img é o <svg><use></use></svg> do sprite oficial da Alura —
    sem fill próprio nos paths, então a cor vem 100% do CSS (fill aqui). */
+/* height fixo + width auto (até um teto): os símbolos do sprite não têm
+   viewBox quadrado (ex. inovacao-gestao é bem mais largo que alto) — com
+   width E height fixos, o "meet" padrão encolhia o ícone inteiro pra caber
+   na largura, ficando minúsculo. Com só a altura travada, todo ícone
+   mantém o mesmo peso visual, só a largura varia com a proporção nativa. */
 .category-img {
-    width: 22px;
     height: 22px;
+    width: auto;
+    max-width: 28px;
     display: block;
     flex-shrink: 0;
     margin: 0 auto;
