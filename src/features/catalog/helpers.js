@@ -58,15 +58,35 @@ export function classifyKind(kindRaw) {
   return { typeClass: 'type-outro', badgeLabel: kindRaw || 'Outro', iconClass: 'fa-question' };
 }
 
-export function isContentLegacy(dateText) {
-  if (!dateText) return false;
+export function parseDateText(dateText) {
+  if (!dateText) return null;
   const parts = dateText.split('/');
-  if (parts.length !== 3) return false;
+  if (parts.length !== 3) return null;
   const date = new Date(parts[2], parts[1] - 1, parts[0]);
-  if (Number.isNaN(date.getTime())) return false;
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export function isContentLegacy(dateText) {
+  const date = parseDateText(dateText);
+  if (!date) return false;
   const fourYearsAgo = new Date();
   fourYearsAgo.setFullYear(fourYearsAgo.getFullYear() - 4);
   return date < fourYearsAgo;
+}
+
+export function formatElapsed(dateText) {
+  const date = parseDateText(dateText);
+  if (!date) return '';
+  const days = Math.floor((Date.now() - date.getTime()) / 86400000);
+  if (days <= 0) return 'hoje';
+  if (days === 1) return 'ontem';
+  if (days < 7) return `há ${days} dias`;
+  if (days < 14) return 'há 1 semana';
+  if (days < 30) return `há ${Math.floor(days / 7)} semanas`;
+  if (days < 60) return 'há 1 mês';
+  if (days < 365) return `há ${Math.floor(days / 30)} meses`;
+  if (days < 730) return 'há 1 ano';
+  return `há ${Math.floor(days / 365)} anos`;
 }
 
 function normalize(str) {

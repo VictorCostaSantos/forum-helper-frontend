@@ -4,8 +4,10 @@ import {
   INTRO_LABELS,
   classifyKind,
   filterData,
+  formatElapsed,
   getKindIconClass,
   isContentLegacy,
+  parseDateText,
 } from './helpers';
 import { buildHTMLString } from './output';
 import { searchWithAI } from './ai';
@@ -40,6 +42,16 @@ function CatalogView() {
   useEffect(() => { saveCart(cart); }, [cart]);
 
   const types = useMemo(() => Array.from(new Set(items.map((i) => i.kind))).sort(), [items]);
+
+  const novidades = useMemo(() => {
+    return items
+      .filter((i) => (i.kind === 'CURSO' || i.kind === 'ARTIGO') && i.status_tag && i.date_text)
+      .map((i) => ({ item: i, date: parseDateText(i.date_text) }))
+      .filter(({ date }) => date)
+      .sort((a, b) => b.date - a.date)
+      .slice(0, 40)
+      .map(({ item }) => item);
+  }, [items]);
 
   const dataToRender = useMemo(() => {
     let data = items;
@@ -303,7 +315,14 @@ function CatalogView() {
                       </div>
                       <div className="item-meta">
                         <span className="badge badge-visual">{badgeLabel}</span>
-                        {item.date_text ? <span className="item-date">• {item.date_text}</span> : null}
+                        {item.date_text ? (
+                          <span className="item-date">
+                            • {item.date_text}
+                            {formatElapsed(item.date_text) ? (
+                              <span className="item-elapsed"> · {formatElapsed(item.date_text)}</span>
+                            ) : null}
+                          </span>
+                        ) : null}
                       </div>
                     </div>
 
@@ -381,6 +400,13 @@ function CatalogView() {
                   className="tab-icon-img"
                   alt="Preview"
                 />
+              </button>
+              <button
+                className={`tab-link ${sidebarTab === 'novidades' ? 'active' : ''}`}
+                title="Novidades"
+                onClick={() => setSidebarTab('novidades')}
+              >
+                <i className="fas fa-bell"></i>
               </button>
             </div>
           </div>
@@ -489,6 +515,47 @@ function CatalogView() {
                   <div dangerouslySetInnerHTML={{ __html: buildResponse() }} />
                 )}
               </div>
+            </div>
+
+            <div
+              id="view-novidades"
+              className="sidebar-view"
+              style={{ display: sidebarTab === 'novidades' ? 'block' : 'none' }}
+            >
+              {novidades.length === 0 ? (
+                <p style={{ textAlign: 'center', color: 'var(--text-secondary-cat)', marginTop: 50 }}>
+                  Nenhuma novidade encontrada.
+                </p>
+              ) : (
+                <ul className="novidades-list">
+                  {novidades.map((item) => {
+                    const { typeClass, badgeLabel, iconClass } = classifyKind(item.kind);
+                    return (
+                      <li key={item.link} className={`list-item novidade-item ${typeClass}`}>
+                        <a
+                          href={item.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="novidade-link"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="novidade-icon">
+                            <i className={`fas ${iconClass}`}></i>
+                          </div>
+                          <div className="novidade-body">
+                            <span className="badge badge-visual novidade-badge">{badgeLabel}</span>
+                            <p className="novidade-title">{item.title}</p>
+                          </div>
+                          <div className="novidade-when">
+                            <span className="novidade-elapsed">{formatElapsed(item.date_text)}</span>
+                            {item.date_text}
+                          </div>
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
           </div>
 
