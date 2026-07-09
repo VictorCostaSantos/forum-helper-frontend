@@ -23,7 +23,7 @@ export function getKindIconClass(kindRaw) {
   if (k.includes('TIRINHA') || k.includes('HQ') || k.includes('ALURAVERSO')) return 'fa-laugh-beam';
   if (k.includes('CASE')) return 'fa-lightbulb';
   if (k.includes('WEBSERIE') || k.includes('WEB SÉRIE') || k.includes('SERIE')) return 'fa-play-circle';
-  if (k.includes('FORMACAO') || k.includes('FORMAÇÃO')) return 'fa-map-signs';
+  if (k.includes('TRILHA') || k.includes('FORMACAO') || k.includes('FORMAÇÃO')) return 'fa-map-signs';
   if (k.includes('ALURA+') || k.includes('PLUS') || k.includes('MAIS')) return 'fa-star';
   if (k.includes('CARREIRA') || k.includes('SOFT')) return 'fa-briefcase';
   if (k.includes('VIDEO') || k.includes('VÍDEO') || k.includes('LIVE') || k.includes('EVENTO')) return 'fa-youtube';
@@ -41,8 +41,8 @@ export function classifyKind(kindRaw) {
     return { typeClass: 'type-case', badgeLabel: 'Case', iconClass: 'fa-lightbulb' };
   if (k.includes('WEBSERIE') || k.includes('WEB SÉRIE') || k.includes('SERIE'))
     return { typeClass: 'type-video', badgeLabel: 'Websérie', iconClass: 'fa-play-circle' };
-  if (k.includes('FORMACAO') || k.includes('FORMAÇÃO'))
-    return { typeClass: 'type-formacao', badgeLabel: 'Formação', iconClass: 'fa-map-signs' };
+  if (k.includes('TRILHA') || k.includes('FORMACAO') || k.includes('FORMAÇÃO'))
+    return { typeClass: 'type-formacao', badgeLabel: 'Trilha', iconClass: 'fa-map-signs' };
   if (k.includes('ALURA+') || k.includes('PLUS') || k.includes('MAIS'))
     return { typeClass: 'type-aluramais', badgeLabel: 'Alura+', iconClass: 'fa-star' };
   if (k.includes('CARREIRA') || k.includes('SOFT'))

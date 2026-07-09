@@ -150,12 +150,14 @@ body.dark-mode #catalog-view .list-item.is-legacy-item {
 }
 
 .item-icon-container {
-    width: 44px;
-    height: 44px;
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
     background-color: rgba(0, 0, 0, 0.05);
     /* Funciona em light/dark */
     border: 1px solid var(--border-color-cat);
@@ -163,6 +165,12 @@ body.dark-mode #catalog-view .list-item.is-legacy-item {
 
 body.dark-mode #catalog-view .item-icon-container {
     background-color: rgba(255, 255, 255, 0.05);
+}
+
+.item-icon-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .item-icon-container i {
@@ -233,6 +241,37 @@ body.dark-mode .legacy-warning {
     background-color: #3b2d00; /* Fundo escuro amarelado */
     color: #ffd666;            /* Texto Dourado */
     border-color: #614700;
+}
+
+/* --- TAG REMOVIDO DA PLATAFORMA --- */
+.removed-warning {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    background-color: #fdecea;
+    color: var(--color-danger-cat);
+    border: 1px solid #f5c6cb;
+
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.removed-warning i {
+    font-size: 0.8rem;
+    position: relative;
+    top: -1px;
+}
+
+body.dark-mode .removed-warning {
+    background-color: #3b0d0d;
+    color: #ff8a80;
+    border-color: #611414;
 }
 
 .badge {

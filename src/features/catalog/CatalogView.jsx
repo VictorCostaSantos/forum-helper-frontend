@@ -17,7 +17,9 @@ function CatalogView() {
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
+  const [brokenIcons, setBrokenIcons] = useState(() => new Set());
   const [cart, setCart] = useState(() => loadCart());
   const [aiState, setAiState] = useState({ links: null, tags: [], summary: '', loading: false });
   const [sidebarTab, setSidebarTab] = useState('list');
@@ -46,14 +48,17 @@ function CatalogView() {
       data.sort((a, b) => aiState.links.indexOf(a.link) - aiState.links.indexOf(b.link));
       return data;
     }
+    if (statusFilter) {
+      data = data.filter((item) => (statusFilter === 'DESCONHECIDO' ? !item.status_tag : item.status_tag === statusFilter));
+    }
     return filterData(data, search, typeFilter);
-  }, [items, search, typeFilter, aiState.links]);
+  }, [items, search, typeFilter, statusFilter, aiState.links]);
 
   const totalPages = Math.max(1, Math.ceil(dataToRender.length / ITEMS_PER_PAGE));
   const currentPage = Math.min(page, totalPages);
   const paginated = dataToRender.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-  useEffect(() => { setPage(1); }, [search, typeFilter, aiState.links]);
+  useEffect(() => { setPage(1); }, [search, typeFilter, statusFilter, aiState.links]);
 
   const cartHas = useCallback((link) => cart.some((c) => c.link === link), [cart]);
 
@@ -143,6 +148,7 @@ function CatalogView() {
   const reset = () => {
     setSearch('');
     setTypeFilter('');
+    setStatusFilter('');
     clearAi();
   };
 
@@ -199,6 +205,17 @@ function CatalogView() {
               <option value="">Todos os Formatos</option>
               {types.map((k) => <option key={k} value={k}>{k}</option>)}
             </select>
+            <select
+              id="statusFilter"
+              className="filter-select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="">Todos os Status</option>
+              <option value="ATIVO">Ativo</option>
+              <option value="REMOVIDO DA PLATAFORMA">Removido da plataforma</option>
+              <option value="DESCONHECIDO">Desconhecido (legado)</option>
+            </select>
             <button id="resetFilters" title="Limpar filtros" onClick={reset}>Limpar</button>
           </div>
 
@@ -250,8 +267,13 @@ function CatalogView() {
                     </div>
 
                     <div className="item-icon-container">
-                      {item.icon ? (
-                        <img src={item.icon} alt="" style={{ width: 24, height: 24, objectFit: 'contain' }} referrerPolicy="no-referrer" />
+                      {item.icon && !brokenIcons.has(item.link) ? (
+                        <img
+                          src={item.icon}
+                          alt=""
+                          referrerPolicy="no-referrer"
+                          onError={() => setBrokenIcons((prev) => new Set(prev).add(item.link))}
+                        />
                       ) : (
                         <i className={`fas ${iconClass}`}></i>
                       )}
@@ -268,6 +290,11 @@ function CatalogView() {
                         >
                           {item.title}
                         </a>
+                        {item.status_tag === 'REMOVIDO DA PLATAFORMA' ? (
+                          <div className="removed-warning" title="Este conteúdo foi removido da plataforma Alura.">
+                            <i className="fas fa-ban"></i> Removido da plataforma
+                          </div>
+                        ) : null}
                         {legacy ? (
                           <div className="legacy-warning" title="Este conteúdo tem mais de 4 anos e pode estar desatualizado.">
                             <i className="fas fa-exclamation-triangle"></i> Antigo
