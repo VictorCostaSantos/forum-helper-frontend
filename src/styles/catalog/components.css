@@ -69,17 +69,17 @@
 .list-item {
     background: var(--bg-card-catalog);
     /* AGORA MUDA NO DARK MODE */
-    border-radius: 8px;
+    border-radius: 12px;
     box-shadow: var(--shadow-sm-cat);
-    padding: 14px 20px;
+    padding: 14px 18px;
 
     display: grid;
     grid-template-columns: auto auto 1fr auto;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
 
-    border: 1px solid transparent;
-    border-left: 5px solid var(--cat-outro);
+    border: 1px solid var(--border-color-cat);
+    --kind-color: var(--cat-outro);
     transition: transform 0.15s, box-shadow 0.15s;
     color: var(--text-primary-cat);
 }
@@ -150,21 +150,15 @@ body.dark-mode #catalog-view .list-item.is-legacy-item {
 }
 
 .item-icon-container {
-    width: 52px;
-    height: 52px;
+    width: 60px;
+    height: 60px;
     flex-shrink: 0;
-    border-radius: 8px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    background-color: rgba(0, 0, 0, 0.05);
-    /* Funciona em light/dark */
-    border: 1px solid var(--border-color-cat);
-}
-
-body.dark-mode #catalog-view .item-icon-container {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: color-mix(in srgb, var(--kind-color, var(--cat-outro)) 16%, var(--bg-card-catalog));
 }
 
 .item-icon-container img {
@@ -174,12 +168,8 @@ body.dark-mode #catalog-view .item-icon-container {
 }
 
 .item-icon-container i {
-    font-size: 1.3rem;
-    color: #777;
-}
-
-body.dark-mode #catalog-view .item-icon-container i {
-    color: #aaa;
+    font-size: 1.4rem;
+    color: var(--kind-color, var(--cat-outro));
 }
 
 .item-info {
@@ -276,12 +266,18 @@ body.dark-mode .removed-warning {
 
 .badge {
     padding: 4px 10px;
-    border-radius: 4px;
+    border-radius: 20px;
     font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
     color: white;
     letter-spacing: 0.5px;
+}
+
+.badge.badge-visual {
+    font-family: 'Roboto Mono', monospace;
+    background-color: color-mix(in srgb, var(--kind-color, var(--cat-outro)) 16%, transparent);
+    color: var(--kind-color, var(--cat-outro));
 }
 
 .item-date {
@@ -322,23 +318,26 @@ body.dark-mode .removed-warning {
 }
 
 .novidade-icon {
-    width: 30px;
-    height: 30px;
+    width: 44px;
+    height: 44px;
     flex-shrink: 0;
-    border-radius: 7px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    background-color: color-mix(in srgb, var(--kind-color, var(--cat-outro)) 16%, var(--bg-card-catalog));
 }
 
-body.dark-mode .novidade-icon {
-    background-color: rgba(255, 255, 255, 0.05);
+.novidade-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .novidade-icon i {
-    font-size: 0.8rem;
-    color: var(--text-secondary-cat);
+    font-size: 1rem;
+    color: var(--kind-color, var(--cat-outro));
 }
 
 .novidade-body {

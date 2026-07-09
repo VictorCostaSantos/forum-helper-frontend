@@ -1,89 +1,16 @@
-/* Arquivo: css/utilities.css (GARANTIA DAS CORES) */
+/* Arquivo: css/utilities.css (cor por tipo, via --kind-color) */
+/* --kind-color alimenta o fundo do ícone e o badge "soft" (ver components.css) */
 
-/* CURSO (Verde) */
-#catalog-view .list-item.type-curso {
-    border-left-color: var(--cat-curso);
-}
-
-#catalog-view .list-item.type-curso .badge-visual {
-    background-color: var(--cat-curso);
-}
-
-/* FORMAÇÃO (Roxo) */
-#catalog-view .list-item.type-formacao {
-    border-left-color: var(--cat-formacao);
-}
-
-#catalog-view .list-item.type-formacao .badge-visual {
-    background-color: var(--cat-formacao);
-}
-
-/* ALURA+ (Rosa) */
-#catalog-view .list-item.type-aluramais {
-    border-left-color: var(--cat-aluramais);
-}
-
-#catalog-view .list-item.type-aluramais .badge-visual {
-    background-color: var(--cat-aluramais);
-}
-
-/* VÍDEO (Vermelho) */
-#catalog-view .list-item.type-video {
-    border-left-color: var(--cat-video);
-}
-
-#catalog-view .list-item.type-video .badge-visual {
-    background-color: var(--cat-video);
-}
-
-/* PODCAST / CASE (Laranja) */
+#catalog-view .list-item.type-curso { --kind-color: var(--cat-curso); }
+#catalog-view .list-item.type-formacao { --kind-color: var(--cat-formacao); }
+#catalog-view .list-item.type-aluramais { --kind-color: var(--cat-aluramais); }
+#catalog-view .list-item.type-video { --kind-color: var(--cat-video); }
 #catalog-view .list-item.type-podcast,
-#catalog-view .list-item.type-case {
-    border-left-color: var(--cat-podcast);
-}
-
-#catalog-view .list-item.type-podcast .badge-visual,
-#catalog-view .list-item.type-case .badge-visual {
-    background-color: var(--cat-podcast);
-}
-
-/* ARTIGO (Azul Claro) */
-#catalog-view .list-item.type-artigo {
-    border-left-color: var(--cat-artigo);
-}
-
-#catalog-view .list-item.type-artigo .badge-visual {
-    background-color: var(--cat-artigo);
-    color: #212529;
-}
-
-/* CARREIRA (Amarelo) */
-#catalog-view .list-item.type-carreira {
-    border-left-color: var(--cat-carreira);
-}
-
-#catalog-view .list-item.type-carreira .badge-visual {
-    background-color: var(--cat-carreira);
-    color: #212529;
-}
-
-/* LÚDICO (Roxo Escuro) */
-#catalog-view .list-item.type-ludico {
-    border-left-color: var(--cat-ludico);
-}
-
-#catalog-view .list-item.type-ludico .badge-visual {
-    background-color: var(--cat-ludico);
-}
-
-/* OUTRO (Cinza) */
-#catalog-view .list-item.type-outro {
-    border-left-color: var(--cat-outro);
-}
-
-#catalog-view .list-item.type-outro .badge-visual {
-    background-color: var(--cat-outro);
-}
+#catalog-view .list-item.type-case { --kind-color: var(--cat-podcast); }
+#catalog-view .list-item.type-artigo { --kind-color: var(--cat-artigo); }
+#catalog-view .list-item.type-carreira { --kind-color: var(--cat-carreira); }
+#catalog-view .list-item.type-ludico { --kind-color: var(--cat-ludico); }
+#catalog-view .list-item.type-outro { --kind-color: var(--cat-outro); }
 
 /* Animações */
 @keyframes slideLeft {

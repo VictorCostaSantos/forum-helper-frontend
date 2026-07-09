@@ -318,7 +318,7 @@ function CatalogView() {
                         {item.date_text ? (
                           <span className="item-date">
                             • {item.date_text}
-                            {formatElapsed(item.date_text) ? (
+                            {item.status_tag && formatElapsed(item.date_text) ? (
                               <span className="item-elapsed"> · {formatElapsed(item.date_text)}</span>
                             ) : null}
                           </span>
