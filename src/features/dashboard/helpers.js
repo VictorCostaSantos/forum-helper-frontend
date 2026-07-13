@@ -9,7 +9,6 @@ export const TEAM_MEMBERS = [
   'armano-junior',
   'mikedesousa80',
   'udanielnogueira',
-  'iara-martinez',
   'vascoginde',
 ];
 
@@ -25,7 +24,6 @@ export const NAME_MAP = {
   'lorena-garcia': 'Lorena Garcia',
   'mikedesousa80': 'Mike de Sousa',
   'udanielnogueira': 'Daniel Nogueira',
-  'iara-martinez': 'Iara Martinez',
 };
 
 export function formatName(user) {

@@ -20,7 +20,6 @@ export const TEAM = [
   { username: 'armano-junior',           displayName: 'Armano Júnior',     isAdmin: false },
   { username: 'mikedesousa80',           displayName: 'Mike de Sousa',     isAdmin: false },
   { username: 'udanielnogueira',         displayName: 'Daniel Nogueira',   isAdmin: false },
-  { username: 'iara-martinez',           displayName: 'Iara Martinez',     isAdmin: false },
   { username: 'vascoginde',              displayName: 'Vasco Ginde',       isAdmin: true  },
 ];
 

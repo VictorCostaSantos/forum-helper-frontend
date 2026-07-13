@@ -20,14 +20,13 @@ export const TYPE_ICONS = {
 
 export const TEAM_MEMBERS = [
   'monalisa-silva1', 'victos-costa', 'nathqueiroz', 'rafaela-petelin-silverio',
-  'lorena-garcia', 'armano-junior', 'mikedesousa80', 'udanielnogueira', 'iara-martinez', 'vascoginde',
+  'lorena-garcia', 'armano-junior', 'mikedesousa80', 'udanielnogueira', 'vascoginde',
 ];
 
 const NAME_MAP = {
   'victos-costa': 'Victor', 'nathqueiroz': 'Nath', 'mikedesousa80': 'Mike',
   'udanielnogueira': 'Daniel', 'vascoginde': 'Vasco', 'armano-junior': 'Armano',
   'lorena-garcia': 'Lorena', 'monalisa-silva1': 'Monalisa', 'rafaela-petelin-silverio': 'Rafaela',
-  'iara-martinez': 'Iara',
 };
 
 export const FILTERS_LEFT = [
