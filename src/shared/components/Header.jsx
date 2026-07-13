@@ -8,7 +8,7 @@ const DEFAULT_SOLUTION_FLAG_HTML =
   '<div style="display: inline-block; padding: 10px 20px; background: linear-gradient(135deg, #06B9A1, #049F89); color: white; font-size: 0.85em; font-style: italic; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); border: 1px solid #FFF; text-align: center;">\n<strong style="font-size: 0.9em;">Caso este post tenha lhe ajudado, por favor, <span style="text-decoration: underline;">marcar como solucionado</span></strong>\n</div>';
 
 const DEFAULT_FEEDBACK_FLAG_HTML =
-  '<div style="padding: 5px;"></div>\n<div style="display: inline-flex; padding: 10px 20px; background-color: #051933; color: white; font-size: 0.85em; font-style: italic; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); border: 1px solid #FFF; text-align: center; align-items: center; gap: 10px;">\n  <img src="https://i.imgur.com/PnH9w3G.jpeg" alt="Alura" width="35">\n  <strong style="font-size: 0.9em;"> Conte com o apoio da <span style="text-decoration: underline;">comunidade Alura</span> na sua jornada. Abraços e bons estudos!</strong>\n</div>';
+  '<div style="padding: 5px;"></div>\n<div style="display: inline-flex; padding: 10px 20px; background-color: #0C0C0E; color: white; font-size: 0.85em; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.15); text-align: center; align-items: center; gap: 10px;">\n  <img src="https://cursos.alura.com.br/assets/images/alura/favicon.ico" alt="Alura" width="24">\n  <strong style="font-size: 0.9em;"> Conte com o apoio da <span style="text-decoration: underline;">comunidade Alura</span> na sua jornada. Abraços e bons estudos!</strong>\n</div>';
 
 const FORUM_URL = 'https://cursos.alura.com.br/forum/todos/1?hasAccessMGM=true';
 
