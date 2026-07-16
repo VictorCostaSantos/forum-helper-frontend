@@ -2,7 +2,7 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyDdTYpvQioNflgCXJRwu2KkCK_lEz1qvOc',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
   authDomain: 'forum-helper-mural.firebaseapp.com',
   projectId: 'forum-helper-mural',
   storageBucket: 'forum-helper-mural.firebasestorage.app',
