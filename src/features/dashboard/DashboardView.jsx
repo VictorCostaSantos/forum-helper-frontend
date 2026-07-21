@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import {
   Chart,
   BarController,
@@ -17,7 +17,7 @@ import {
 import 'chartjs-adapter-date-fns';
 import { ptBR } from 'date-fns/locale';
 
-import { fetchDashboardStats, fetchAvatarFromBackend } from '../../api/apiService';
+import { fetchDashboardStats, fetchAvatarFromBackend, fetchMemberTopicsByRegion } from '../../api/apiService';
 import {
   TEAM_MEMBERS,
   PRESETS,
@@ -156,6 +156,9 @@ function DashboardView({ username = '' }) {
   const [chartView, setChartView] = useState('team'); // 'team' | 'individual'
   const [metric, setMetric] = useState('responses');
   const [modalUser, setModalUser] = useState(null);
+  const [region, setRegion] = useState('BR'); // 'BR' | 'LATAM'
+  const [memberTopics, setMemberTopics] = useState([]);
+  const [loadingTopics, setLoadingTopics] = useState(false);
 
   const teamCanvasRef = useRef(null);
   const schoolCanvasRef = useRef(null);
@@ -201,6 +204,25 @@ function DashboardView({ username = '' }) {
       setLoading(false);
     }
   };
+
+  // Carrega dados de tópicos por membro conforme a região
+  const loadMemberTopics = useCallback(async () => {
+    setLoadingTopics(true);
+    try {
+      const topics = await fetchMemberTopicsByRegion(region);
+      setMemberTopics(topics || []);
+    } catch (err) {
+      console.error(`Erro ao carregar tópicos (${region}):`, err);
+      setMemberTopics([]);
+    } finally {
+      setLoadingTopics(false);
+    }
+  }, [region]);
+
+  // Carrega tópicos quando a região muda
+  useEffect(() => {
+    loadMemberTopics();
+  }, [loadMemberTopics]);
 
   useEffect(() => {
     loadDashboard();
@@ -676,6 +698,31 @@ function DashboardView({ username = '' }) {
           </div>
         </section>
 
+        {/* Toggle de Região e Dados de Tópicos */}
+        <section className="dash-region-section dash-section">
+          <div className="region-toggle">
+            <label>Região dos Tópicos:</label>
+            <div className="pill-toggle">
+              <button
+                type="button"
+                className={region === 'BR' ? 'active' : ''}
+                onClick={() => setRegion('BR')}
+                title="Dados do Brasil"
+              >
+                <i className="fas fa-globe"></i> Brasil
+              </button>
+              <button
+                type="button"
+                className={region === 'LATAM' ? 'active' : ''}
+                onClick={() => setRegion('LATAM')}
+                title="Dados da América Latina"
+              >
+                <i className="fas fa-globe"></i> Latam
+              </button>
+            </div>
+          </div>
+        </section>
+
         {loading ? (
           <div className="panel" style={{ textAlign: 'center', padding: 60, color: 'var(--light-text-color)' }}>
             <i className="fas fa-spinner fa-spin"></i> Carregando dashboard...
@@ -763,6 +810,60 @@ function DashboardView({ username = '' }) {
               <div className="chart-canvas">
                 <canvas ref={schoolCanvasRef}></canvas>
               </div>
+            </section>
+
+            {/* Tópicos por Membro — Dados do BI da Região */}
+            <section className="panel dash-section">
+              <div className="panel-header">
+                <div>
+                  <h3 className="panel-title">
+                    <i className="fas fa-list-check" style={{ color: '#9CD33B' }}></i>
+                    Tópicos por Membro — {region}
+                  </h3>
+                  <p className="panel-subtitle">Dados importados do BI {region === 'LATAM' ? '(América Latina)' : '(Brasil)'}</p>
+                </div>
+              </div>
+              {loadingTopics ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--light-text-color)' }}>
+                  <i className="fas fa-spinner fa-spin"></i> Carregando dados de tópicos...
+                </div>
+              ) : memberTopics && memberTopics.length > 0 ? (
+                <div className="topics-grid">
+                  {memberTopics.map((member, idx) => (
+                    <div key={idx} className="topic-member-card">
+                      <h4 className="member-name">{member.name || member.username || 'Sem nome'}</h4>
+                      <div className="member-stats">
+                        <div className="stat-item">
+                          <span className="stat-value">{member.totalTopics || 0}</span>
+                          <span className="stat-label">Tópicos</span>
+                        </div>
+                        {member.openTopics !== undefined && (
+                          <div className="stat-item">
+                            <span className="stat-value">{member.openTopics}</span>
+                            <span className="stat-label">Abertos</span>
+                          </div>
+                        )}
+                        {member.closedTopics !== undefined && (
+                          <div className="stat-item">
+                            <span className="stat-value">{member.closedTopics}</span>
+                            <span className="stat-label">Fechados</span>
+                          </div>
+                        )}
+                        {member.rate !== undefined && (
+                          <div className="stat-item">
+                            <span className="stat-value">{member.rate.toFixed(1)}%</span>
+                            <span className="stat-label">Taxa</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--light-text-color)' }}>
+                  <i className="fas fa-inbox"></i> Nenhum dado de tópicos disponível para {region}
+                </div>
+              )}
             </section>
 
           </>

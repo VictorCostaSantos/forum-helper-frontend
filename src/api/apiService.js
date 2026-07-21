@@ -198,6 +198,17 @@ export async function fetchAvatarFromBackend(username) {
     }
 }
 
+// Busca dados de tópicos por membro do BI (o backend decide o ID conforme a região)
+export async function fetchMemberTopicsByRegion(region = 'BR') {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/bi-topics?region=${region}`);
+        return response.data || [];
+    } catch (error) {
+        console.error(`Erro ao buscar tópicos por membro (${region}):`, error);
+        return [];
+    }
+}
+
 const BI_ANNUAL_URL = "https://bi.caelumalura.com.br/public/result?id=SEU_ID_DA_QUERY_ANUAL_AQUI&format=json";
 const userAnnualCache = {};
 
