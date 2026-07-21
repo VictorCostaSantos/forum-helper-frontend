@@ -79,6 +79,15 @@ export const METRICS = [
   { key: 'rate', label: 'Taxa de Solução', icon: 'fa-percent', suffix: '%', color: '#7B71FF' },
 ];
 
+// Métricas do gráfico individual quando a região LATAM está selecionada —
+// vêm do BI (fetchMemberTopicsByRegion), não do dashboard-stats.
+export const METRICS_LATAM = [
+  { key: 'totalTopics', label: 'Tópicos', icon: 'fa-list-check', suffix: '', color: '#9CD33B' },
+  { key: 'openTopics', label: 'Abertos', icon: 'fa-envelope-open-text', suffix: '', color: '#ffc107' },
+  { key: 'closedTopics', label: 'Fechados', icon: 'fa-envelope', suffix: '', color: '#6BD1FF' },
+  { key: 'rate', label: 'Taxa de Solução', icon: 'fa-percent', suffix: '%', color: '#7B71FF' },
+];
+
 export const HIGHLIGHT_COLOR = '#06B9A1';
 export const ANON_COLOR_LIGHT = 'rgba(123, 113, 255, 0.45)';
 export const ANON_COLOR_DARK = 'rgba(170, 145, 255, 0.5)';
@@ -162,6 +171,37 @@ export function buildDisplayNameMap(users, currentUser, manager) {
   shuffled.forEach((u, i) => { map[u.username] = `Membro ${i + 1}`; });
   if (me) map[me] = formatName(me);
   return map;
+}
+
+/**
+ * Ordena uma lista de membros e monta o mapa de nomes de exibição — usado tanto
+ * pro chart BR (data.users) quanto pro LATAM (memberTopics), que têm campos
+ * diferentes mas o mesmo formato { username, ... }.
+ * Gestor: ordenado por sortValue desc, nomes reais. Demais: ordem embaralhada,
+ * "Membro N" exceto o próprio (mesma lógica de anonimização do buildDisplayNameMap).
+ */
+export function orderAndAnonymize(items, sortValue, isMgr, me) {
+  const arr = [...items];
+  if (isMgr) {
+    arr.sort((a, b) => sortValue(b) - sortValue(a));
+  } else {
+    for (let i = arr.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+
+  const displayNames = {};
+  if (isMgr) {
+    arr.forEach((u) => { displayNames[u.username] = formatName(u.username); });
+  } else {
+    let counter = 1;
+    arr.forEach((u) => {
+      displayNames[u.username] = u.username === me ? formatName(u.username) : `Membro ${counter}`;
+      if (u.username !== me) counter += 1;
+    });
+  }
+  return { ordered: arr, displayNames };
 }
 
 /** Calcula valor de uma métrica para um usuário. */

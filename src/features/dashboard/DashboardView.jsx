@@ -22,6 +22,7 @@ import {
   TEAM_MEMBERS,
   PRESETS,
   METRICS,
+  METRICS_LATAM,
   SCHOOL_COLORS,
   PALETTE,
   HIGHLIGHT_COLOR,
@@ -31,6 +32,7 @@ import {
   getPresetRange,
   getThemeColors,
   getUserMetricValue,
+  orderAndAnonymize,
   isManager as checkManager,
 } from './helpers';
 
@@ -247,33 +249,27 @@ function DashboardView({ username = '' }) {
 
   // Ordem-base estável: gestor vê ordenado por respostas; demais veem embaralhado.
   // Recomputa só quando os dados mudam — trocar de métrica não reembaralha (evita "salto").
-  const orderedUsers = useMemo(() => {
-    const arr = [...(data.users || [])];
-    if (isMgr) {
-      arr.sort((a, b) => (b.totalResponses || 0) - (a.totalResponses || 0));
-    } else {
-      for (let i = arr.length - 1; i > 0; i -= 1) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-    }
-    return arr;
-  }, [data.users, isMgr]);
+  const { ordered: orderedUsers, displayNames } = useMemo(
+    () => orderAndAnonymize(data.users || [], (u) => u.totalResponses || 0, isMgr, me),
+    [data.users, isMgr, me]
+  );
 
-  // Mapa de exibição segue a ordem-base: "Membro N" preserva sua posição visual.
-  const displayNames = useMemo(() => {
-    const map = {};
-    if (isMgr) {
-      orderedUsers.forEach((u) => { map[u.username] = formatName(u.username); });
-      return map;
-    }
-    let counter = 1;
-    orderedUsers.forEach((u) => {
-      map[u.username] = u.username === me ? formatName(u.username) : `Membro ${counter}`;
-      if (u.username !== me) counter += 1;
-    });
-    return map;
-  }, [orderedUsers, isMgr, me]);
+  // Mesma lógica pro gráfico LATAM (dados do BI, não do dashboard-stats).
+  const { ordered: orderedLatamMembers, displayNames: latamDisplayNames } = useMemo(
+    () => orderAndAnonymize(memberTopics, (u) => u.totalTopics || 0, isMgr, me),
+    [memberTopics, isMgr, me]
+  );
+
+  // LATAM não tem série diária (o BI só dá totais agregados) — força pro modo Individual.
+  useEffect(() => {
+    if (region === 'LATAM' && chartView === 'team') setChartView('individual');
+  }, [region, chartView]);
+
+  // Ao trocar de região, garante que a métrica selecionada existe no novo conjunto.
+  useEffect(() => {
+    const list = region === 'LATAM' ? METRICS_LATAM : METRICS;
+    if (!list.some((m) => m.key === metric)) setMetric(list[0].key);
+  }, [region, metric]);
 
   // KPIs
   const kpis = useMemo(() => {
@@ -331,7 +327,7 @@ function DashboardView({ username = '' }) {
     teamChartRef.current = null;
     const theme = getThemeColors();
 
-    if (chartView === 'team') {
+    if (chartView === 'team' && region === 'BR') {
       const respByDate = data.summary?.responsesByDate || {};
       const groupedByDay = {};
       Object.keys(respByDate).forEach((full) => {
@@ -390,14 +386,23 @@ function DashboardView({ username = '' }) {
       return;
     }
 
-    // Individual — usa a métrica selecionada
-    const metricCfg = METRICS.find((m) => m.key === metric) || METRICS[0];
-    const baseItems = orderedUsers.map((u) => ({ user: u, value: getUserMetricValue(u, metric) }));
-    const items = isMgr
-      ? [...baseItems].sort((a, b) => (metric === 'sla' ? a.value - b.value : b.value - a.value))
-      : baseItems;
+    // Individual — usa a métrica selecionada. LATAM lê direto do BI (fetchMemberTopicsByRegion),
+    // que já vem ordenado/anonimizado por orderAndAnonymize; BR usa dashboard-stats.
+    const isLatam = region === 'LATAM';
+    const metricsList = isLatam ? METRICS_LATAM : METRICS;
+    const metricCfg = metricsList.find((m) => m.key === metric) || metricsList[0];
 
-    const labels = items.map((r) => displayNames[r.user.username] || formatName(r.user.username));
+    const items = isLatam
+      ? orderedLatamMembers.map((u) => ({ user: u, value: u[metricCfg.key] || 0 }))
+      : (() => {
+          const baseItems = orderedUsers.map((u) => ({ user: u, value: getUserMetricValue(u, metric) }));
+          return isMgr
+            ? [...baseItems].sort((a, b) => (metric === 'sla' ? a.value - b.value : b.value - a.value))
+            : baseItems;
+        })();
+
+    const namesMap = isLatam ? latamDisplayNames : displayNames;
+    const labels = items.map((r) => namesMap[r.user.username] || formatName(r.user.username));
     const totals = items.map((r) => r.value);
     const colors = items.map((_, i) => PALETTE[i % PALETTE.length]);
     const myIndex = items.findIndex((r) => r.user.username === me);
@@ -454,7 +459,7 @@ function DashboardView({ username = '' }) {
             textColor: theme.text,
           },
         },
-        onClick: isMgr
+        onClick: isMgr && !isLatam
           ? (_e, els) => {
               if (!els.length) return;
               const idx = els[0].index;
@@ -464,11 +469,11 @@ function DashboardView({ username = '' }) {
           : undefined,
         onHover: (event, els) => {
           const target = event.native?.target;
-          if (target) target.style.cursor = isMgr && els.length ? 'pointer' : 'default';
+          if (target) target.style.cursor = isMgr && !isLatam && els.length ? 'pointer' : 'default';
         },
       },
     });
-  }, [orderedUsers, chartView, metric, displayNames, isMgr, me]);
+  }, [orderedUsers, orderedLatamMembers, chartView, metric, region, displayNames, latamDisplayNames, isMgr, me]);
 
   // Distribuição por Escola
   useEffect(() => {
@@ -660,7 +665,8 @@ function DashboardView({ username = '' }) {
 
   const closeModal = () => setModalUser(null);
 
-  const currentMetric = METRICS.find((m) => m.key === metric) || METRICS[0];
+  const currentMetricsList = region === 'LATAM' ? METRICS_LATAM : METRICS;
+  const currentMetric = currentMetricsList.find((m) => m.key === metric) || currentMetricsList[0];
 
   return (
     <div id="dashboard-view" className="view-container active dashboard-modern">
@@ -698,30 +704,6 @@ function DashboardView({ username = '' }) {
           </div>
         </section>
 
-        {/* Toggle de Região e Dados de Tópicos */}
-        <section className="dash-region-section dash-section">
-          <div className="region-toggle">
-            <label>Região dos Tópicos:</label>
-            <div className="pill-toggle">
-              <button
-                type="button"
-                className={region === 'BR' ? 'active' : ''}
-                onClick={() => setRegion('BR')}
-                title="Dados do Brasil"
-              >
-                <i className="fas fa-globe"></i> Brasil
-              </button>
-              <button
-                type="button"
-                className={region === 'LATAM' ? 'active' : ''}
-                onClick={() => setRegion('LATAM')}
-                title="Dados da América Latina"
-              >
-                <i className="fas fa-globe"></i> Latam
-              </button>
-            </div>
-          </div>
-        </section>
 
         {loading ? (
           <div className="panel" style={{ textAlign: 'center', padding: 60, color: 'var(--light-text-color)' }}>
@@ -748,7 +730,9 @@ function DashboardView({ username = '' }) {
                     {chartView === 'team'
                       ? 'Toda a equipe ao longo do período selecionado'
                       : isMgr
-                        ? `${currentMetric.label} por membro — clique numa barra para ver detalhes`
+                        ? region === 'LATAM'
+                          ? `${currentMetric.label} por membro (LATAM)`
+                          : `${currentMetric.label} por membro — clique numa barra para ver detalhes`
                         : `${currentMetric.label} — sua posição na equipe (demais membros anonimizados)`}
                   </p>
                 </div>
@@ -756,11 +740,29 @@ function DashboardView({ username = '' }) {
                   <div className="pill-toggle">
                     <button
                       type="button"
-                      className={chartView === 'team' ? 'active' : ''}
-                      onClick={() => setChartView('team')}
+                      className={region === 'BR' ? 'active' : ''}
+                      onClick={() => setRegion('BR')}
                     >
-                      <i className="fas fa-users"></i> Equipe
+                      <i className="fas fa-globe"></i> Brasil
                     </button>
+                    <button
+                      type="button"
+                      className={region === 'LATAM' ? 'active' : ''}
+                      onClick={() => setRegion('LATAM')}
+                    >
+                      <i className="fas fa-globe"></i> Latam
+                    </button>
+                  </div>
+                  <div className="pill-toggle">
+                    {region === 'BR' ? (
+                      <button
+                        type="button"
+                        className={chartView === 'team' ? 'active' : ''}
+                        onClick={() => setChartView('team')}
+                      >
+                        <i className="fas fa-users"></i> Equipe
+                      </button>
+                    ) : null}
                     <button
                       type="button"
                       className={chartView === 'individual' ? 'active' : ''}
@@ -771,7 +773,7 @@ function DashboardView({ username = '' }) {
                   </div>
                   {chartView === 'individual' ? (
                     <div className="pill-toggle">
-                      {METRICS.map((m) => (
+                      {currentMetricsList.map((m) => (
                         <button
                           key={m.key}
                           type="button"
@@ -787,12 +789,18 @@ function DashboardView({ username = '' }) {
                 </div>
               </div>
 
-              <div className="chart-canvas tall">
-                <canvas
-                  key={`${chartView}-${metric}`}
-                  ref={teamCanvasRef}
-                ></canvas>
-              </div>
+              {region === 'LATAM' && loadingTopics ? (
+                <div style={{ textAlign: 'center', padding: 60, color: 'var(--light-text-color)' }}>
+                  <i className="fas fa-spinner fa-spin"></i> Carregando dados da LATAM...
+                </div>
+              ) : (
+                <div className="chart-canvas tall">
+                  <canvas
+                    key={`${region}-${chartView}-${metric}`}
+                    ref={teamCanvasRef}
+                  ></canvas>
+                </div>
+              )}
             </section>
 
             {/* Distribuição por Escola — full width, agregado da equipe */}
@@ -810,60 +818,6 @@ function DashboardView({ username = '' }) {
               <div className="chart-canvas">
                 <canvas ref={schoolCanvasRef}></canvas>
               </div>
-            </section>
-
-            {/* Tópicos por Membro — Dados do BI da Região */}
-            <section className="panel dash-section">
-              <div className="panel-header">
-                <div>
-                  <h3 className="panel-title">
-                    <i className="fas fa-list-check" style={{ color: '#9CD33B' }}></i>
-                    Tópicos por Membro — {region}
-                  </h3>
-                  <p className="panel-subtitle">Dados importados do BI {region === 'LATAM' ? '(América Latina)' : '(Brasil)'}</p>
-                </div>
-              </div>
-              {loadingTopics ? (
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--light-text-color)' }}>
-                  <i className="fas fa-spinner fa-spin"></i> Carregando dados de tópicos...
-                </div>
-              ) : memberTopics && memberTopics.length > 0 ? (
-                <div className="topics-grid">
-                  {memberTopics.map((member, idx) => (
-                    <div key={idx} className="topic-member-card">
-                      <h4 className="member-name">{member.name || member.username || 'Sem nome'}</h4>
-                      <div className="member-stats">
-                        <div className="stat-item">
-                          <span className="stat-value">{member.totalTopics || 0}</span>
-                          <span className="stat-label">Tópicos</span>
-                        </div>
-                        {member.openTopics !== undefined && (
-                          <div className="stat-item">
-                            <span className="stat-value">{member.openTopics}</span>
-                            <span className="stat-label">Abertos</span>
-                          </div>
-                        )}
-                        {member.closedTopics !== undefined && (
-                          <div className="stat-item">
-                            <span className="stat-value">{member.closedTopics}</span>
-                            <span className="stat-label">Fechados</span>
-                          </div>
-                        )}
-                        {member.rate !== undefined && (
-                          <div className="stat-item">
-                            <span className="stat-value">{member.rate.toFixed(1)}%</span>
-                            <span className="stat-label">Taxa</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--light-text-color)' }}>
-                  <i className="fas fa-inbox"></i> Nenhum dado de tópicos disponível para {region}
-                </div>
-              )}
             </section>
 
           </>
